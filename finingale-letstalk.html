@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Finingale — Let's Talk</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:  #0A1628;
+    --navy2: #0E1F3D;
+    --navy3: #162847;
+    --gold:  #C9A84C;
+    --gold2: #E8C96B;
+    --white: #F8F5EE;
+    --grey:  #8A95A3;
+    --light: #D6DAE0;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.4;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 100px 48px 80px;
+    position: relative; overflow: hidden;
+    border-bottom: 1px solid rgba(201,168,76,0.12);
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 80% 50%, rgba(201,168,76,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-grid-lines {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  .hero-label {
+    font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+    position: relative; z-index: 1;
+  }
+  .hero-label::before { content: ''; width: 28px; height: 1px; background: var(--gold); }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 5vw, 5rem);
+    font-weight: 900; line-height: 1.05;
+    letter-spacing: -1px; margin-bottom: 24px;
+    position: relative; z-index: 1;
+  }
+  .hero-title em {
+    font-style: italic; color: var(--gold);
+  }
+
+  .hero-sub {
+    font-size: 1.05rem; font-weight: 300;
+    color: var(--grey); max-width: 480px;
+    line-height: 1.75;
+    position: relative; z-index: 1;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .main-wrap {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0; min-height: 600px;
+  }
+
+  /* ── LEFT — Personal bio ── */
+  .bio-side {
+    padding: 72px 48px;
+    border-right: 1px solid rgba(201,168,76,0.12);
+    display: flex; flex-direction: column; gap: 40px;
+  }
+
+  .bio-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--navy3) 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; font-weight: 900; color: var(--navy);
+    flex-shrink: 0;
+  }
+
+  .bio-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .bio-role {
+    font-size: 0.82rem; color: var(--gold);
+    font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  .bio-body {
+    font-size: 0.95rem; color: var(--grey);
+    line-height: 1.85; font-weight: 300;
+  }
+  .bio-body p { margin-bottom: 14px; }
+
+  .divider {
+    width: 40px; height: 2px; background: var(--gold); opacity: 0.5;
+  }
+
+  .connect-label {
+    font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 16px;
+  }
+
+  .connect-links {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .connect-link {
+    display: flex; align-items: center; gap: 14px;
+    text-decoration: none; color: var(--white);
+    padding: 14px 18px;
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 3px;
+    font-size: 0.88rem; font-weight: 400;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .connect-link:hover {
+    border-color: var(--gold); background: rgba(201,168,76,0.05);
+  }
+  .connect-link-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .connect-link-text { flex: 1; }
+  .connect-link-handle {
+    font-size: 0.75rem; color: var(--grey); display: block;
+  }
+  .connect-link-arr {
+    color: var(--gold); opacity: 0; transition: opacity 0.2s, transform 0.2s;
+    font-size: 0.9rem;
+  }
+  .connect-link:hover .connect-link-arr { opacity: 1; transform: translateX(4px); }
+
+  .disclaimer {
+    font-size: 0.75rem; color: var(--grey);
+    line-height: 1.6; font-weight: 300;
+    padding: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 3px;
+    background: rgba(255,255,255,0.02);
+  }
+
+  /* ── RIGHT — Form ── */
+  .form-side {
+    padding: 72px 48px;
+    background: var(--navy2);
+    display: flex; flex-direction: column;
+  }
+
+  .form-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .form-subheading {
+    font-size: 0.9rem; color: var(--grey);
+    font-weight: 300; margin-bottom: 40px; line-height: 1.6;
+  }
+
+  /* Google Form embed wrapper */
+  .gform-wrap {
+    flex: 1;
+    border: 1px solid rgba(201,168,76,0.12);
+    border-radius: 4px; overflow: hidden;
+    background: #fff; /* form is light */
+    min-height: 520px;
+  }
+
+  .gform-wrap iframe {
+    width: 100%; height: 100%; border: none; min-height: 520px;
+    display: block;
+  }
+
+  /* placeholder shown until user swaps in real form URL */
+  .form-placeholder {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: 520px; gap: 16px;
+    border: 2px dashed rgba(201,168,76,0.25);
+    border-radius: 4px; padding: 32px; text-align: center;
+  }
+  .form-placeholder-icon { font-size: 2.4rem; opacity: 0.5; }
+  .form-placeholder-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; font-weight: 700; color: var(--white);
+  }
+  .form-placeholder-text {
+    font-size: 0.85rem; color: var(--grey); max-width: 320px; line-height: 1.6;
+  }
+  .form-placeholder code {
+    font-size: 0.78rem; background: rgba(201,168,76,0.1);
+    color: var(--gold2); padding: 2px 8px; border-radius: 3px;
+  }
+
+  /* ── BOTTOM STRIP ── */
+  .bottom-strip {
+    border-top: 1px solid rgba(201,168,76,0.12);
+    padding: 48px;
+    display: flex; gap: 48px; flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .response-card {
+    flex: 1; min-width: 200px;
+    padding: 24px;
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 3px;
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+  .response-card-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .response-card-title {
+    font-size: 0.9rem; font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .response-card-text {
+    font-size: 0.82rem; color: var(--grey); line-height: 1.6;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 860px) {
+    .hero { padding: 80px 24px 60px; }
+    .main-wrap { grid-template-columns: 1fr; }
+    .bio-side { padding: 48px 24px; border-right: none; border-bottom: 1px solid rgba(201,168,76,0.12); }
+    .form-side { padding: 48px 24px; }
+    .bottom-strip { padding: 40px 24px; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-grid-lines"></div>
+  <div class="hero-label">Contact</div>
+  <h1 class="hero-title">Let's <em>Talk</em>.</h1>
+  <p class="hero-sub">
+    I'd genuinely love to hear from you — whether it's a question, a collaboration idea, or just to say hello.
+  </p>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main-wrap">
+
+  <!-- BIO SIDE -->
+  <div class="bio-side">
+
+    <div style="display:flex; gap:20px; align-items:center;">
+      <div class="bio-avatar">F</div>  <!-- Replace F with your initial -->
+      <div>
+        <div class="bio-name">Your Name Here</div>
+        <!-- ↑ Replace with your actual name -->
+        <div class="bio-role">Finance Student · Creator of Finingale</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="bio-body">
+      <p>
+        Hey — I'm a finance student who got tired of financial tools being either too expensive, too complicated, or too boring. So I built Finingale: a place where anyone can access clear, useful, and genuinely well-built finance tools.
+      </p>
+      <p>
+        <!-- ↓ Personalise this paragraph with your own story -->
+        I'm currently studying [Your Degree] at [Your University]. When I'm not building calculators and financial models, I'm probably reading annual reports, following markets, or thinking about the next thing to add to this site.
+      </p>
+      <p>
+        Whether you have feedback on a tool, want to discuss finance, or have a collaboration in mind — my inbox is open.
+      </p>
+    </div>
+
+    <div>
+      <div class="connect-label">Find Me Online</div>
+      <div class="connect-links">
+        <a href="YOUR_LINKEDIN_URL" target="_blank" class="connect-link">
+          <!-- ↑ Replace YOUR_LINKEDIN_URL with your actual LinkedIn profile URL -->
+          <span class="connect-link-icon">💼</span>
+          <div class="connect-link-text">
+            LinkedIn
+            <span class="connect-link-handle">linkedin.com/in/your-profile</span>
+            <!-- ↑ Replace with your LinkedIn handle -->
+          </div>
+          <span class="connect-link-arr">→</span>
+        </a>
+        <a href="YOUR_EMAIL_MAILTO" class="connect-link">
+          <!-- ↑ Replace with: mailto:youremail@example.com -->
+          <span class="connect-link-icon">✉️</span>
+          <div class="connect-link-text">
+            Email
+            <span class="connect-link-handle">your@email.com</span>
+            <!-- ↑ Replace with your email -->
+          </div>
+          <span class="connect-link-arr">→</span>
+        </a>
+        <!-- Add more links here if needed — Twitter, GitHub, etc. -->
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      📌 Everything on Finingale is for <strong>educational purposes only</strong> — it is not financial advice. Always consult a qualified professional before making investment decisions.
+    </div>
+
+  </div>
+
+  <!-- FORM SIDE -->
+  <div class="form-side">
+    <div class="form-heading">Send a Message</div>
+    <div class="form-subheading">Fill in the form below — I typically respond within 1–2 days.</div>
+
+    <div class="gform-wrap">
+      <!--
+        ============================================================
+        HOW TO EMBED YOUR GOOGLE FORM:
+        1. Open your Google Form
+        2. Click the "Send" button (top right)
+        3. Click the "<>" (embed) tab
+        4. Copy the iframe code
+        5. Replace the placeholder below with just the SRC URL from the iframe
+        For example, your iframe src will look like:
+        https://docs.google.com/forms/d/e/XXXXXXXXXX/viewform?embedded=true
+        ============================================================
+      -->
+
+      <!-- PLACEHOLDER — replace with your Google Form iframe once you have it -->
+      <div class="form-placeholder">
+        <div class="form-placeholder-icon">📋</div>
+        <div class="form-placeholder-title">Google Form Goes Here</div>
+        <div class="form-placeholder-text">
+          Create your Google Form, then replace this block with:<br/><br/>
+          <code>&lt;iframe src="YOUR_GOOGLE_FORM_URL"&gt;&lt;/iframe&gt;</code>
+          <br/><br/>
+          See the comment in the HTML for step-by-step instructions.
+        </div>
+      </div>
+
+      <!-- UNCOMMENT AND USE THIS once you have your Google Form URL:
+      <iframe
+        src="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform?embedded=true"
+        frameborder="0"
+        marginheight="0"
+        marginwidth="0">
+        Loading form…
+      </iframe>
+      -->
+    </div>
+  </div>
+
+</div>
+
+<!-- ── BOTTOM INFO STRIP ── -->
+<div class="bottom-strip">
+  <div class="response-card">
+    <div class="response-card-icon">⚡</div>
+    <div>
+      <div class="response-card-title">Quick Response</div>
+      <div class="response-card-text">I aim to reply within 1–2 business days. For urgent things, LinkedIn is faster.</div>
+    </div>
+  </div>
+  <div class="response-card">
+    <div class="response-card-icon">🤝</div>
+    <div>
+      <div class="response-card-title">Open to Collabs</div>
+      <div class="response-card-text">Internships, projects, content partnerships — if it's finance-related, I'm interested.</div>
+    </div>
+  </div>
+  <div class="response-card">
+    <div class="response-card-icon">💡</div>
+    <div>
+      <div class="response-card-title">Suggest a Tool</div>
+      <div class="response-card-text">Have a calculator or model you'd love to see built? Tell me — the best ideas come from users.</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

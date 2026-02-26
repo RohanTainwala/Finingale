@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Finingale — Home</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #0A1628;
+    --navy2:  #0E1F3D;
+    --navy3:  #162847;
+    --gold:   #C9A84C;
+    --gold2:  #E8C96B;
+    --gold3:  #F0D98A;
+    --white:  #F8F5EE;
+    --grey:   #8A95A3;
+    --light:  #D6DAE0;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.4;
+  }
+
+  /* ── NAV BAR ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 20px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(10,22,40,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+  }
+
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem; font-weight: 900;
+    color: var(--white); letter-spacing: -0.5px;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--gold); }
+
+  .nav-links {
+    display: flex; gap: 36px; list-style: none;
+  }
+  .nav-links a {
+    font-size: 0.85rem; font-weight: 500;
+    color: var(--light); text-decoration: none;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--gold2); }
+
+  .nav-cta {
+    padding: 10px 22px;
+    border: 1px solid var(--gold);
+    color: var(--gold); font-size: 0.82rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    text-decoration: none; border-radius: 2px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav-cta:hover { background: var(--gold); color: var(--navy); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 120px 48px 80px;
+    position: relative; overflow: hidden;
+  }
+
+  /* diagonal grid lines background */
+  .hero::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  .hero-label {
+    font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .hero-label::before {
+    content: '';
+    display: block; width: 32px; height: 1px; background: var(--gold);
+  }
+
+  .hero-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    font-weight: 900; line-height: 1.05;
+    letter-spacing: -1px; max-width: 800px;
+    margin-bottom: 28px;
+  }
+
+  .hero-headline em {
+    font-style: normal; color: var(--gold);
+    position: relative;
+  }
+  .hero-headline em::after {
+    content: '';
+    position: absolute; bottom: 6px; left: 0; right: 0;
+    height: 2px; background: var(--gold); opacity: 0.4;
+  }
+
+  .hero-sub {
+    font-size: 1.1rem; font-weight: 300;
+    color: var(--grey); max-width: 500px; line-height: 1.7;
+    margin-bottom: 48px;
+  }
+
+  .hero-actions {
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    padding: 16px 36px;
+    background: var(--gold); color: var(--navy);
+    font-size: 0.88rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    text-decoration: none; border-radius: 2px;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: var(--gold2); transform: translateY(-2px); }
+
+  .btn-outline {
+    padding: 16px 36px;
+    border: 1px solid rgba(255,255,255,0.25); color: var(--white);
+    font-size: 0.88rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    text-decoration: none; border-radius: 2px;
+    transition: border-color 0.2s, color 0.2s;
+    display: inline-block;
+  }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* floating stat cards */
+  .hero-stats {
+    position: absolute; right: 80px; bottom: 120px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .stat-card {
+    background: rgba(14,31,61,0.8);
+    border: 1px solid rgba(201,168,76,0.2);
+    backdrop-filter: blur(12px);
+    padding: 18px 24px; border-radius: 4px;
+    min-width: 180px;
+    animation: floatUp 3s ease-in-out infinite alternate;
+  }
+  .stat-card:nth-child(2) { animation-delay: 1s; }
+  .stat-card:nth-child(3) { animation-delay: 2s; }
+
+  @keyframes floatUp {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-8px); }
+  }
+
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem; font-weight: 700; color: var(--gold2);
+  }
+  .stat-label {
+    font-size: 0.72rem; font-weight: 500;
+    color: var(--grey); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  /* ── TICKER STRIP ── */
+  .ticker {
+    background: var(--navy2);
+    border-top: 1px solid rgba(201,168,76,0.2);
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+    padding: 12px 0; overflow: hidden;
+    position: relative;
+  }
+  .ticker-inner {
+    display: flex; gap: 0; white-space: nowrap;
+    animation: scroll 30s linear infinite;
+  }
+  .ticker-item {
+    padding: 0 40px; font-size: 0.8rem;
+    color: var(--grey); letter-spacing: 0.05em;
+    border-right: 1px solid rgba(201,168,76,0.15);
+  }
+  .ticker-item span { color: var(--gold2); margin-left: 8px; font-weight: 600; }
+  .ticker-item .up { color: #4CAF50; }
+  .ticker-item .dn { color: #F44336; }
+
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── SECTIONS ── */
+  section { padding: 100px 48px; position: relative; }
+
+  .section-label {
+    font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::before {
+    content: ''; display: block;
+    width: 24px; height: 1px; background: var(--gold);
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700; line-height: 1.15;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    color: var(--grey); font-size: 1rem;
+    font-weight: 300; line-height: 1.7;
+    max-width: 520px; margin-bottom: 60px;
+  }
+
+  /* ── FEATURE CARDS ── */
+  .features-bg { background: var(--navy2); }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.12);
+  }
+
+  .feature-card {
+    background: var(--navy2);
+    padding: 40px 36px;
+    transition: background 0.25s;
+    cursor: default;
+  }
+  .feature-card:hover { background: var(--navy3); }
+
+  .feature-icon {
+    width: 48px; height: 48px;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 24px;
+    font-size: 1.4rem;
+  }
+
+  .feature-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .feature-desc {
+    font-size: 0.88rem; color: var(--grey);
+    line-height: 1.7; font-weight: 300;
+  }
+
+  .feature-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 20px; font-size: 0.8rem; font-weight: 600;
+    color: var(--gold); text-decoration: none;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    transition: gap 0.2s;
+  }
+  .feature-link:hover { gap: 14px; }
+
+  /* ── ABOUT STRIP ── */
+  .about-strip {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+    align-items: center;
+  }
+
+  .about-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem; font-weight: 400;
+    line-height: 1.5; color: var(--white);
+    border-left: 3px solid var(--gold);
+    padding-left: 28px;
+  }
+
+  .about-text {
+    font-size: 0.95rem; color: var(--grey);
+    line-height: 1.8; font-weight: 300;
+  }
+
+  .about-text p { margin-bottom: 16px; }
+
+  /* ── TOOLS PREVIEW ── */
+  .tools-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px; margin-top: 48px;
+  }
+
+  .tool-pill {
+    padding: 20px 24px;
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 3px;
+    display: flex; align-items: center; gap: 14px;
+    text-decoration: none; color: var(--white);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .tool-pill:hover {
+    border-color: var(--gold); background: rgba(201,168,76,0.05);
+  }
+  .tool-pill-icon {
+    font-size: 1.3rem; flex-shrink: 0;
+  }
+  .tool-pill-name {
+    font-size: 0.88rem; font-weight: 500;
+  }
+  .tool-pill-tag {
+    font-size: 0.68rem; color: var(--grey);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  /* ── MARQUEE WORDS ── */
+  .marquee-section {
+    padding: 48px 0; overflow: hidden;
+    border-top: 1px solid rgba(201,168,76,0.1);
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+  }
+  .marquee-inner {
+    display: flex; gap: 0;
+    animation: scroll 20s linear infinite;
+  }
+  .marquee-word {
+    padding: 0 32px;
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 900;
+    color: rgba(201,168,76,0.12);
+    white-space: nowrap; border-right: 1px solid rgba(201,168,76,0.1);
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+
+  /* ── CTA BAND ── */
+  .cta-band {
+    background: var(--gold);
+    padding: 72px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 32px;
+  }
+
+  .cta-band-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 900; color: var(--navy); max-width: 500px;
+  }
+
+  .btn-dark {
+    padding: 16px 36px;
+    background: var(--navy); color: var(--gold);
+    font-size: 0.88rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    text-decoration: none; border-radius: 2px;
+    transition: background 0.2s; white-space: nowrap;
+    display: inline-block;
+  }
+  .btn-dark:hover { background: var(--navy2); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #060E1A;
+    padding: 60px 48px 32px;
+    border-top: 1px solid rgba(201,168,76,0.15);
+  }
+
+  .footer-top {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; flex-wrap: wrap; gap: 40px;
+    padding-bottom: 48px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    margin-bottom: 32px;
+  }
+
+  .footer-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; font-weight: 900; color: var(--white);
+  }
+  .footer-brand span { color: var(--gold); }
+  .footer-tagline {
+    font-size: 0.82rem; color: var(--grey); margin-top: 8px;
+    font-weight: 300;
+  }
+
+  .footer-links { display: flex; gap: 60px; flex-wrap: wrap; }
+  .footer-col h4 {
+    font-size: 0.72rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.15em;
+    color: var(--gold); margin-bottom: 16px;
+  }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-col a {
+    font-size: 0.85rem; color: var(--grey); text-decoration: none;
+    font-weight: 300; transition: color 0.2s;
+  }
+  .footer-col a:hover { color: var(--white); }
+
+  .footer-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.78rem; color: var(--grey); flex-wrap: wrap; gap: 12px;
+  }
+
+  /* ── SCROLL ANIMATIONS ── */
+  .reveal {
+    opacity: 0; transform: translateY(28px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 18px 24px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 24px 60px; }
+    .hero-stats { display: none; }
+    section { padding: 72px 24px; }
+    .about-strip { grid-template-columns: 1fr; gap: 40px; }
+    .cta-band { padding: 48px 24px; }
+    footer { padding: 48px 24px 24px; }
+    .footer-links { gap: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAVIGATION ── -->
+<nav>
+  <a href="#" class="nav-logo">Fining<span>ale</span></a>
+  <ul class="nav-links">
+    <li><a href="#">Home</a></li>
+    <li><a href="#">Articles</a></li>
+    <li><a href="#">Calculators</a></li>
+    <li><a href="#">Models</a></li>
+    <li><a href="#">Let's Talk</a></li>
+  </ul>
+  <a href="#" class="nav-cta">Let's Talk →</a>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-label">Finance Intelligence · Personal Brand</div>
+  <h1 class="hero-headline">
+    Where Finance<br/>Meets <em>Clarity</em><br/>& Ambition.
+  </h1>
+  <p class="hero-sub">
+    Interactive tools, financial models, and sharp analysis — built by a finance student who believes everyone deserves to understand money.
+  </p>
+  <div class="hero-actions">
+    <a href="#" class="btn-primary">Explore Tools</a>
+    <a href="#" class="btn-outline">Read Articles</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat-card">
+      <div class="stat-value">4+</div>
+      <div class="stat-label">Calculators</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">5+</div>
+      <div class="stat-label">Financial Models</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">Free</div>
+      <div class="stat-label">Always</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TICKER ── -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <!-- duplicated for seamless loop -->
+    <div class="ticker-item">Compound Interest <span class="up">▲ Power of Time</span></div>
+    <div class="ticker-item">DCF Valuation <span>— Intrinsic Value</span></div>
+    <div class="ticker-item">Portfolio Optimization <span class="up">▲ Risk-Return</span></div>
+    <div class="ticker-item">Monte Carlo <span>— Simulation</span></div>
+    <div class="ticker-item">SIP Calculator <span class="up">▲ Wealth Building</span></div>
+    <div class="ticker-item">Retirement Planning <span>— Start Now</span></div>
+    <div class="ticker-item">Financial Ratios <span class="up">▲ Deep Analysis</span></div>
+    <div class="ticker-item">Loan Repayment <span>— Smart Debt</span></div>
+    <div class="ticker-item">Compound Interest <span class="up">▲ Power of Time</span></div>
+    <div class="ticker-item">DCF Valuation <span>— Intrinsic Value</span></div>
+    <div class="ticker-item">Portfolio Optimization <span class="up">▲ Risk-Return</span></div>
+    <div class="ticker-item">Monte Carlo <span>— Simulation</span></div>
+    <div class="ticker-item">SIP Calculator <span class="up">▲ Wealth Building</span></div>
+    <div class="ticker-item">Retirement Planning <span>— Start Now</span></div>
+    <div class="ticker-item">Financial Ratios <span class="up">▲ Deep Analysis</span></div>
+    <div class="ticker-item">Loan Repayment <span>— Smart Debt</span></div>
+  </div>
+</div>
+
+<!-- ── FEATURES ── -->
+<section class="features-bg reveal">
+  <div class="section-label">What's Inside</div>
+  <h2 class="section-title">Your Finance Toolkit</h2>
+  <p class="section-sub">Professional-grade tools built to make complex finance concepts accessible — and actually useful.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div class="feature-title">Calculators</div>
+      <div class="feature-desc">Compound interest, loan repayments, SIP, and retirement savings — all interactive, all free.</div>
+      <a href="#" class="feature-link">Explore ↗</a>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏗️</div>
+      <div class="feature-title">Financial Models</div>
+      <div class="feature-desc">DCF valuations, portfolio optimization, Monte Carlo simulations — with downloadable Excel files.</div>
+      <a href="#" class="feature-link">Explore ↗</a>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">✍️</div>
+      <div class="feature-title">Articles</div>
+      <div class="feature-desc">Sharp, jargon-free breakdowns of financial concepts, markets, and real-world investing.</div>
+      <a href="#" class="feature-link">Read ↗</a>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <div class="feature-title">AI Guide</div>
+      <div class="feature-desc">An AI-powered assistant walks you through every financial model so you understand, not just calculate.</div>
+      <a href="#" class="feature-link">Coming Soon ↗</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── MARQUEE ── -->
+<div class="marquee-section">
+  <div class="marquee-inner">
+    <div class="marquee-word">Valuation</div>
+    <div class="marquee-word">Analysis</div>
+    <div class="marquee-word">Investing</div>
+    <div class="marquee-word">Returns</div>
+    <div class="marquee-word">Risk</div>
+    <div class="marquee-word">Clarity</div>
+    <div class="marquee-word">Growth</div>
+    <div class="marquee-word">Finingale</div>
+    <div class="marquee-word">Valuation</div>
+    <div class="marquee-word">Analysis</div>
+    <div class="marquee-word">Investing</div>
+    <div class="marquee-word">Returns</div>
+    <div class="marquee-word">Risk</div>
+    <div class="marquee-word">Clarity</div>
+    <div class="marquee-word">Growth</div>
+    <div class="marquee-word">Finingale</div>
+  </div>
+</div>
+
+<!-- ── TOOLS PREVIEW ── -->
+<section class="reveal">
+  <div class="section-label">Tools Roadmap</div>
+  <h2 class="section-title">Everything You Need</h2>
+  <p class="section-sub">From simple calculators to institutional-quality models — built to grow with you.</p>
+
+  <div class="tools-row">
+    <a href="#" class="tool-pill">
+      <span class="tool-pill-icon">📈</span>
+      <div>
+        <div class="tool-pill-name">Compound Interest</div>
+        <div class="tool-pill-tag">Calculator · Live</div>
+      </div>
+    </a>
+    <a href="#" class="tool-pill">
+      <span class="tool-pill-icon">🏠</span>
+      <div>
+        <div class="tool-pill-name">Mortgage Calculator</div>
+        <div class="tool-pill-tag">Calculator · Live</div>
+      </div>
+    </a>
+    <a href="#" class="tool-pill">
+      <span class="tool-pill-icon">💰</span>
+      <div>
+        <div class="tool-pill-name">SIP Calculator</div>
+        <div class="tool-pill-tag">Calculator · Live</div>
+      </div>
+    </a>
+    <a href="#" class="tool-pill">
+      <span class="tool-pill-icon">🎯</span>
+      <div>
+        <div class="tool-pill-name">Retirement Planner</div>
+        <div class="tool-pill-tag">Calculator · Live</div>
+      </div>
+    </a>
+    <a href="#" class="tool-pill">
+      <span class="tool-pill-icon">🔍</span>
+      <div>
+        <div class="tool-pill-name">DCF Model</div>
+        <div class="tool-pill-tag">Model · Coming Soon</div>
+      </div>
+    </a>
+    <a href="#" class="tool-pill">
+      <span class="tool-pill-icon">📉</span>
+      <div>
+        <div class="tool-pill-name">Monte Carlo</div>
+        <div class="tool-pill-tag">Model · Coming Soon</div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ── ABOUT STRIP ── -->
+<section class="features-bg reveal">
+  <div class="about-strip">
+    <div>
+      <div class="section-label">The Philosophy</div>
+      <blockquote class="about-quote">
+        "Finance shouldn't be locked behind expensive courses or confusing jargon."
+      </blockquote>
+    </div>
+    <div class="about-text">
+      <p>Finingale was built on a simple belief: that every person — student, professional, or curious mind — deserves access to the same quality of financial tools that institutions use.</p>
+      <p>I'm a finance student building this as both a learning project and a resource for others. Every calculator, model, and article here is designed to teach, not just output numbers.</p>
+      <a href="#" class="btn-outline" style="margin-top:8px;">About Me →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA BAND ── -->
+<div class="cta-band reveal">
+  <div class="cta-band-title">Have a question or just want to connect?</div>
+  <a href="#" class="btn-dark">Let's Talk →</a>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand">Fining<span>ale</span></div>
+      <div class="footer-tagline">Finance Intelligence · Built by a Student, For Everyone</div>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Pages</h4>
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="#">Articles</a></li>
+          <li><a href="#">Calculators</a></li>
+          <li><a href="#">Models</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Tools</h4>
+        <ul>
+          <li><a href="#">Compound Interest</a></li>
+          <li><a href="#">Mortgage Calculator</a></li>
+          <li><a href="#">SIP Calculator</a></li>
+          <li><a href="#">DCF Model</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="#">LinkedIn</a></li>
+          <li><a href="#">Let's Talk</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2024 Finingale. Built with purpose.</span>
+    <span>For educational purposes only — not financial advice.</span>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal animation
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
