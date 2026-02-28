@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NPV & IRR Calculator — Finingale</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0A1628;--navy2:#0E1F3D;--navy3:#162847;--gold:#C9A84C;--gold2:#E8C96B;--white:#F8F5EE;--grey:#8A95A3;--blue:#60a5fa;--green:#4ade80;--red:#f87171;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;padding:40px 24px;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0;}
+.wrapper{max-width:1080px;margin:0 auto;position:relative;z-index:1;}
+.calc-header{margin-bottom:36px;}
+.calc-tag{font-size:0.68rem;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.calc-tag::before{content:'';width:22px;height:1px;background:var(--gold);}
+.calc-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;line-height:1.1;margin-bottom:8px;}
+.calc-title span{color:var(--gold);}
+.calc-desc{font-size:0.88rem;color:var(--grey);font-weight:300;max-width:600px;line-height:1.75;}
+.calc-body{display:grid;grid-template-columns:400px 1fr;gap:20px;align-items:start;}
+@media(max-width:860px){.calc-body{grid-template-columns:1fr;}}
+.panel{background:var(--navy2);border:1px solid rgba(201,168,76,0.13);border-radius:8px;padding:28px;}
+.panel+.panel{margin-top:20px;}
+.panel-title{font-size:0.68rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid rgba(201,168,76,0.12);}
+.input-group{margin-bottom:20px;}
+.input-label{font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);margin-bottom:6px;display:block;}
+.input-hint{font-size:0.65rem;color:rgba(138,149,163,0.6);margin-bottom:6px;display:block;}
+.input-wrap{position:relative;display:flex;align-items:center;}
+.input-prefix{position:absolute;left:14px;font-size:0.88rem;font-weight:600;color:var(--gold);pointer-events:none;z-index:1;}
+.input-suffix{position:absolute;right:14px;font-size:0.88rem;font-weight:500;color:var(--grey);pointer-events:none;z-index:1;}
+.field{width:100%;padding:12px 14px;background:var(--navy3);border:1px solid rgba(201,168,76,0.18);border-radius:5px;color:var(--white);font-size:0.95rem;font-weight:500;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;-moz-appearance:textfield;}
+.field::-webkit-outer-spin-button,.field::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.field:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.1);}
+.field.has-prefix{padding-left:32px;}
+.field.has-suffix{padding-right:40px;}
+.field.error{border-color:var(--red);}
+.error-msg{font-size:0.65rem;color:var(--red);margin-top:5px;display:none;}
+.error-msg.show{display:block;}
+/* Cash flow rows */
+.cf-rows{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;max-height:260px;overflow-y:auto;padding-right:4px;}
+.cf-rows::-webkit-scrollbar{width:4px;}
+.cf-rows::-webkit-scrollbar-track{background:rgba(255,255,255,0.04);}
+.cf-rows::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.3);border-radius:2px;}
+.cf-row{display:grid;grid-template-columns:80px 1fr 32px;gap:8px;align-items:center;}
+.cf-year-label{font-size:0.72rem;color:var(--gold);font-weight:600;text-align:center;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.15);border-radius:3px;padding:6px 4px;}
+.cf-remove{width:32px;height:32px;border:1px solid rgba(248,113,113,0.3);background:transparent;color:var(--red);font-size:1rem;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.18s;flex-shrink:0;}
+.cf-remove:hover{background:rgba(248,113,113,0.1);}
+.add-cf-btn{width:100%;padding:10px;border:1px dashed rgba(201,168,76,0.3);background:transparent;color:var(--gold);font-size:0.78rem;font-family:'DM Sans',sans-serif;border-radius:4px;cursor:pointer;transition:all 0.18s;text-align:center;margin-bottom:16px;}
+.add-cf-btn:hover{background:rgba(201,168,76,0.06);border-style:solid;}
+.calc-btn{width:100%;padding:14px;background:var(--gold);color:var(--navy);font-size:0.85rem;font-weight:700;font-family:'DM Sans',sans-serif;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:5px;cursor:pointer;transition:background 0.2s,transform 0.15s;}
+.calc-btn:hover{background:var(--gold2);transform:translateY(-1px);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--grey);}
+.empty-state-icon{font-size:2.5rem;margin-bottom:12px;opacity:0.4;}
+.empty-state-text{font-size:0.85rem;line-height:1.6;}
+/* Big result cards */
+.big-results{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.big-card{border-radius:6px;padding:20px;text-align:center;}
+.big-card.npv-card{background:linear-gradient(135deg,rgba(74,222,128,0.1),rgba(74,222,128,0.04));border:1px solid rgba(74,222,128,0.3);}
+.big-card.irr-card{background:linear-gradient(135deg,rgba(201,168,76,0.1),rgba(201,168,76,0.04));border:1px solid rgba(201,168,76,0.3);}
+.big-card.npv-neg{background:linear-gradient(135deg,rgba(248,113,113,0.1),rgba(248,113,113,0.04));border:1px solid rgba(248,113,113,0.3);}
+.big-card-label{font-size:0.65rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--grey);margin-bottom:8px;}
+.big-card-value{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;}
+.big-card.npv-card .big-card-value{color:var(--green);}
+.big-card.npv-neg .big-card-value{color:var(--red);}
+.big-card.irr-card .big-card-value{color:var(--gold2);}
+.big-card-sub{font-size:0.7rem;color:var(--grey);margin-top:6px;}
+.verdict{padding:12px 16px;border-radius:4px;font-size:0.82rem;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.verdict.accept{background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.25);color:var(--green);}
+.verdict.reject{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.25);color:var(--red);}
+.results-mini{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.mini-card{background:var(--navy3);border:1px solid rgba(201,168,76,0.1);border-radius:5px;padding:14px;}
+.mini-label{font-size:0.62rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--grey);margin-bottom:5px;}
+.mini-value{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--white);}
+.mini-sub{font-size:0.65rem;color:var(--grey);margin-top:2px;}
+.chart-container{position:relative;height:260px;}
+.calc-footer{margin-top:24px;padding-top:14px;border-top:1px solid rgba(201,168,76,0.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.brand{font-family:'Playfair Display',serif;font-size:1rem;font-weight:900;}
+.brand span{color:var(--gold);}
+.disclaimer{font-size:0.67rem;color:var(--grey);}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="calc-header">
+    <div class="calc-tag">Calculator 05 · Finingale</div>
+    <h1 class="calc-title">NPV & <span>IRR</span></h1>
+    <p class="calc-desc">Net Present Value and Internal Rate of Return — the two most important investment evaluation metrics. Enter your cash flows to determine if a project or investment creates value.</p>
+  </div>
+  <div class="calc-body">
+    <div>
+      <div class="panel">
+        <div class="panel-title">Investment Details</div>
+        <div class="input-group">
+          <label class="input-label">Initial Investment (Year 0)</label>
+          <span class="input-hint">Upfront cost — enter as a positive number</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="initial" class="field has-prefix" placeholder="e.g. 100000" min="0" step="any"/></div>
+          <div class="error-msg" id="err-initial">Please enter a valid initial investment</div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Discount Rate (WACC / Required Return)</label>
+          <span class="input-hint">Your required rate of return or cost of capital</span>
+          <div class="input-wrap"><input type="number" id="discount" class="field has-suffix" placeholder="e.g. 10" min="0" max="100" step="any"/><span class="input-suffix">%</span></div>
+          <div class="error-msg" id="err-discount">Please enter a valid discount rate</div>
+        </div>
+        <div class="input-group" style="margin-bottom:12px;">
+          <label class="input-label">Annual Cash Flows</label>
+          <span class="input-hint">Enter expected cash inflow for each year (can be negative)</span>
+        </div>
+        <div class="cf-rows" id="cf-rows"></div>
+        <button class="add-cf-btn" onclick="addCashFlow()">+ Add Another Year</button>
+        <button class="calc-btn" onclick="calculate()">Calculate NPV & IRR →</button>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <div class="panel-title">Results</div>
+        <div class="empty-state" id="empty-state">
+          <div class="empty-state-icon">📊</div>
+          <div class="empty-state-text">Enter your investment details and cash flows<br/>then click <strong style="color:var(--gold)">Calculate</strong> to evaluate the investment.</div>
+        </div>
+        <div id="results-content" style="display:none;">
+          <div class="big-results">
+            <div class="big-card npv-card" id="npv-card">
+              <div class="big-card-label">Net Present Value</div>
+              <div class="big-card-value" id="res-npv">—</div>
+              <div class="big-card-sub" id="res-npv-sub">—</div>
+            </div>
+            <div class="big-card irr-card">
+              <div class="big-card-label">Internal Rate of Return</div>
+              <div class="big-card-value" id="res-irr">—</div>
+              <div class="big-card-sub" id="res-irr-sub">—</div>
+            </div>
+          </div>
+          <div class="verdict" id="verdict">✅ Accept — this investment creates value</div>
+          <div class="results-mini">
+            <div class="mini-card">
+              <div class="mini-label">Total Cash Inflows</div>
+              <div class="mini-value" id="res-total-in">—</div>
+              <div class="mini-sub">Sum of all positive flows</div>
+            </div>
+            <div class="mini-card">
+              <div class="mini-label">Profitability Index</div>
+              <div class="mini-value" id="res-pi">—</div>
+              <div class="mini-sub">PV of inflows / investment</div>
+            </div>
+            <div class="mini-card">
+              <div class="mini-label">Payback Period</div>
+              <div class="mini-value" id="res-payback">—</div>
+              <div class="mini-sub">Years to recover investment</div>
+            </div>
+            <div class="mini-card">
+              <div class="mini-label">Discount Rate Used</div>
+              <div class="mini-value" id="res-rate">—</div>
+              <div class="mini-sub">Required rate of return</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel" id="chart-panel" style="display:none;">
+        <div class="panel-title">Cash Flow & Cumulative NPV</div>
+        <div class="chart-container"><canvas id="npvChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+  <div class="calc-footer">
+    <div class="brand">Fining<span>ale</span></div>
+    <div class="disclaimer">For educational purposes only. Not financial advice.</div>
+  </div>
+</div>
+<script>
+const fmt = n => '$' + Math.round(Math.abs(n)).toLocaleString('en-US');
+const fmtSigned = n => (n >= 0 ? '+$' : '-$') + Math.round(Math.abs(n)).toLocaleString('en-US');
+let chartInstance = null;
+let cfCount = 0;
+
+function addCashFlow(value = '') {
+  cfCount++;
+  const row = document.createElement('div');
+  row.className = 'cf-row';
+  row.id = 'cf-row-' + cfCount;
+  row.innerHTML = `
+    <div class="cf-year-label">Yr ${cfCount}</div>
+    <div class="input-wrap">
+      <span class="input-prefix">$</span>
+      <input type="number" id="cf-${cfCount}" class="field has-prefix" placeholder="e.g. 30000" step="any" value="${value}"/>
+    </div>
+    <button class="cf-remove" onclick="removeCF(${cfCount})" title="Remove">×</button>
+  `;
+  document.getElementById('cf-rows').appendChild(row);
+  renumberYears();
+}
+
+function removeCF(id) {
+  const row = document.getElementById('cf-row-' + id);
+  if (row) row.remove();
+  renumberYears();
+}
+
+function renumberYears() {
+  const rows = document.querySelectorAll('.cf-row');
+  rows.forEach((row, i) => {
+    const label = row.querySelector('.cf-year-label');
+    if (label) label.textContent = 'Yr ' + (i + 1);
+  });
+}
+
+function getCashFlows() {
+  const inputs = document.querySelectorAll('[id^="cf-"]');
+  return Array.from(inputs).map(i => parseFloat(i.value) || 0);
+}
+
+function calcNPV(rate, cashflows, initial) {
+  let npv = -initial;
+  cashflows.forEach((cf, i) => { npv += cf / Math.pow(1 + rate, i + 1); });
+  return npv;
+}
+
+function calcIRR(cashflows, initial) {
+  // Newton-Raphson method
+  let rate = 0.1;
+  for (let i = 0; i < 1000; i++) {
+    const npv = calcNPV(rate, cashflows, initial);
+    let dNPV = 0;
+    cashflows.forEach((cf, j) => { dNPV -= (j + 1) * cf / Math.pow(1 + rate, j + 2); });
+    const newRate = rate - npv / dNPV;
+    if (Math.abs(newRate - rate) < 1e-8) return newRate;
+    rate = newRate;
+  }
+  return null;
+}
+
+function showError(id, show) {
+  const el = document.getElementById('err-' + id);
+  const field = document.getElementById(id);
+  if (!el) return;
+  if (show) { el.classList.add('show'); if(field) field.classList.add('error'); }
+  else { el.classList.remove('show'); if(field) field.classList.remove('error'); }
+}
+
+function calculate() {
+  const initial = parseFloat(document.getElementById('initial').value);
+  const discountRate = parseFloat(document.getElementById('discount').value) / 100;
+  let valid = true;
+  if (!initial || initial <= 0) { showError('initial', true); valid = false; } else showError('initial', false);
+  if (isNaN(discountRate) || discountRate < 0) { showError('discount', true); valid = false; } else showError('discount', false);
+  if (!valid) return;
+
+  const cashflows = getCashFlows();
+  if (cashflows.length === 0) { alert('Please add at least one cash flow year.'); return; }
+
+  const npv = calcNPV(discountRate, cashflows, initial);
+  const irr = calcIRR(cashflows, initial);
+  const totalInflows = cashflows.filter(cf => cf > 0).reduce((a, b) => a + b, 0);
+
+  // Payback period
+  let cumulative = -initial, payback = null;
+  for (let i = 0; i < cashflows.length; i++) {
+    const prev = cumulative;
+    cumulative += cashflows[i];
+    if (cumulative >= 0 && payback === null) {
+      payback = i + (Math.abs(prev) / cashflows[i]);
+    }
+  }
+
+  // Profitability index
+  let pvInflows = 0;
+  cashflows.forEach((cf, i) => { if (cf > 0) pvInflows += cf / Math.pow(1 + discountRate, i + 1); });
+  const pi = pvInflows / initial;
+  const accept = npv > 0;
+
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('results-content').style.display = 'block';
+  document.getElementById('chart-panel').style.display = 'block';
+
+  const npvCard = document.getElementById('npv-card');
+  npvCard.className = 'big-card ' + (accept ? 'npv-card' : 'npv-neg');
+  document.getElementById('res-npv').textContent = fmtSigned(npv);
+  document.getElementById('res-npv').style.color = accept ? '#4ade80' : '#f87171';
+  document.getElementById('res-npv-sub').textContent = accept ? 'Investment creates value' : 'Investment destroys value';
+  document.getElementById('res-irr').textContent = irr !== null ? (irr * 100).toFixed(2) + '%' : 'N/A';
+  document.getElementById('res-irr-sub').textContent = irr !== null ? (irr > discountRate ? 'IRR > discount rate ✓' : 'IRR < discount rate ✗') : 'Could not converge';
+  document.getElementById('res-total-in').textContent = fmt(totalInflows);
+  document.getElementById('res-pi').textContent = pi.toFixed(3);
+  document.getElementById('res-payback').textContent = payback !== null ? payback.toFixed(1) + ' years' : 'Not recovered';
+  document.getElementById('res-rate').textContent = (discountRate * 100).toFixed(1) + '%';
+
+  const verdict = document.getElementById('verdict');
+  verdict.className = 'verdict ' + (accept ? 'accept' : 'reject');
+  verdict.textContent = accept ? '✅ Accept — NPV is positive, investment creates value' : '❌ Reject — NPV is negative, investment destroys value';
+
+  // Chart
+  const labels = ['Yr 0'];
+  const cfData = [-initial];
+  const cumulNPV = [-initial];
+  let running = -initial;
+  cashflows.forEach((cf, i) => {
+    labels.push('Yr ' + (i + 1));
+    cfData.push(cf);
+    running += cf / Math.pow(1 + discountRate, i + 1);
+    cumulNPV.push(Math.round(running));
+  });
+
+  const ctx = document.getElementById('npvChart').getContext('2d');
+  if (chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, {
+    data:{
+      labels,
+      datasets:[
+        {type:'bar',label:'Cash Flow',data:cfData,backgroundColor:cfData.map(v=>v>=0?'rgba(74,222,128,0.6)':'rgba(248,113,113,0.6)'),borderColor:cfData.map(v=>v>=0?'#4ade80':'#f87171'),borderWidth:1,borderRadius:3,yAxisID:'y'},
+        {type:'line',label:'Cumulative NPV',data:cumulNPV,borderColor:'#E8C96B',backgroundColor:'rgba(232,201,107,0.1)',borderWidth:2.5,fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:'#E8C96B',yAxisID:'y'}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      animation:{duration:700,easing:'easeInOutQuart'},
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#8A95A3',font:{family:'DM Sans',size:11},boxWidth:12}},
+        tooltip:{backgroundColor:'#0E1F3D',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#C9A84C',bodyColor:'#F8F5EE',padding:12,callbacks:{label:c=>' '+c.dataset.label+': '+fmtSigned(c.raw)}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8A95A3',font:{family:'DM Sans',size:10}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8A95A3',font:{family:'DM Sans',size:10},callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'K':v<=-1000?(v/1000).toFixed(0)+'K':v)}}
+      }
+    }
+  });
+}
+
+// Init with 5 default cash flow rows
+for (let i = 0; i < 5; i++) addCashFlow();
+</script>
+</body>
+</html>

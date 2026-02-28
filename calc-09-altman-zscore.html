@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Altman Z-Score Calculator — Finingale</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0A1628;--navy2:#0E1F3D;--navy3:#162847;--gold:#C9A84C;--gold2:#E8C96B;--white:#F8F5EE;--grey:#8A95A3;--blue:#60a5fa;--green:#4ade80;--red:#f87171;--yellow:#fbbf24;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;padding:40px 24px;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0;}
+.wrapper{max-width:1080px;margin:0 auto;position:relative;z-index:1;}
+.calc-header{margin-bottom:36px;}
+.calc-tag{font-size:0.68rem;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.calc-tag::before{content:'';width:22px;height:1px;background:var(--gold);}
+.calc-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;line-height:1.1;margin-bottom:8px;}
+.calc-title span{color:var(--gold);}
+.calc-desc{font-size:0.88rem;color:var(--grey);font-weight:300;max-width:600px;line-height:1.75;}
+.calc-body{display:grid;grid-template-columns:400px 1fr;gap:20px;align-items:start;}
+@media(max-width:860px){.calc-body{grid-template-columns:1fr;}}
+.panel{background:var(--navy2);border:1px solid rgba(201,168,76,0.13);border-radius:8px;padding:28px;}
+.panel+.panel{margin-top:20px;}
+.panel-title{font-size:0.68rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid rgba(201,168,76,0.12);}
+.input-group{margin-bottom:18px;}
+.input-label{font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+.input-formula{font-size:0.62rem;color:rgba(201,168,76,0.6);font-weight:400;letter-spacing:0;}
+.input-hint{font-size:0.65rem;color:rgba(138,149,163,0.6);margin-bottom:6px;display:block;}
+.input-wrap{position:relative;display:flex;align-items:center;}
+.input-prefix{position:absolute;left:14px;font-size:0.88rem;font-weight:600;color:var(--gold);pointer-events:none;z-index:1;}
+.field{width:100%;padding:12px 14px;background:var(--navy3);border:1px solid rgba(201,168,76,0.18);border-radius:5px;color:var(--white);font-size:0.95rem;font-weight:500;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;-moz-appearance:textfield;}
+.field::-webkit-outer-spin-button,.field::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.field:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.1);}
+.field.has-prefix{padding-left:32px;}
+.field.error{border-color:var(--red);}
+.error-msg{font-size:0.65rem;color:var(--red);margin-top:5px;display:none;}
+.error-msg.show{display:block;}
+.calc-btn{width:100%;margin-top:8px;padding:14px;background:var(--gold);color:var(--navy);font-size:0.85rem;font-weight:700;font-family:'DM Sans',sans-serif;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:5px;cursor:pointer;transition:background 0.2s,transform 0.15s;}
+.calc-btn:hover{background:var(--gold2);transform:translateY(-1px);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--grey);}
+.empty-state-icon{font-size:2.5rem;margin-bottom:12px;opacity:0.4;}
+.empty-state-text{font-size:0.85rem;line-height:1.6;}
+/* Z-Score gauge */
+.gauge-section{margin-bottom:20px;}
+.gauge-track{height:20px;border-radius:10px;background:linear-gradient(90deg,#f87171 0%,#f87171 33%,#fbbf24 33%,#fbbf24 60%,#4ade80 60%,#4ade80 100%);position:relative;margin-bottom:8px;overflow:visible;}
+.gauge-needle{position:absolute;top:50%;width:4px;height:30px;background:var(--white);border-radius:2px;transform:translate(-50%,-50%);transition:left 0.8s cubic-bezier(.4,0,.2,1);box-shadow:0 0 8px rgba(255,255,255,0.4);}
+.gauge-labels{display:flex;justify-content:space-between;font-size:0.65rem;color:var(--grey);}
+.zone-labels{display:flex;margin-bottom:4px;}
+.zone-label{font-size:0.62rem;font-weight:600;text-align:center;padding:2px 0;}
+.zone-label.distress{flex:0 0 33%;color:var(--red);}
+.zone-label.grey-zone{flex:0 0 27%;color:var(--yellow);}
+.zone-label.safe{flex:1;color:var(--green);}
+.score-display{text-align:center;margin-bottom:16px;}
+.score-value{font-family:'Playfair Display',serif;font-size:3rem;font-weight:900;}
+.score-value.safe{color:var(--green);}
+.score-value.grey{color:var(--yellow);}
+.score-value.distress{color:var(--red);}
+.score-badge{display:inline-block;padding:8px 20px;border-radius:3px;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-top:8px;}
+.score-badge.safe{background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.3);color:var(--green);}
+.score-badge.grey{background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3);color:var(--yellow);}
+.score-badge.distress{background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);color:var(--red);}
+.ratios-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.ratio-card{background:var(--navy3);border:1px solid rgba(201,168,76,0.1);border-radius:5px;padding:12px;}
+.ratio-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.ratio-name{font-size:0.62rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);}
+.ratio-weight{font-size:0.6rem;color:var(--grey);}
+.ratio-value{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--white);}
+.ratio-contrib{font-size:0.65rem;color:var(--grey);margin-top:2px;}
+.chart-container{position:relative;height:220px;}
+.calc-footer{margin-top:24px;padding-top:14px;border-top:1px solid rgba(201,168,76,0.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.brand{font-family:'Playfair Display',serif;font-size:1rem;font-weight:900;}
+.brand span{color:var(--gold);}
+.disclaimer{font-size:0.67rem;color:var(--grey);}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="calc-header">
+    <div class="calc-tag">Calculator 09 · Finingale</div>
+    <h1 class="calc-title">Altman <span>Z-Score</span></h1>
+    <p class="calc-desc">The Altman Z-Score predicts the probability of a company going bankrupt within two years. Developed by Professor Edward Altman, it uses five financial ratios to assess financial health.</p>
+  </div>
+  <div class="calc-body">
+    <div>
+      <div class="panel">
+        <div class="panel-title">Financial Statement Inputs</div>
+        <div class="input-group">
+          <div class="input-label">Working Capital <span class="input-formula">X1 = WC / Total Assets</span></div>
+          <span class="input-hint">Current Assets minus Current Liabilities</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="wc" class="field has-prefix" placeholder="e.g. 50000000" step="any"/></div>
+          <div class="error-msg" id="err-wc">Please enter a valid value</div>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Retained Earnings <span class="input-formula">X2 = RE / Total Assets</span></div>
+          <span class="input-hint">Cumulative retained earnings on balance sheet</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="re" class="field has-prefix" placeholder="e.g. 120000000" step="any"/></div>
+        </div>
+        <div class="input-group">
+          <div class="input-label">EBIT <span class="input-formula">X3 = EBIT / Total Assets</span></div>
+          <span class="input-hint">Earnings Before Interest and Taxes</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="ebit" class="field has-prefix" placeholder="e.g. 40000000" step="any"/></div>
+          <div class="error-msg" id="err-ebit">Please enter a valid value</div>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Market Cap <span class="input-formula">X4 = Mkt Cap / Total Liabilities</span></div>
+          <span class="input-hint">Market value of equity (shares × price)</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="mktcap" class="field has-prefix" placeholder="e.g. 300000000" step="any"/></div>
+          <div class="error-msg" id="err-mktcap">Please enter a valid value</div>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Revenue / Sales <span class="input-formula">X5 = Sales / Total Assets</span></div>
+          <span class="input-hint">Total annual revenue</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="sales" class="field has-prefix" placeholder="e.g. 250000000" step="any"/></div>
+          <div class="error-msg" id="err-sales">Please enter a valid value</div>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Total Assets</div>
+          <span class="input-hint">Sum of all assets on the balance sheet</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="assets" class="field has-prefix" placeholder="e.g. 400000000" min="1" step="any"/></div>
+          <div class="error-msg" id="err-assets">Total assets must be greater than 0</div>
+        </div>
+        <div class="input-group" style="margin-bottom:16px;">
+          <div class="input-label">Total Liabilities</div>
+          <span class="input-hint">Sum of all liabilities on the balance sheet</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="liab" class="field has-prefix" placeholder="e.g. 150000000" min="1" step="any"/></div>
+          <div class="error-msg" id="err-liab">Total liabilities must be greater than 0</div>
+        </div>
+        <button class="calc-btn" onclick="calculate()">Calculate Z-Score →</button>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <div class="panel-title">Z-Score Result</div>
+        <div class="empty-state" id="empty-state">
+          <div class="empty-state-icon">🏦</div>
+          <div class="empty-state-text">Enter the company's financial figures<br/>and click <strong style="color:var(--gold)">Calculate Z-Score</strong> to assess financial health.</div>
+        </div>
+        <div id="results-content" style="display:none;">
+          <div class="score-display">
+            <div class="score-value" id="score-value">—</div>
+            <div><span class="score-badge" id="score-badge">—</span></div>
+            <div style="font-size:0.78rem;color:var(--grey);margin-top:10px;" id="score-desc">—</div>
+          </div>
+          <!-- Gauge -->
+          <div class="gauge-section">
+            <div class="zone-labels">
+              <div class="zone-label distress">Distress Zone</div>
+              <div class="zone-label grey-zone">Grey Zone</div>
+              <div class="zone-label safe">Safe Zone</div>
+            </div>
+            <div class="gauge-track">
+              <div class="gauge-needle" id="gauge-needle" style="left:0%"></div>
+            </div>
+            <div class="gauge-labels"><span>0</span><span>1.81</span><span>2.99</span><span>5+</span></div>
+          </div>
+          <!-- Component ratios -->
+          <div class="ratios-grid">
+            <div class="ratio-card">
+              <div class="ratio-top"><span class="ratio-name">X1 — Liquidity</span><span class="ratio-weight">× 1.2</span></div>
+              <div class="ratio-value" id="x1-val">—</div>
+              <div class="ratio-contrib" id="x1-contrib">—</div>
+            </div>
+            <div class="ratio-card">
+              <div class="ratio-top"><span class="ratio-name">X2 — Profitability</span><span class="ratio-weight">× 1.4</span></div>
+              <div class="ratio-value" id="x2-val">—</div>
+              <div class="ratio-contrib" id="x2-contrib">—</div>
+            </div>
+            <div class="ratio-card">
+              <div class="ratio-top"><span class="ratio-name">X3 — Operating</span><span class="ratio-weight">× 3.3</span></div>
+              <div class="ratio-value" id="x3-val">—</div>
+              <div class="ratio-contrib" id="x3-contrib">—</div>
+            </div>
+            <div class="ratio-card">
+              <div class="ratio-top"><span class="ratio-name">X4 — Leverage</span><span class="ratio-weight">× 0.6</span></div>
+              <div class="ratio-value" id="x4-val">—</div>
+              <div class="ratio-contrib" id="x4-contrib">—</div>
+            </div>
+            <div class="ratio-card" style="grid-column:1/-1;">
+              <div class="ratio-top"><span class="ratio-name">X5 — Asset Turnover</span><span class="ratio-weight">× 1.0</span></div>
+              <div class="ratio-value" id="x5-val">—</div>
+              <div class="ratio-contrib" id="x5-contrib">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel" id="chart-panel" style="display:none;">
+        <div class="panel-title">Component Contribution to Z-Score</div>
+        <div class="chart-container"><canvas id="zChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+  <div class="calc-footer">
+    <div class="brand">Fining<span>ale</span></div>
+    <div class="disclaimer">For educational purposes only. Not financial advice. Based on Altman (1968) original Z-Score model for public manufacturing firms.</div>
+  </div>
+</div>
+<script>
+const fmtR = n => n.toFixed(4);
+let chartInstance = null;
+
+function showError(id, show) {
+  const el = document.getElementById('err-' + id);
+  const field = document.getElementById(id);
+  if (!el) return;
+  if (show) { el.classList.add('show'); if(field) field.classList.add('error'); }
+  else { el.classList.remove('show'); if(field) field.classList.remove('error'); }
+}
+
+function calculate() {
+  const wc = parseFloat(document.getElementById('wc').value) || 0;
+  const re = parseFloat(document.getElementById('re').value) || 0;
+  const ebit = parseFloat(document.getElementById('ebit').value);
+  const mktcap = parseFloat(document.getElementById('mktcap').value);
+  const sales = parseFloat(document.getElementById('sales').value);
+  const assets = parseFloat(document.getElementById('assets').value);
+  const liab = parseFloat(document.getElementById('liab').value);
+
+  let valid = true;
+  if (isNaN(ebit)) { showError('ebit', true); valid = false; } else showError('ebit', false);
+  if (!mktcap || mktcap <= 0) { showError('mktcap', true); valid = false; } else showError('mktcap', false);
+  if (!sales || sales <= 0) { showError('sales', true); valid = false; } else showError('sales', false);
+  if (!assets || assets <= 0) { showError('assets', true); valid = false; } else showError('assets', false);
+  if (!liab || liab <= 0) { showError('liab', true); valid = false; } else showError('liab', false);
+  if (!valid) return;
+
+  // Altman Z-Score = 1.2X1 + 1.4X2 + 3.3X3 + 0.6X4 + 1.0X5
+  const x1 = wc / assets;
+  const x2 = re / assets;
+  const x3 = ebit / assets;
+  const x4 = mktcap / liab;
+  const x5 = sales / assets;
+  const c1 = 1.2 * x1, c2 = 1.4 * x2, c3 = 3.3 * x3, c4 = 0.6 * x4, c5 = 1.0 * x5;
+  const z = c1 + c2 + c3 + c4 + c5;
+
+  let zone, zoneClass, desc;
+  if (z < 1.81) { zone = '🔴 Distress Zone'; zoneClass = 'distress'; desc = 'High probability of bankruptcy within 2 years. Immediate action required.'; }
+  else if (z <= 2.99) { zone = '🟡 Grey Zone'; zoneClass = 'grey'; desc = 'Uncertain financial position. Monitor closely — could go either way.'; }
+  else { zone = '🟢 Safe Zone'; zoneClass = 'safe'; desc = 'Financially healthy company. Low bankruptcy risk based on current financials.'; }
+
+  // Gauge needle position (0–5+ mapped to 0–100%)
+  const needlePct = Math.min(Math.max(z / 5 * 100, 2), 98);
+
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('results-content').style.display = 'block';
+  document.getElementById('chart-panel').style.display = 'block';
+
+  const scoreEl = document.getElementById('score-value');
+  scoreEl.textContent = z.toFixed(2);
+  scoreEl.className = 'score-value ' + zoneClass;
+  const badge = document.getElementById('score-badge');
+  badge.textContent = zone;
+  badge.className = 'score-badge ' + zoneClass;
+  document.getElementById('score-desc').textContent = desc;
+  setTimeout(() => { document.getElementById('gauge-needle').style.left = needlePct + '%'; }, 100);
+
+  const ratios = [{id:'x1',val:x1,contrib:c1},{id:'x2',val:x2,contrib:c2},{id:'x3',val:x3,contrib:c3},{id:'x4',val:x4,contrib:c4},{id:'x5',val:x5,contrib:c5}];
+  ratios.forEach(r => {
+    document.getElementById(r.id+'-val').textContent = fmtR(r.val);
+    document.getElementById(r.id+'-contrib').textContent = 'Contributes: ' + r.contrib.toFixed(4) + ' to Z-Score';
+  });
+
+  const ctx = document.getElementById('zChart').getContext('2d');
+  const contribs = [c1,c2,c3,c4,c5];
+  const colors = contribs.map(v => v >= 0 ? 'rgba(74,222,128,0.7)' : 'rgba(248,113,113,0.7)');
+  if (chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, {
+    type:'bar',
+    data:{labels:['X1 × 1.2\n(Liquidity)','X2 × 1.4\n(Retained)','X3 × 3.3\n(EBIT)','X4 × 0.6\n(Leverage)','X5 × 1.0\n(Turnover)'],datasets:[{label:'Contribution to Z-Score',data:contribs.map(v=>parseFloat(v.toFixed(4))),backgroundColor:colors,borderColor:colors.map(c=>c.replace('0.7','1')),borderWidth:1,borderRadius:4}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      animation:{duration:700,easing:'easeInOutQuart'},
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#0E1F3D',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#C9A84C',bodyColor:'#F8F5EE',padding:12,callbacks:{label:c=>' Contribution: '+c.raw.toFixed(4)}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8A95A3',font:{family:'DM Sans',size:9}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8A95A3',font:{family:'DM Sans',size:10}},title:{display:true,text:'Contribution to Z-Score',color:'#8A95A3',font:{family:'DM Sans',size:10}}}
+      }
+    }
+  });
+}
+document.querySelectorAll('.field').forEach(f => f.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); }));
+</script>
+</body>
+</html>

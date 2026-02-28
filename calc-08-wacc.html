@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WACC Calculator — Finingale</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0A1628;--navy2:#0E1F3D;--navy3:#162847;--gold:#C9A84C;--gold2:#E8C96B;--white:#F8F5EE;--grey:#8A95A3;--blue:#60a5fa;--green:#4ade80;--red:#f87171;--purple:#c084fc;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;padding:40px 24px;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0;}
+.wrapper{max-width:1080px;margin:0 auto;position:relative;z-index:1;}
+.calc-header{margin-bottom:36px;}
+.calc-tag{font-size:0.68rem;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.calc-tag::before{content:'';width:22px;height:1px;background:var(--gold);}
+.calc-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;line-height:1.1;margin-bottom:8px;}
+.calc-title span{color:var(--gold);}
+.calc-desc{font-size:0.88rem;color:var(--grey);font-weight:300;max-width:600px;line-height:1.75;}
+.calc-body{display:grid;grid-template-columns:400px 1fr;gap:20px;align-items:start;}
+@media(max-width:860px){.calc-body{grid-template-columns:1fr;}}
+.panel{background:var(--navy2);border:1px solid rgba(201,168,76,0.13);border-radius:8px;padding:28px;}
+.panel+.panel{margin-top:20px;}
+.panel-title{font-size:0.68rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid rgba(201,168,76,0.12);}
+.section-divider{font-size:0.68rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin:20px 0 14px;display:flex;align-items:center;gap:10px;}
+.section-divider::after{content:'';flex:1;height:1px;background:rgba(201,168,76,0.15);}
+.input-group{margin-bottom:18px;}
+.input-label{font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);margin-bottom:6px;display:block;}
+.input-hint{font-size:0.65rem;color:rgba(138,149,163,0.6);margin-bottom:6px;display:block;}
+.input-wrap{position:relative;display:flex;align-items:center;}
+.input-prefix{position:absolute;left:14px;font-size:0.88rem;font-weight:600;color:var(--gold);pointer-events:none;z-index:1;}
+.input-suffix{position:absolute;right:14px;font-size:0.88rem;font-weight:500;color:var(--grey);pointer-events:none;z-index:1;}
+.field{width:100%;padding:12px 14px;background:var(--navy3);border:1px solid rgba(201,168,76,0.18);border-radius:5px;color:var(--white);font-size:0.95rem;font-weight:500;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;-moz-appearance:textfield;}
+.field::-webkit-outer-spin-button,.field::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.field:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.1);}
+.field.has-prefix{padding-left:32px;}
+.field.has-suffix{padding-right:40px;}
+.field.error{border-color:var(--red);}
+.error-msg{font-size:0.65rem;color:var(--red);margin-top:5px;display:none;}
+.error-msg.show{display:block;}
+.capm-toggle{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.capm-toggle input[type=checkbox]{width:16px;height:16px;accent-color:var(--gold);cursor:pointer;}
+.capm-toggle label{font-size:0.78rem;color:var(--grey);cursor:pointer;}
+.capm-fields{padding:16px;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.12);border-radius:5px;margin-bottom:14px;display:none;}
+.capm-fields.show{display:block;}
+.calc-btn{width:100%;margin-top:8px;padding:14px;background:var(--gold);color:var(--navy);font-size:0.85rem;font-weight:700;font-family:'DM Sans',sans-serif;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:5px;cursor:pointer;transition:background 0.2s,transform 0.15s;}
+.calc-btn:hover{background:var(--gold2);transform:translateY(-1px);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--grey);}
+.empty-state-icon{font-size:2.5rem;margin-bottom:12px;opacity:0.4;}
+.empty-state-text{font-size:0.85rem;line-height:1.6;}
+.wacc-hero{background:linear-gradient(135deg,rgba(201,168,76,0.12),rgba(201,168,76,0.04));border:1px solid rgba(201,168,76,0.35);border-radius:8px;padding:24px;text-align:center;margin-bottom:16px;}
+.wacc-label{font-size:0.68rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.wacc-value{font-family:'Playfair Display',serif;font-size:3.5rem;font-weight:900;color:var(--gold2);}
+.wacc-sub{font-size:0.78rem;color:var(--grey);margin-top:6px;}
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.result-card{background:var(--navy3);border:1px solid rgba(201,168,76,0.1);border-radius:5px;padding:16px;}
+.result-label{font-size:0.63rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--grey);margin-bottom:6px;}
+.result-value{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--white);}
+.result-sub{font-size:0.67rem;color:var(--grey);margin-top:3px;}
+.formula-box{background:var(--navy3);border:1px solid rgba(201,168,76,0.15);border-radius:5px;padding:16px;margin-bottom:16px;font-size:0.78rem;color:var(--grey);line-height:1.7;}
+.formula-box strong{color:var(--gold2);}
+.donut-wrap{position:relative;width:180px;height:180px;margin:0 auto;}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
+.donut-center-label{font-size:0.6rem;color:var(--grey);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;}
+.donut-center-val{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--gold2);}
+.legend-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:0.75rem;color:var(--grey);}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.calc-footer{margin-top:24px;padding-top:14px;border-top:1px solid rgba(201,168,76,0.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.brand{font-family:'Playfair Display',serif;font-size:1rem;font-weight:900;}
+.brand span{color:var(--gold);}
+.disclaimer{font-size:0.67rem;color:var(--grey);}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="calc-header">
+    <div class="calc-tag">Calculator 08 · Finingale</div>
+    <h1 class="calc-title">WACC <span>Calculator</span></h1>
+    <p class="calc-desc">Weighted Average Cost of Capital — the minimum return a company must earn to satisfy all its investors. The cornerstone of DCF valuation and capital structure decisions.</p>
+  </div>
+  <div class="calc-body">
+    <div>
+      <div class="panel">
+        <div class="panel-title">Capital Structure</div>
+        <div class="section-divider">Equity</div>
+        <div class="capm-toggle">
+          <input type="checkbox" id="use-capm" onchange="toggleCAPM()"/>
+          <label for="use-capm">Calculate Cost of Equity using CAPM</label>
+        </div>
+        <div class="capm-fields" id="capm-fields">
+          <div class="input-group">
+            <label class="input-label">Risk-Free Rate</label>
+            <span class="input-hint">Typically 10-year government bond yield</span>
+            <div class="input-wrap"><input type="number" id="rf" class="field has-suffix" placeholder="e.g. 4.5" step="any"/><span class="input-suffix">%</span></div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Equity Risk Premium</label>
+            <span class="input-hint">Market return minus risk-free rate (typically 5–7%)</span>
+            <div class="input-wrap"><input type="number" id="erp" class="field has-suffix" placeholder="e.g. 5.5" step="any"/><span class="input-suffix">%</span></div>
+          </div>
+          <div class="input-group" style="margin-bottom:0;">
+            <label class="input-label">Beta</label>
+            <span class="input-hint">Systematic risk vs the market (1.0 = market)</span>
+            <div class="input-wrap"><input type="number" id="beta" class="field" placeholder="e.g. 1.2" step="any"/></div>
+          </div>
+        </div>
+        <div class="input-group" id="ke-manual-group">
+          <label class="input-label">Cost of Equity (Ke)</label>
+          <span class="input-hint">Required return by equity shareholders</span>
+          <div class="input-wrap"><input type="number" id="ke" class="field has-suffix" placeholder="e.g. 12" step="any"/><span class="input-suffix">%</span></div>
+          <div class="error-msg" id="err-ke">Please enter a valid cost of equity</div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Market Value of Equity</label>
+          <span class="input-hint">Market cap (shares × price)</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="equity" class="field has-prefix" placeholder="e.g. 500000000" step="any"/></div>
+          <div class="error-msg" id="err-equity">Please enter a valid equity value</div>
+        </div>
+        <div class="section-divider">Debt</div>
+        <div class="input-group">
+          <label class="input-label">Cost of Debt (Kd) — Pre-Tax</label>
+          <span class="input-hint">Interest rate on company's debt</span>
+          <div class="input-wrap"><input type="number" id="kd" class="field has-suffix" placeholder="e.g. 6" step="any"/><span class="input-suffix">%</span></div>
+          <div class="error-msg" id="err-kd">Please enter a valid cost of debt</div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Market Value of Debt</label>
+          <span class="input-hint">Total outstanding debt (book value if market unavailable)</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="debt" class="field has-prefix" placeholder="e.g. 200000000" step="any"/></div>
+          <div class="error-msg" id="err-debt">Please enter a valid debt value</div>
+        </div>
+        <div class="input-group" style="margin-bottom:16px;">
+          <label class="input-label">Corporate Tax Rate</label>
+          <span class="input-hint">Used to calculate tax shield on debt</span>
+          <div class="input-wrap"><input type="number" id="tax" class="field has-suffix" placeholder="e.g. 25" step="any"/><span class="input-suffix">%</span></div>
+          <div class="error-msg" id="err-tax">Please enter a valid tax rate</div>
+        </div>
+        <button class="calc-btn" onclick="calculate()">Calculate WACC →</button>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <div class="panel-title">WACC Results</div>
+        <div class="empty-state" id="empty-state">
+          <div class="empty-state-icon">⚖️</div>
+          <div class="empty-state-text">Enter your capital structure details<br/>and click <strong style="color:var(--gold)">Calculate WACC</strong>.</div>
+        </div>
+        <div id="results-content" style="display:none;">
+          <div class="wacc-hero">
+            <div class="wacc-label">Weighted Average Cost of Capital</div>
+            <div class="wacc-value" id="res-wacc">—</div>
+            <div class="wacc-sub" id="res-wacc-sub">—</div>
+          </div>
+          <div class="formula-box" id="formula-box">—</div>
+          <div class="results-grid">
+            <div class="result-card">
+              <div class="result-label">Cost of Equity (Ke)</div>
+              <div class="result-value" id="res-ke">—</div>
+              <div class="result-sub" id="res-ke-sub">—</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">After-Tax Cost of Debt</div>
+              <div class="result-value" id="res-kd-at">—</div>
+              <div class="result-sub">Kd × (1 − Tax Rate)</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Equity Weight (We)</div>
+              <div class="result-value" id="res-we">—</div>
+              <div class="result-sub">% of total capital</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Debt Weight (Wd)</div>
+              <div class="result-value" id="res-wd">—</div>
+              <div class="result-sub">% of total capital</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+            <div class="donut-wrap">
+              <canvas id="donutChart"></canvas>
+              <div class="donut-center">
+                <div class="donut-center-label">WACC</div>
+                <div class="donut-center-val" id="donut-wacc">—</div>
+              </div>
+            </div>
+            <div style="flex:1;min-width:160px;">
+              <div class="legend-row"><div class="legend-dot" style="background:#60a5fa;"></div> Equity: <strong id="leg-e" style="color:var(--white);margin-left:4px;">—</strong></div>
+              <div class="legend-row"><div class="legend-dot" style="background:#f87171;"></div> Debt: <strong id="leg-d" style="color:var(--white);margin-left:4px;">—</strong></div>
+              <p style="font-size:0.75rem;color:var(--grey);line-height:1.7;margin-top:8px;">Use this WACC as the <strong style="color:var(--white);">discount rate</strong> in your DCF model to find intrinsic value.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="calc-footer">
+    <div class="brand">Fining<span>ale</span></div>
+    <div class="disclaimer">For educational purposes only. Not financial advice.</div>
+  </div>
+</div>
+<script>
+const fmt = n => '$' + Math.round(n).toLocaleString('en-US');
+const fmtPct = n => n.toFixed(2) + '%';
+let donutInstance = null;
+
+function toggleCAPM() {
+  const checked = document.getElementById('use-capm').checked;
+  document.getElementById('capm-fields').classList.toggle('show', checked);
+  document.getElementById('ke-manual-group').style.display = checked ? 'none' : 'block';
+}
+
+function showError(id, show) {
+  const el = document.getElementById('err-' + id);
+  const field = document.getElementById(id);
+  if (!el) return;
+  if (show) { el.classList.add('show'); if(field) field.classList.add('error'); }
+  else { el.classList.remove('show'); if(field) field.classList.remove('error'); }
+}
+
+function calculate() {
+  const useCAPM = document.getElementById('use-capm').checked;
+  let ke;
+  if (useCAPM) {
+    const rf = parseFloat(document.getElementById('rf').value) / 100;
+    const erp = parseFloat(document.getElementById('erp').value) / 100;
+    const beta = parseFloat(document.getElementById('beta').value);
+    if (isNaN(rf) || isNaN(erp) || isNaN(beta)) { alert('Please fill in all CAPM fields.'); return; }
+    ke = rf + beta * erp;
+  } else {
+    ke = parseFloat(document.getElementById('ke').value) / 100;
+    if (isNaN(ke) || ke < 0) { showError('ke', true); return; } showError('ke', false);
+  }
+
+  const kd = parseFloat(document.getElementById('kd').value) / 100;
+  const equity = parseFloat(document.getElementById('equity').value);
+  const debt = parseFloat(document.getElementById('debt').value);
+  const tax = parseFloat(document.getElementById('tax').value) / 100;
+
+  let valid = true;
+  if (isNaN(kd) || kd < 0) { showError('kd', true); valid = false; } else showError('kd', false);
+  if (isNaN(equity) || equity <= 0) { showError('equity', true); valid = false; } else showError('equity', false);
+  if (isNaN(debt) || debt < 0) { showError('debt', true); valid = false; } else showError('debt', false);
+  if (isNaN(tax) || tax < 0) { showError('tax', true); valid = false; } else showError('tax', false);
+  if (!valid) return;
+
+  const totalCapital = equity + debt;
+  const we = equity / totalCapital;
+  const wd = debt / totalCapital;
+  const kdAfterTax = kd * (1 - tax);
+  const wacc = we * ke + wd * kdAfterTax;
+
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('results-content').style.display = 'block';
+
+  document.getElementById('res-wacc').textContent = fmtPct(wacc * 100);
+  document.getElementById('res-wacc-sub').textContent = 'Use as discount rate in DCF valuation';
+  document.getElementById('res-ke').textContent = fmtPct(ke * 100);
+  document.getElementById('res-ke-sub').textContent = useCAPM ? 'Calculated via CAPM' : 'Manual input';
+  document.getElementById('res-kd-at').textContent = fmtPct(kdAfterTax * 100);
+  document.getElementById('res-we').textContent = fmtPct(we * 100);
+  document.getElementById('res-wd').textContent = fmtPct(wd * 100);
+  document.getElementById('donut-wacc').textContent = fmtPct(wacc * 100);
+  document.getElementById('leg-e').textContent = fmt(equity);
+  document.getElementById('leg-d').textContent = fmt(debt);
+  document.getElementById('formula-box').innerHTML = `
+    <strong>WACC</strong> = (We × Ke) + (Wd × Kd × (1−T))<br/>
+    = (${fmtPct(we*100)} × ${fmtPct(ke*100)}) + (${fmtPct(wd*100)} × ${fmtPct(kd*100)} × (1−${fmtPct(tax*100)}))<br/>
+    = <strong>${fmtPct(we*ke*100)}</strong> + <strong>${fmtPct(wd*kdAfterTax*100)}</strong> = <strong style="color:var(--gold2)">${fmtPct(wacc*100)}</strong>
+  `;
+
+  if (donutInstance) donutInstance.destroy();
+  const dCtx = document.getElementById('donutChart').getContext('2d');
+  donutInstance = new Chart(dCtx, {
+    type:'doughnut',
+    data:{labels:['Equity','Debt'],datasets:[{data:[Math.round(equity),Math.round(debt)],backgroundColor:['#60a5fa','#f87171'],borderColor:'#0E1F3D',borderWidth:3,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'72%',animation:{duration:700},plugins:{legend:{display:false},tooltip:{backgroundColor:'#0E1F3D',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#C9A84C',bodyColor:'#F8F5EE',padding:10,callbacks:{label:c=>' '+c.label+': '+fmt(c.raw)}}}}
+  });
+}
+document.querySelectorAll('.field').forEach(f => f.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); }));
+</script>
+</body>
+</html>

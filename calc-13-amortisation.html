@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Amortisation Schedule — Finingale</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0A1628;--navy2:#0E1F3D;--navy3:#162847;--gold:#C9A84C;--gold2:#E8C96B;--white:#F8F5EE;--grey:#8A95A3;--blue:#60a5fa;--green:#4ade80;--red:#f87171;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;padding:40px 24px;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0;}
+.wrapper{max-width:1100px;margin:0 auto;position:relative;z-index:1;}
+.calc-header{margin-bottom:36px;}
+.calc-tag{font-size:0.68rem;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.calc-tag::before{content:'';width:22px;height:1px;background:var(--gold);}
+.calc-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;line-height:1.1;margin-bottom:8px;}
+.calc-title span{color:var(--gold);}
+.calc-desc{font-size:0.88rem;color:var(--grey);font-weight:300;max-width:600px;line-height:1.75;}
+.calc-body{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start;}
+@media(max-width:820px){.calc-body{grid-template-columns:1fr;}}
+.panel{background:var(--navy2);border:1px solid rgba(201,168,76,0.13);border-radius:8px;padding:28px;}
+.panel+.panel{margin-top:20px;}
+.panel-title{font-size:0.68rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid rgba(201,168,76,0.12);}
+.input-group{margin-bottom:20px;}
+.input-label{font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);margin-bottom:6px;display:block;}
+.input-hint{font-size:0.65rem;color:rgba(138,149,163,0.6);margin-bottom:6px;display:block;}
+.input-wrap{position:relative;display:flex;align-items:center;}
+.input-prefix{position:absolute;left:14px;font-size:0.88rem;font-weight:600;color:var(--gold);pointer-events:none;z-index:1;}
+.input-suffix{position:absolute;right:14px;font-size:0.88rem;font-weight:500;color:var(--grey);pointer-events:none;z-index:1;}
+.field{width:100%;padding:12px 14px;background:var(--navy3);border:1px solid rgba(201,168,76,0.18);border-radius:5px;color:var(--white);font-size:0.95rem;font-weight:500;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;-moz-appearance:textfield;}
+.field::-webkit-outer-spin-button,.field::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.field:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.1);}
+.field.has-prefix{padding-left:32px;}
+.field.has-suffix{padding-right:40px;}
+.field.error{border-color:var(--red);}
+.error-msg{font-size:0.65rem;color:var(--red);margin-top:5px;display:none;}
+.error-msg.show{display:block;}
+.calc-btn{width:100%;margin-top:8px;padding:14px;background:var(--gold);color:var(--navy);font-size:0.85rem;font-weight:700;font-family:'DM Sans',sans-serif;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:5px;cursor:pointer;transition:background 0.2s,transform 0.15s;}
+.calc-btn:hover{background:var(--gold2);transform:translateY(-1px);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--grey);}
+.empty-state-icon{font-size:2.5rem;margin-bottom:12px;opacity:0.4;}
+.empty-state-text{font-size:0.85rem;line-height:1.6;}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+@media(max-width:600px){.summary-grid{grid-template-columns:1fr 1fr;}}
+.sum-card{background:var(--navy3);border:1px solid rgba(201,168,76,0.1);border-radius:5px;padding:14px;}
+.sum-card.hi{border-color:rgba(201,168,76,0.4);background:rgba(201,168,76,0.07);}
+.sum-label{font-size:0.62rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--grey);margin-bottom:5px;}
+.sum-value{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--white);}
+.sum-card.hi .sum-value{color:var(--gold2);}
+.sum-value.bad{color:var(--red);}
+.sum-sub{font-size:0.63rem;color:var(--grey);margin-top:2px;}
+.chart-container{position:relative;height:240px;margin-bottom:20px;}
+/* Full amortisation table */
+.amort-wrap{max-height:400px;overflow-y:auto;border-radius:5px;}
+.amort-wrap::-webkit-scrollbar{width:5px;}
+.amort-wrap::-webkit-scrollbar-track{background:rgba(255,255,255,0.04);}
+.amort-wrap::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.3);border-radius:3px;}
+.amort-table{width:100%;border-collapse:collapse;font-size:0.75rem;}
+.amort-table thead{position:sticky;top:0;z-index:2;}
+.amort-table th{font-size:0.62rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);padding:10px 12px;background:var(--navy2);border-bottom:1px solid rgba(201,168,76,0.2);text-align:right;white-space:nowrap;}
+.amort-table th:first-child{text-align:left;}
+.amort-table td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04);color:var(--grey);text-align:right;white-space:nowrap;}
+.amort-table td:first-child{text-align:left;color:var(--white);}
+.amort-table tr:hover td{background:rgba(201,168,76,0.04);}
+.amort-table .year-row td{background:rgba(201,168,76,0.05);color:var(--gold);font-weight:600;}
+.view-toggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;}
+.vt-btn{padding:9px;border:1px solid rgba(201,168,76,0.18);background:transparent;color:var(--grey);font-size:0.75rem;font-family:'DM Sans',sans-serif;border-radius:4px;cursor:pointer;transition:all 0.18s;text-align:center;}
+.vt-btn.active{background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700;}
+.vt-btn:hover:not(.active){border-color:var(--gold);color:var(--gold);}
+.export-btn{display:block;width:100%;margin-top:12px;padding:10px;border:1px solid rgba(201,168,76,0.2);background:transparent;color:var(--gold);font-size:0.75rem;font-family:'DM Sans',sans-serif;border-radius:3px;cursor:pointer;transition:all 0.18s;text-align:center;}
+.export-btn:hover{background:rgba(201,168,76,0.08);}
+.calc-footer{margin-top:24px;padding-top:14px;border-top:1px solid rgba(201,168,76,0.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.brand{font-family:'Playfair Display',serif;font-size:1rem;font-weight:900;}
+.brand span{color:var(--gold);}
+.disclaimer{font-size:0.67rem;color:var(--grey);}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="calc-header">
+    <div class="calc-tag">Calculator 13 · Finingale</div>
+    <h1 class="calc-title">Amortisation <span>Schedule</span></h1>
+    <p class="calc-desc">Generate a complete month-by-month or year-by-year amortisation schedule for any loan. See exactly how much of each payment goes to principal vs interest across the full loan term.</p>
+  </div>
+  <div class="calc-body">
+    <div>
+      <div class="panel">
+        <div class="panel-title">Loan Details</div>
+        <div class="input-group">
+          <label class="input-label">Loan Amount</label>
+          <span class="input-hint">Principal amount borrowed</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="principal" class="field has-prefix" placeholder="e.g. 300000" min="0" step="any"/></div>
+          <div class="error-msg" id="err-principal">Please enter a valid loan amount</div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Annual Interest Rate</label>
+          <span class="input-hint">Annual interest rate on the loan</span>
+          <div class="input-wrap"><input type="number" id="rate" class="field has-suffix" placeholder="e.g. 6.5" min="0" max="100" step="any"/><span class="input-suffix">%</span></div>
+          <div class="error-msg" id="err-rate">Please enter a valid interest rate</div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Loan Term</label>
+          <span class="input-hint">Total duration of the loan</span>
+          <div class="input-wrap"><input type="number" id="term" class="field has-suffix" placeholder="e.g. 30" min="1" max="30" step="1"/><span class="input-suffix">yrs</span></div>
+          <div class="error-msg" id="err-term">Please enter between 1 and 30 years</div>
+        </div>
+        <div class="input-group" style="margin-bottom:16px;">
+          <label class="input-label">Extra Monthly Payment (Optional)</label>
+          <span class="input-hint">Additional payment to reduce loan faster</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="extra" class="field has-prefix" placeholder="e.g. 200 (or 0)" min="0" step="any"/></div>
+        </div>
+        <button class="calc-btn" onclick="calculate()">Generate Schedule →</button>
+      </div>
+    </div>
+    <div>
+      <div class="panel" id="results-panel">
+        <div class="panel-title">Loan Summary</div>
+        <div class="empty-state" id="empty-state">
+          <div class="empty-state-icon">📋</div>
+          <div class="empty-state-text">Enter your loan details on the left<br/>and click <strong style="color:var(--gold)">Generate Schedule</strong>.</div>
+        </div>
+        <div id="results-content" style="display:none;">
+          <div class="summary-grid">
+            <div class="sum-card hi"><div class="sum-label">Monthly EMI</div><div class="sum-value" id="res-emi">—</div><div class="sum-sub">Regular payment</div></div>
+            <div class="sum-card"><div class="sum-label">Total Interest</div><div class="sum-value bad" id="res-interest">—</div><div class="sum-sub" id="res-int-pct">—</div></div>
+            <div class="sum-card"><div class="sum-label">Total Payment</div><div class="sum-value" id="res-total">—</div><div class="sum-sub">Principal + interest</div></div>
+            <div class="sum-card" id="extra-card" style="display:none;"><div class="sum-label">Interest Saved</div><div class="sum-value" style="color:var(--green);" id="res-saved">—</div><div class="sum-sub">With extra payments</div></div>
+            <div class="sum-card" id="early-card" style="display:none;"><div class="sum-label">Paid Off Early</div><div class="sum-value" style="color:var(--green);" id="res-early">—</div><div class="sum-sub">Months saved</div></div>
+          </div>
+          <div class="chart-container"><canvas id="amortChart"></canvas></div>
+          <div class="view-toggle">
+            <button class="vt-btn active" onclick="switchView('monthly',this)">Monthly View</button>
+            <button class="vt-btn" onclick="switchView('yearly',this)">Yearly View</button>
+          </div>
+          <div class="amort-wrap">
+            <table class="amort-table">
+              <thead id="table-head"></thead>
+              <tbody id="amort-tbody"></tbody>
+            </table>
+          </div>
+          <button class="export-btn" onclick="exportCSV()">⬇ Export as CSV</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="calc-footer">
+    <div class="brand">Fining<span>ale</span></div>
+    <div class="disclaimer">For educational purposes only. Not financial advice.</div>
+  </div>
+</div>
+<script>
+const fmt=n=>'$'+Math.round(n).toLocaleString('en-US');
+const fmt2=n=>'$'+parseFloat(n.toFixed(2)).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+let chartInstance=null, allMonthly=[], allYearly=[], currentView='monthly';
+
+function showError(id,show){
+  const el=document.getElementById('err-'+id),field=document.getElementById(id);
+  if(!el)return;
+  if(show){el.classList.add('show');if(field)field.classList.add('error');}
+  else{el.classList.remove('show');if(field)field.classList.remove('error');}
+}
+
+function calculate(){
+  const P=parseFloat(document.getElementById('principal').value);
+  const ann=parseFloat(document.getElementById('rate').value)/100;
+  const years=parseInt(document.getElementById('term').value);
+  const extra=parseFloat(document.getElementById('extra').value)||0;
+  let valid=true;
+  if(!P||P<=0){showError('principal',true);valid=false;}else showError('principal',false);
+  if(isNaN(ann)||ann<0){showError('rate',true);valid=false;}else showError('rate',false);
+  if(!years||years<1||years>30){showError('term',true);valid=false;}else showError('term',false);
+  if(!valid)return;
+
+  const r=ann/12, n=years*12;
+  const emi=r>0?P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1):P/n;
+  const totalPaymentBase=emi*n;
+  const totalInterestBase=totalPaymentBase-P;
+
+  // Build monthly schedule
+  allMonthly=[]; allYearly=[];
+  let balance=P, totalInterestPaid=0, totalPrincipalPaid=0;
+  let monthCount=0;
+  for(let m=1;m<=n;m++){
+    if(balance<=0)break;
+    const intPayment=balance*r;
+    const baseP=emi-intPayment;
+    const extraP=Math.min(extra,balance-baseP);
+    const principalPay=Math.min(baseP+extraP,balance);
+    const payment=intPayment+principalPay;
+    balance=Math.max(0,balance-principalPay);
+    totalInterestPaid+=intPayment;
+    totalPrincipalPaid+=principalPay;
+    monthCount=m;
+    allMonthly.push({month:m,payment:payment,principal:principalPay,interest:intPayment,balance:balance,cumInterest:totalInterestPaid,cumPrincipal:totalPrincipalPaid});
+    if(balance<=0)break;
+  }
+  // Yearly rollup
+  for(let y=1;y<=years;y++){
+    const mStart=(y-1)*12, mEnd=Math.min(y*12,allMonthly.length);
+    if(mStart>=allMonthly.length)break;
+    const slice=allMonthly.slice(mStart,mEnd);
+    allYearly.push({year:y,payment:slice.reduce((s,r)=>s+r.payment,0),principal:slice.reduce((s,r)=>s+r.principal,0),interest:slice.reduce((s,r)=>s+r.interest,0),balance:slice[slice.length-1].balance});
+  }
+
+  const interestSaved=extra>0?totalInterestBase-totalInterestPaid:0;
+  const monthsSaved=extra>0?n-monthCount:0;
+
+  document.getElementById('empty-state').style.display='none';
+  document.getElementById('results-content').style.display='block';
+  document.getElementById('res-emi').textContent=fmt(emi);
+  document.getElementById('res-interest').textContent=fmt(totalInterestPaid);
+  document.getElementById('res-int-pct').textContent=(totalInterestPaid/P*100).toFixed(1)+'% of principal';
+  document.getElementById('res-total').textContent=fmt(totalInterestPaid+P);
+  if(extra>0){
+    document.getElementById('extra-card').style.display='block';
+    document.getElementById('early-card').style.display='block';
+    document.getElementById('res-saved').textContent=fmt(interestSaved);
+    document.getElementById('res-early').textContent=monthsSaved+' months';
+  }
+
+  // Chart
+  const chartLabels=allYearly.map(r=>'Yr '+r.year);
+  const ctx=document.getElementById('amortChart').getContext('2d');
+  const gP=ctx.createLinearGradient(0,0,0,240);
+  gP.addColorStop(0,'rgba(96,165,250,0.75)');gP.addColorStop(1,'rgba(96,165,250,0.2)');
+  const gI=ctx.createLinearGradient(0,0,0,240);
+  gI.addColorStop(0,'rgba(248,113,113,0.75)');gI.addColorStop(1,'rgba(248,113,113,0.2)');
+  if(chartInstance)chartInstance.destroy();
+  chartInstance=new Chart(ctx,{
+    type:'bar',
+    data:{labels:chartLabels,datasets:[
+      {label:'Principal',data:allYearly.map(r=>Math.round(r.principal)),backgroundColor:gP,borderRadius:2,borderSkipped:false},
+      {label:'Interest',data:allYearly.map(r=>Math.round(r.interest)),backgroundColor:gI,borderRadius:2,borderSkipped:false}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      animation:{duration:700,easing:'easeInOutQuart'},
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#8A95A3',font:{family:'DM Sans',size:11},boxWidth:12}},
+        tooltip:{backgroundColor:'#0E1F3D',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#C9A84C',bodyColor:'#F8F5EE',padding:12,callbacks:{label:c=>' '+c.dataset.label+': '+fmt(c.raw)}}
+      },
+      scales:{
+        x:{stacked:true,grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#8A95A3',font:{family:'DM Sans',size:9},maxTicksLimit:12}},
+        y:{stacked:true,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8A95A3',font:{family:'DM Sans',size:10},callback:v=>'$'+(v>=1e6?(v/1e6).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v)}}
+      }
+    }
+  });
+  switchView(currentView,null);
+}
+
+function switchView(view,btn){
+  currentView=view;
+  document.querySelectorAll('.vt-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  else document.querySelectorAll('.vt-btn')[view==='monthly'?0:1].classList.add('active');
+  renderTable(view);
+}
+
+function renderTable(view){
+  const monthly=view==='monthly';
+  document.getElementById('table-head').innerHTML=monthly
+    ?'<tr><th>Month</th><th>Payment</th><th>Principal</th><th>Interest</th><th>Balance</th></tr>'
+    :'<tr><th>Year</th><th>Annual Payment</th><th>Principal</th><th>Interest</th><th>Balance</th></tr>';
+  const rows=monthly?allMonthly:allYearly;
+  document.getElementById('amort-tbody').innerHTML=rows.map(r=>
+    monthly
+    ?`<tr><td>${r.month}</td><td>${fmt2(r.payment)}</td><td>${fmt2(r.principal)}</td><td>${fmt2(r.interest)}</td><td>${fmt2(r.balance)}</td></tr>`
+    :`<tr class="year-row"><td>Year ${r.year}</td><td>${fmt(r.payment)}</td><td>${fmt(r.principal)}</td><td>${fmt(r.interest)}</td><td>${fmt(r.balance)}</td></tr>`
+  ).join('');
+}
+
+function exportCSV(){
+  const monthly=currentView==='monthly';
+  const rows=monthly?allMonthly:allYearly;
+  const header=monthly?'Month,Payment,Principal,Interest,Balance\n':'Year,Annual Payment,Principal,Interest,Balance\n';
+  const data=rows.map(r=>monthly?`${r.month},${r.payment.toFixed(2)},${r.principal.toFixed(2)},${r.interest.toFixed(2)},${r.balance.toFixed(2)}`:`${r.year},${r.payment.toFixed(2)},${r.principal.toFixed(2)},${r.interest.toFixed(2)},${r.balance.toFixed(2)}`).join('\n');
+  const blob=new Blob([header+data],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='amortisation-schedule.csv';a.click();
+}
+document.querySelectorAll('.field').forEach(f=>f.addEventListener('keydown',e=>{if(e.key==='Enter')calculate();}));
+</script>
+</body>
+</html>

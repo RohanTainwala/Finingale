@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Retirement Savings Calculator — Finingale</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0A1628;--navy2:#0E1F3D;--navy3:#162847;--gold:#C9A84C;--gold2:#E8C96B;--white:#F8F5EE;--grey:#8A95A3;--blue:#60a5fa;--green:#4ade80;--red:#f87171;--purple:#c084fc;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;padding:40px 24px;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0;}
+.wrapper{max-width:1080px;margin:0 auto;position:relative;z-index:1;}
+.calc-header{margin-bottom:36px;}
+.calc-tag{font-size:0.68rem;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.calc-tag::before{content:'';width:22px;height:1px;background:var(--gold);}
+.calc-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;line-height:1.1;margin-bottom:8px;}
+.calc-title span{color:var(--gold);}
+.calc-desc{font-size:0.88rem;color:var(--grey);font-weight:300;max-width:600px;line-height:1.75;}
+.calc-body{display:grid;grid-template-columns:370px 1fr;gap:20px;align-items:start;}
+@media(max-width:820px){.calc-body{grid-template-columns:1fr;}}
+.panel{background:var(--navy2);border:1px solid rgba(201,168,76,0.13);border-radius:8px;padding:28px;}
+.panel+.panel{margin-top:20px;}
+.panel-title{font-size:0.68rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid rgba(201,168,76,0.12);}
+.input-group{margin-bottom:20px;}
+.input-label{font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);margin-bottom:6px;display:block;}
+.input-hint{font-size:0.65rem;color:rgba(138,149,163,0.6);margin-bottom:6px;display:block;}
+.input-wrap{position:relative;display:flex;align-items:center;}
+.input-prefix{position:absolute;left:14px;font-size:0.88rem;font-weight:600;color:var(--gold);pointer-events:none;z-index:1;}
+.input-suffix{position:absolute;right:14px;font-size:0.88rem;font-weight:500;color:var(--grey);pointer-events:none;z-index:1;}
+.field{width:100%;padding:12px 14px;background:var(--navy3);border:1px solid rgba(201,168,76,0.18);border-radius:5px;color:var(--white);font-size:0.95rem;font-weight:500;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;-moz-appearance:textfield;}
+.field::-webkit-outer-spin-button,.field::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.field:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.1);}
+.field.has-prefix{padding-left:32px;}
+.field.has-suffix{padding-right:40px;}
+.field.error{border-color:var(--red);}
+.error-msg{font-size:0.65rem;color:var(--red);margin-top:5px;display:none;}
+.error-msg.show{display:block;}
+.calc-btn{width:100%;margin-top:8px;padding:14px;background:var(--gold);color:var(--navy);font-size:0.85rem;font-weight:700;font-family:'DM Sans',sans-serif;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:5px;cursor:pointer;transition:background 0.2s,transform 0.15s;}
+.calc-btn:hover{background:var(--gold2);transform:translateY(-1px);}
+.empty-state{text-align:center;padding:40px 20px;color:var(--grey);}
+.empty-state-icon{font-size:2.5rem;margin-bottom:12px;opacity:0.4;}
+.empty-state-text{font-size:0.85rem;line-height:1.6;}
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.result-card{background:var(--navy3);border:1px solid rgba(201,168,76,0.1);border-radius:5px;padding:16px;}
+.result-card.highlight{border-color:rgba(201,168,76,0.4);background:rgba(201,168,76,0.07);}
+.result-card.alert{border-color:rgba(248,113,113,0.4);background:rgba(248,113,113,0.07);}
+.result-label{font-size:0.63rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--grey);margin-bottom:6px;}
+.result-value{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--white);}
+.result-card.highlight .result-value{color:var(--gold2);}
+.result-card.alert .result-value{color:var(--red);}
+.result-sub{font-size:0.67rem;color:var(--grey);margin-top:3px;}
+/* Status badge */
+.status-badge{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:4px;font-size:0.78rem;font-weight:600;margin-bottom:16px;}
+.status-badge.good{background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--green);}
+.status-badge.warn{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red);}
+.chart-container{position:relative;height:270px;}
+.calc-footer{margin-top:24px;padding-top:14px;border-top:1px solid rgba(201,168,76,0.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.brand{font-family:'Playfair Display',serif;font-size:1rem;font-weight:900;}
+.brand span{color:var(--gold);}
+.disclaimer{font-size:0.67rem;color:var(--grey);}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="calc-header">
+    <div class="calc-tag">Calculator 04 · Finingale</div>
+    <h1 class="calc-title">Retirement <span>Planner</span></h1>
+    <p class="calc-desc">How much will you have when you retire — and will it be enough? Plan your retirement corpus, monthly income, and see if you're on track.</p>
+  </div>
+  <div class="calc-body">
+    <div>
+      <div class="panel">
+        <div class="panel-title">Your Details</div>
+        <div class="input-group">
+          <label class="input-label">Current Age</label>
+          <span class="input-hint">Your age today</span>
+          <div class="input-wrap"><input type="number" id="current-age" class="field has-suffix" placeholder="e.g. 28" min="18" max="80" step="1"/><span class="input-suffix">yrs</span></div>
+          <div class="error-msg" id="err-current-age">Please enter age between 18 and 80</div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Retirement Age</label>
+          <span class="input-hint">When you plan to retire</span>
+          <div class="input-wrap"><input type="number" id="retire-age" class="field has-suffix" placeholder="e.g. 60" min="30" max="80" step="1"/><span class="input-suffix">yrs</span></div>
+          <div class="error-msg" id="err-retire-age">Must be greater than current age</div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Monthly Savings</label>
+          <span class="input-hint">Amount saved towards retirement each month</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="monthly-save" class="field has-prefix" placeholder="e.g. 1000" min="0" step="any"/></div>
+          <div class="error-msg" id="err-monthly-save">Please enter a valid amount</div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Current Savings</label>
+          <span class="input-hint">Existing retirement savings (if any)</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="current-save" class="field has-prefix" placeholder="e.g. 25000 (or 0)" min="0" step="any"/></div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Expected Annual Return</label>
+          <span class="input-hint">Investment return during accumulation</span>
+          <div class="input-wrap"><input type="number" id="return-rate" class="field has-suffix" placeholder="e.g. 8" min="0" max="30" step="any"/><span class="input-suffix">%</span></div>
+          <div class="error-msg" id="err-return-rate">Please enter a valid rate</div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Monthly Income Needed in Retirement</label>
+          <span class="input-hint">How much you need each month post-retirement</span>
+          <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="monthly-need" class="field has-prefix" placeholder="e.g. 4000" min="0" step="any"/></div>
+          <div class="error-msg" id="err-monthly-need">Please enter a valid amount</div>
+        </div>
+        <div class="input-group" style="margin-bottom:16px;">
+          <label class="input-label">Inflation Rate</label>
+          <span class="input-hint">Expected annual inflation</span>
+          <div class="input-wrap"><input type="number" id="inflation" class="field has-suffix" placeholder="e.g. 3" min="0" max="20" step="any"/><span class="input-suffix">%</span></div>
+        </div>
+        <button class="calc-btn" onclick="calculate()">Calculate →</button>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <div class="panel-title">Retirement Projection</div>
+        <div class="empty-state" id="empty-state">
+          <div class="empty-state-icon">🎯</div>
+          <div class="empty-state-text">Enter your details on the left<br/>and click <strong style="color:var(--gold)">Calculate</strong> to see your retirement projection.</div>
+        </div>
+        <div id="results-content" style="display:none;">
+          <div id="status-badge" class="status-badge good">✅ You're on track for retirement</div>
+          <div class="results-grid">
+            <div class="result-card highlight">
+              <div class="result-label">Retirement Corpus</div>
+              <div class="result-value" id="res-corpus">—</div>
+              <div class="result-sub">Total savings at retirement</div>
+            </div>
+            <div class="result-card highlight">
+              <div class="result-label">Corpus Required</div>
+              <div class="result-value" id="res-required">—</div>
+              <div class="result-sub">To fund your retirement</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Years to Retire</div>
+              <div class="result-value" id="res-years">—</div>
+              <div class="result-sub">Accumulation period</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Inflation-Adj. Need</div>
+              <div class="result-value" id="res-adj-need">—</div>
+              <div class="result-sub">Monthly need at retirement</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">Monthly from Corpus</div>
+              <div class="result-value" id="res-monthly-corpus">—</div>
+              <div class="result-sub">At 4% withdrawal rate</div>
+            </div>
+            <div class="result-card" id="shortfall-card">
+              <div class="result-label" id="shortfall-label">Surplus / Shortfall</div>
+              <div class="result-value" id="res-shortfall">—</div>
+              <div class="result-sub" id="res-shortfall-sub">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel" id="chart-panel" style="display:none;">
+        <div class="panel-title">Savings Growth Trajectory</div>
+        <div class="chart-container"><canvas id="retChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+  <div class="calc-footer">
+    <div class="brand">Fining<span>ale</span></div>
+    <div class="disclaimer">For educational purposes only. Not financial advice.</div>
+  </div>
+</div>
+<script>
+const fmt = n => '$' + Math.round(n).toLocaleString('en-US');
+let chartInstance = null;
+
+function showError(id, show) {
+  const el = document.getElementById('err-' + id);
+  const field = document.getElementById(id);
+  if (!el) return;
+  if (show) { el.classList.add('show'); if(field) field.classList.add('error'); }
+  else { el.classList.remove('show'); if(field) field.classList.remove('error'); }
+}
+
+function validate() {
+  const ca = parseFloat(document.getElementById('current-age').value);
+  const ra = parseFloat(document.getElementById('retire-age').value);
+  const ms = parseFloat(document.getElementById('monthly-save').value);
+  const rr = parseFloat(document.getElementById('return-rate').value);
+  const mn = parseFloat(document.getElementById('monthly-need').value);
+  let valid = true;
+  if (!ca || ca < 18 || ca > 80) { showError('current-age', true); valid = false; } else showError('current-age', false);
+  if (!ra || ra <= ca) { showError('retire-age', true); valid = false; } else showError('retire-age', false);
+  if (isNaN(ms) || ms < 0) { showError('monthly-save', true); valid = false; } else showError('monthly-save', false);
+  if (isNaN(rr) || rr < 0 || rr > 30) { showError('return-rate', true); valid = false; } else showError('return-rate', false);
+  if (isNaN(mn) || mn < 0) { showError('monthly-need', true); valid = false; } else showError('monthly-need', false);
+  return valid;
+}
+
+function calculate() {
+  if (!validate()) return;
+  const currentAge = parseFloat(document.getElementById('current-age').value);
+  const retireAge = parseFloat(document.getElementById('retire-age').value);
+  const monthlySave = parseFloat(document.getElementById('monthly-save').value);
+  const currentSave = parseFloat(document.getElementById('current-save').value) || 0;
+  const annualReturn = parseFloat(document.getElementById('return-rate').value) / 100;
+  const monthlyNeed = parseFloat(document.getElementById('monthly-need').value);
+  const inflation = (parseFloat(document.getElementById('inflation').value) || 3) / 100;
+  const yearsToRetire = retireAge - currentAge;
+  const monthlyRate = annualReturn / 12;
+  const months = yearsToRetire * 12;
+
+  // Corpus at retirement
+  const existingGrown = currentSave * Math.pow(1 + annualReturn, yearsToRetire);
+  const sipCorpus = monthlySave > 0 ? monthlySave * (Math.pow(1 + monthlyRate, months) - 1) / monthlyRate * (1 + monthlyRate) : 0;
+  const totalCorpus = existingGrown + sipCorpus;
+
+  // Inflation-adjusted monthly need
+  const adjMonthlyNeed = monthlyNeed * Math.pow(1 + inflation, yearsToRetire);
+  // Required corpus (25x annual expenses — 4% rule)
+  const requiredCorpus = adjMonthlyNeed * 12 * 25;
+  // Monthly from corpus at 4% withdrawal
+  const monthlyFromCorpus = totalCorpus * 0.04 / 12;
+  const shortfall = totalCorpus - requiredCorpus;
+  const onTrack = totalCorpus >= requiredCorpus;
+
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('results-content').style.display = 'block';
+  document.getElementById('chart-panel').style.display = 'block';
+
+  const badge = document.getElementById('status-badge');
+  badge.className = 'status-badge ' + (onTrack ? 'good' : 'warn');
+  badge.textContent = onTrack ? '✅ You are on track for retirement!' : '⚠️ Shortfall detected — consider saving more';
+
+  document.getElementById('res-corpus').textContent = fmt(totalCorpus);
+  document.getElementById('res-required').textContent = fmt(requiredCorpus);
+  document.getElementById('res-years').textContent = yearsToRetire + ' years';
+  document.getElementById('res-adj-need').textContent = fmt(adjMonthlyNeed) + '/mo';
+  document.getElementById('res-monthly-corpus').textContent = fmt(monthlyFromCorpus) + '/mo';
+  document.getElementById('res-shortfall').textContent = (shortfall >= 0 ? '+' : '') + fmt(shortfall);
+  document.getElementById('res-shortfall').style.color = onTrack ? '#4ade80' : '#f87171';
+  document.getElementById('res-shortfall-sub').textContent = onTrack ? 'Surplus above target' : 'Additional corpus needed';
+
+  // Chart data
+  const labels = [], corpusData = [], requiredData = [];
+  for (let y = 0; y <= yearsToRetire; y++) {
+    const m = y * 12;
+    const eg = currentSave * Math.pow(1 + annualReturn, y);
+    const sc = monthlySave > 0 && monthlyRate > 0 ? monthlySave * (Math.pow(1 + monthlyRate, m) - 1) / monthlyRate * (1 + monthlyRate) : monthlySave * m;
+    const adjNeed = monthlyNeed * Math.pow(1 + inflation, y);
+    labels.push('Age ' + (currentAge + y));
+    corpusData.push(Math.round(eg + sc));
+    requiredData.push(Math.round(adjNeed * 12 * 25));
+  }
+
+  const ctx = document.getElementById('retChart').getContext('2d');
+  const gradGold = ctx.createLinearGradient(0,0,0,270);
+  gradGold.addColorStop(0,'rgba(232,201,107,0.45)');
+  gradGold.addColorStop(1,'rgba(232,201,107,0.02)');
+  const gradRed = ctx.createLinearGradient(0,0,0,270);
+  gradRed.addColorStop(0,'rgba(248,113,113,0.25)');
+  gradRed.addColorStop(1,'rgba(248,113,113,0.02)');
+
+  if (chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, {
+    type:'line',
+    data:{labels,datasets:[
+      {label:'Your Corpus',data:corpusData,borderColor:'#E8C96B',backgroundColor:gradGold,borderWidth:2.5,fill:true,tension:0.4,pointRadius:0,pointHoverRadius:5},
+      {label:'Required Corpus',data:requiredData,borderColor:'#f87171',backgroundColor:gradRed,borderWidth:2,fill:true,tension:0.4,pointRadius:0,pointHoverRadius:5,borderDash:[6,3]}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      animation:{duration:700,easing:'easeInOutQuart'},
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#8A95A3',font:{family:'DM Sans',size:11},boxWidth:12}},
+        tooltip:{backgroundColor:'#0E1F3D',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#C9A84C',bodyColor:'#F8F5EE',padding:12,callbacks:{label:c=>' '+c.dataset.label+': '+fmt(c.raw)}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8A95A3',font:{family:'DM Sans',size:10},maxTicksLimit:10}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8A95A3',font:{family:'DM Sans',size:10},callback:v=>'$'+(v>=1e6?(v/1e6).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v)}}
+      }
+    }
+  });
+}
+
+document.querySelectorAll('.field').forEach(f => f.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); }));
+</script>
+</body>
+</html>
