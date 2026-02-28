@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DCF Valuation Calculator — Finingale</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--navy2:#0E1F3D;--navy3:#162847;--navy4:#1a2f52;
+  --gold:#C9A84C;--gold2:#E8C96B;--gold3:#f5e09a;
+  --white:#F8F5EE;--grey:#8A95A3;--grey2:#5a6472;
+  --green:#4ade80;--red:#f87171;--blue:#60a5fa;--purple:#c084fc;--yellow:#fbbf24;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);min-height:100vh;padding:40px 24px;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0;}
+.wrapper{max-width:1100px;margin:0 auto;position:relative;z-index:1;}
+
+/* Header */
+.calc-header{margin-bottom:36px;}
+.calc-tag{font-size:0.68rem;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.calc-tag::before{content:'';width:22px;height:1px;background:var(--gold);}
+.calc-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;line-height:1.1;margin-bottom:8px;}
+.calc-title span{color:var(--gold);}
+.calc-desc{font-size:0.88rem;color:var(--grey);font-weight:300;max-width:660px;line-height:1.8;}
+
+/* Tab Nav */
+.tab-nav{display:flex;gap:4px;margin-bottom:24px;background:var(--navy2);border:1px solid rgba(201,168,76,0.13);border-radius:8px;padding:6px;}
+.tab-btn{flex:1;padding:10px 16px;border:none;background:transparent;color:var(--grey);font-size:0.78rem;font-weight:600;font-family:'DM Sans',sans-serif;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:5px;transition:all 0.2s;text-align:center;}
+.tab-btn.active{background:var(--gold);color:var(--navy);}
+.tab-btn:hover:not(.active){color:var(--gold);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* Layout */
+.calc-body{display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start;}
+@media(max-width:900px){.calc-body{grid-template-columns:1fr;}}
+
+/* Panels */
+.panel{background:var(--navy2);border:1px solid rgba(201,168,76,0.13);border-radius:8px;padding:28px;}
+.panel+.panel{margin-top:20px;}
+.panel-title{font-size:0.68rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid rgba(201,168,76,0.12);}
+.section-label{font-size:0.66rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin:18px 0 12px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:rgba(201,168,76,0.12);}
+
+/* Inputs */
+.input-group{margin-bottom:16px;}
+.input-label{font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);margin-bottom:5px;display:block;}
+.input-hint{font-size:0.63rem;color:rgba(138,149,163,0.55);margin-bottom:5px;display:block;}
+.input-wrap{position:relative;display:flex;align-items:center;}
+.input-prefix{position:absolute;left:14px;font-size:0.88rem;font-weight:600;color:var(--gold);pointer-events:none;z-index:1;}
+.input-suffix{position:absolute;right:14px;font-size:0.88rem;font-weight:500;color:var(--grey);pointer-events:none;z-index:1;}
+.field{width:100%;padding:11px 14px;background:var(--navy3);border:1px solid rgba(201,168,76,0.18);border-radius:5px;color:var(--white);font-size:0.92rem;font-weight:500;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;-moz-appearance:textfield;}
+.field::-webkit-outer-spin-button,.field::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.field:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.1);}
+.field.has-prefix{padding-left:32px;}
+.field.has-suffix{padding-right:42px;}
+.field.error{border-color:var(--red);}
+.select-field{width:100%;padding:11px 14px;background:var(--navy3);border:1px solid rgba(201,168,76,0.18);border-radius:5px;color:var(--white);font-size:0.92rem;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;-webkit-appearance:none;}
+.select-field:focus{border-color:var(--gold);}
+.error-msg{font-size:0.63rem;color:var(--red);margin-top:4px;display:none;}
+.error-msg.show{display:block;}
+
+/* FCF rows */
+.fcf-grid{display:grid;grid-template-columns:60px 1fr;gap:8px;margin-bottom:10px;align-items:center;}
+.fcf-year-tag{font-size:0.72rem;font-weight:700;color:var(--gold);text-align:center;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.15);border-radius:3px;padding:7px 4px;}
+
+/* Buttons */
+.calc-btn{width:100%;margin-top:10px;padding:14px;background:var(--gold);color:var(--navy);font-size:0.85rem;font-weight:700;font-family:'DM Sans',sans-serif;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:5px;cursor:pointer;transition:background 0.2s,transform 0.15s;}
+.calc-btn:hover{background:var(--gold2);transform:translateY(-1px);}
+.secondary-btn{background:transparent;border:1px solid rgba(201,168,76,0.3);color:var(--gold);margin-top:8px;}
+.secondary-btn:hover{background:rgba(201,168,76,0.07);transform:translateY(-1px);}
+
+/* Empty state */
+.empty-state{text-align:center;padding:48px 20px;color:var(--grey);}
+.empty-state-icon{font-size:2.8rem;margin-bottom:14px;opacity:0.4;}
+.empty-state-text{font-size:0.85rem;line-height:1.7;}
+
+/* Valuation hero */
+.val-hero{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;}
+@media(max-width:700px){.val-hero{grid-template-columns:1fr;}}
+.val-card{border-radius:7px;padding:20px;text-align:center;}
+.val-card.intrinsic{background:linear-gradient(135deg,rgba(201,168,76,0.12),rgba(201,168,76,0.04));border:1px solid rgba(201,168,76,0.4);}
+.val-card.market{background:var(--navy3);border:1px solid rgba(96,165,250,0.25);}
+.val-card.margin{background:var(--navy3);border:1px solid rgba(74,222,128,0.25);}
+.val-card.margin.negative{border-color:rgba(248,113,113,0.25);}
+.val-card-label{font-size:0.62rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--grey);margin-bottom:8px;}
+.val-card-value{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;}
+.val-card.intrinsic .val-card-value{color:var(--gold2);}
+.val-card.market .val-card-value{color:var(--blue);}
+.val-card-sub{font-size:0.68rem;color:var(--grey);margin-top:6px;}
+.margin-val{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;}
+
+/* Verdict */
+.verdict-box{padding:14px 18px;border-radius:6px;font-size:0.82rem;font-weight:500;line-height:1.65;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;}
+.verdict-box.undervalued{background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.25);color:var(--green);}
+.verdict-box.overvalued{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);color:var(--red);}
+.verdict-box.fair{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);color:var(--yellow);}
+.verdict-icon{font-size:1.1rem;flex-shrink:0;}
+
+/* Results grid */
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.result-card{background:var(--navy3);border:1px solid rgba(201,168,76,0.1);border-radius:5px;padding:14px;}
+.result-label{font-size:0.62rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--grey);margin-bottom:5px;}
+.result-value{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--white);}
+.result-value.good{color:var(--green);}
+.result-value.bad{color:var(--red);}
+.result-sub{font-size:0.63rem;color:var(--grey);margin-top:2px;}
+
+/* Charts */
+.chart-container{position:relative;height:280px;margin-bottom:20px;}
+.chart-sm{position:relative;height:220px;}
+
+/* Scenarios tab */
+.scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+@media(max-width:700px){.scenario-grid{grid-template-columns:1fr;}}
+.scenario-panel{border-radius:7px;padding:20px;}
+.scenario-panel.bear{background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.25);}
+.scenario-panel.base{background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.35);}
+.scenario-panel.bull{background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.25);}
+.sc-title{font-size:0.7rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:14px;}
+.scenario-panel.bear .sc-title{color:var(--red);}
+.scenario-panel.base .sc-title{color:var(--gold2);}
+.scenario-panel.bull .sc-title{color:var(--green);}
+.sc-field-group{margin-bottom:10px;}
+.sc-field-label{font-size:0.62rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);margin-bottom:4px;display:block;}
+.sc-field{width:100%;padding:8px 10px;background:var(--navy2);border:1px solid rgba(201,168,76,0.15);border-radius:4px;color:var(--white);font-size:0.85rem;font-family:'DM Sans',sans-serif;outline:none;-moz-appearance:textfield;}
+.sc-field::-webkit-outer-spin-button,.sc-field::-webkit-inner-spin-button{-webkit-appearance:none;}
+.sc-field:focus{border-color:var(--gold);}
+.sc-result{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);text-align:center;}
+.sc-result-val{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;}
+.scenario-panel.bear .sc-result-val{color:var(--red);}
+.scenario-panel.base .sc-result-val{color:var(--gold2);}
+.scenario-panel.bull .sc-result-val{color:var(--green);}
+.sc-result-sub{font-size:0.65rem;color:var(--grey);margin-top:4px;}
+
+/* Sensitivity table */
+.sens-wrap{overflow-x:auto;}
+.sens-table{width:100%;border-collapse:collapse;font-size:0.72rem;white-space:nowrap;}
+.sens-table th{padding:8px 12px;background:var(--navy3);color:var(--gold);font-size:0.6rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;border:1px solid rgba(255,255,255,0.06);}
+.sens-table td{padding:8px 12px;border:1px solid rgba(255,255,255,0.05);text-align:center;font-weight:600;font-family:'Playfair Display',serif;}
+.sens-cell-high{background:rgba(74,222,128,0.15);color:var(--green);}
+.sens-cell-mid{background:rgba(201,168,76,0.1);color:var(--gold2);}
+.sens-cell-low{background:rgba(248,113,113,0.12);color:var(--red);}
+.sens-axis-label{font-size:0.62rem;color:var(--grey);text-align:center;margin-bottom:6px;}
+
+/* Waterfall */
+.waterfall-labels{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;}
+.wf-legend{display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--grey);}
+.wf-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+/* Advanced CTA */
+.advanced-cta{margin-top:32px;background:linear-gradient(135deg,var(--navy2),var(--navy3));border:1px solid rgba(201,168,76,0.25);border-radius:10px;padding:32px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;}
+@media(max-width:700px){.advanced-cta{grid-template-columns:1fr;}}
+.cta-tag{font-size:0.62rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.cta-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;margin-bottom:10px;line-height:1.2;}
+.cta-title span{color:var(--gold);}
+.cta-features{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
+.cta-feature{font-size:0.7rem;padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:3px;color:var(--gold2);}
+.cta-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--gold);color:var(--navy);font-size:0.82rem;font-weight:700;font-family:'DM Sans',sans-serif;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:5px;cursor:pointer;text-decoration:none;white-space:nowrap;transition:background 0.2s,transform 0.15s;}
+.cta-btn:hover{background:var(--gold2);transform:translateY(-1px);}
+.cta-btn-arrow{font-size:1rem;}
+
+/* Footer */
+.calc-footer{margin-top:28px;padding-top:14px;border-top:1px solid rgba(201,168,76,0.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.brand{font-family:'Playfair Display',serif;font-size:1rem;font-weight:900;}
+.brand span{color:var(--gold);}
+.disclaimer{font-size:0.67rem;color:var(--grey);}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="calc-header">
+    <div class="calc-tag">Calculator 16 · Finingale</div>
+    <h1 class="calc-title">DCF <span>Valuation</span></h1>
+    <p class="calc-desc">Discounted Cash Flow — the foundation of fundamental investing. Project future free cash flows, discount them at your required rate of return, and find the intrinsic value of any business. Includes scenario analysis and a full sensitivity table.</p>
+  </div>
+
+  <!-- Tab Nav -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('dcf',this)">📐 DCF Model</button>
+    <button class="tab-btn" onclick="switchTab('scenarios',this)">📊 Scenarios</button>
+    <button class="tab-btn" onclick="switchTab('sensitivity',this)">🔢 Sensitivity</button>
+  </div>
+
+  <!-- ════════════════════════
+       TAB 1: DCF MODEL
+  ════════════════════════ -->
+  <div id="tab-dcf" class="tab-content active">
+    <div class="calc-body">
+      <!-- LEFT: INPUTS -->
+      <div>
+        <div class="panel">
+          <div class="panel-title">Company & Market Data</div>
+
+          <div class="input-group">
+            <label class="input-label">Industry / Sector</label>
+            <span class="input-hint">Pre-fills typical assumptions for this sector</span>
+            <select class="select-field" id="industry" onchange="applyIndustryDefaults()">
+              <option value="custom">Custom / Other</option>
+              <option value="tech">Technology</option>
+              <option value="banking">Banking & Financial Services</option>
+              <option value="consumer">Consumer Goods & Retail</option>
+              <option value="healthcare">Healthcare & Pharma</option>
+              <option value="energy">Energy & Oil & Gas</option>
+              <option value="realestate">Real Estate</option>
+              <option value="industrials">Industrials & Manufacturing</option>
+              <option value="telecom">Telecom & Media</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Current Share Price</label>
+            <span class="input-hint">Market price — to compare vs intrinsic value</span>
+            <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="share-price" class="field has-prefix" placeholder="e.g. 150" min="0" step="any"/></div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Shares Outstanding</label>
+            <span class="input-hint">Total shares in millions</span>
+            <div class="input-wrap"><input type="number" id="shares" class="field has-suffix" placeholder="e.g. 500" min="0" step="any"/><span class="input-suffix">M</span></div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Net Debt</label>
+            <span class="input-hint">Total debt minus cash (enter negative if net cash)</span>
+            <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="net-debt" class="field has-prefix" placeholder="e.g. 2000 (millions)" step="any"/></div>
+          </div>
+
+          <div class="section-label">Projection Period</div>
+
+          <div class="input-group">
+            <label class="input-label">Base Year FCF</label>
+            <span class="input-hint">Free Cash Flow in most recent year (millions)</span>
+            <div class="input-wrap"><span class="input-prefix">$</span><input type="number" id="base-fcf" class="field has-prefix" placeholder="e.g. 500" step="any"/></div>
+            <div class="error-msg" id="err-base-fcf">Please enter a valid FCF</div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Projection Years</label>
+            <span class="input-hint">Number of years to project (typically 5–10)</span>
+            <div class="input-wrap"><input type="number" id="proj-years" class="field" placeholder="e.g. 10" min="3" max="15" step="1" value="10"/></div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">FCF Growth Rate (Years 1–5)</label>
+            <span class="input-hint">Near-term annual growth in free cash flow</span>
+            <div class="input-wrap"><input type="number" id="growth1" class="field has-suffix" placeholder="e.g. 15" step="any"/><span class="input-suffix">%</span></div>
+            <div class="error-msg" id="err-growth1">Please enter a valid growth rate</div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">FCF Growth Rate (Years 6+)</label>
+            <span class="input-hint">Later-stage growth — usually lower than early years</span>
+            <div class="input-wrap"><input type="number" id="growth2" class="field has-suffix" placeholder="e.g. 8" step="any"/><span class="input-suffix">%</span></div>
+          </div>
+
+          <div class="section-label">Discount & Terminal Value</div>
+
+          <div class="input-group">
+            <label class="input-label">Discount Rate (WACC)</label>
+            <span class="input-hint">Required rate of return — use our WACC calculator</span>
+            <div class="input-wrap"><input type="number" id="wacc" class="field has-suffix" placeholder="e.g. 10" min="1" max="50" step="any"/><span class="input-suffix">%</span></div>
+            <div class="error-msg" id="err-wacc">Please enter a valid discount rate</div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Terminal Value Method</label>
+            <select class="select-field" id="tv-method" onchange="toggleTVMethod()">
+              <option value="gordon">Gordon Growth Model (perpetuity)</option>
+              <option value="multiple">Exit Multiple (EV/EBITDA)</option>
+            </select>
+          </div>
+
+          <div id="tv-gordon">
+            <div class="input-group">
+              <label class="input-label">Terminal Growth Rate</label>
+              <span class="input-hint">Perpetual growth rate — typically GDP growth (2–3%)</span>
+              <div class="input-wrap"><input type="number" id="terminal-g" class="field has-suffix" placeholder="e.g. 2.5" step="any"/><span class="input-suffix">%</span></div>
+              <div class="error-msg" id="err-terminal-g">Must be less than WACC</div>
+            </div>
+          </div>
+
+          <div id="tv-multiple" style="display:none;">
+            <div class="input-group">
+              <label class="input-label">Exit EV/EBITDA Multiple</label>
+              <span class="input-hint">Industry exit multiple applied to final year EBITDA</span>
+              <div class="input-wrap"><input type="number" id="exit-multiple" class="field has-suffix" placeholder="e.g. 12" min="1" step="any"/><span class="input-suffix">×</span></div>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Final Year EBITDA Margin</label>
+              <span class="input-hint">Estimated EBITDA as % of revenue in terminal year</span>
+              <div class="input-wrap"><input type="number" id="ebitda-margin" class="field has-suffix" placeholder="e.g. 25" step="any"/><span class="input-suffix">%</span></div>
+            </div>
+          </div>
+
+          <button class="calc-btn" onclick="calcDCF()">Calculate Intrinsic Value →</button>
+          <button class="calc-btn secondary-btn" onclick="resetToIndustry()">Reset to Industry Defaults ↺</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: RESULTS -->
+      <div>
+        <div class="panel">
+          <div class="panel-title">Valuation Results</div>
+          <div class="empty-state" id="dcf-empty">
+            <div class="empty-state-icon">🏢</div>
+            <div class="empty-state-text">Select an industry, enter your assumptions<br/>and click <strong style="color:var(--gold)">Calculate Intrinsic Value</strong> to value the business.</div>
+          </div>
+          <div id="dcf-results" style="display:none;">
+
+            <!-- Hero cards -->
+            <div class="val-hero">
+              <div class="val-card intrinsic">
+                <div class="val-card-label">Intrinsic Value Per Share</div>
+                <div class="val-card-value" id="res-intrinsic">—</div>
+                <div class="val-card-sub" id="res-intrinsic-sub">DCF fair value</div>
+              </div>
+              <div class="val-card market">
+                <div class="val-card-label">Current Market Price</div>
+                <div class="val-card-value" id="res-market">—</div>
+                <div class="val-card-sub">What the market pays today</div>
+              </div>
+              <div class="val-card margin" id="mos-card">
+                <div class="val-card-label">Margin of Safety</div>
+                <div class="margin-val" id="res-mos">—</div>
+                <div class="val-card-sub" id="res-mos-sub">—</div>
+              </div>
+            </div>
+
+            <!-- Verdict -->
+            <div class="verdict-box" id="verdict-box">
+              <span class="verdict-icon">—</span>
+              <span id="verdict-text">—</span>
+            </div>
+
+            <!-- Key metrics -->
+            <div class="results-grid">
+              <div class="result-card">
+                <div class="result-label">Enterprise Value</div>
+                <div class="result-value" id="res-ev">—</div>
+                <div class="result-sub">PV of FCFs + Terminal Value</div>
+              </div>
+              <div class="result-card">
+                <div class="result-label">Equity Value</div>
+                <div class="result-value" id="res-equity-val">—</div>
+                <div class="result-sub">EV minus net debt</div>
+              </div>
+              <div class="result-card">
+                <div class="result-label">PV of FCF Projections</div>
+                <div class="result-value" id="res-pv-fcf">—</div>
+                <div class="result-sub">Discounted cash flows only</div>
+              </div>
+              <div class="result-card">
+                <div class="result-label">PV of Terminal Value</div>
+                <div class="result-value" id="res-pv-tv">—</div>
+                <div class="result-sub" id="res-tv-pct">% of total enterprise value</div>
+              </div>
+              <div class="result-card">
+                <div class="result-label">Implied P/E</div>
+                <div class="result-value" id="res-pe">—</div>
+                <div class="result-sub">At intrinsic value price</div>
+              </div>
+              <div class="result-card">
+                <div class="result-label">WACC Used</div>
+                <div class="result-value" id="res-wacc-used">—</div>
+                <div class="result-sub">Discount rate applied</div>
+              </div>
+            </div>
+
+            <!-- Waterfall chart -->
+            <div style="font-size:0.65rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Free Cash Flow Projections</div>
+            <div class="chart-container"><canvas id="dcfChart"></canvas></div>
+
+            <!-- Value breakdown donut -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;">
+              <div>
+                <div style="font-size:0.65rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Value Components</div>
+                <div class="chart-sm"><canvas id="donutChart"></canvas></div>
+              </div>
+              <div>
+                <div style="font-size:0.65rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Year-by-Year FCF Schedule</div>
+                <div style="max-height:220px;overflow-y:auto;" id="fcf-schedule"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════
+       TAB 2: SCENARIOS
+  ════════════════════════ -->
+  <div id="tab-scenarios" class="tab-content">
+    <div class="panel" style="margin-bottom:20px;">
+      <div class="panel-title">Scenario Analysis — Bear / Base / Bull</div>
+      <p style="font-size:0.78rem;color:var(--grey);margin-bottom:20px;line-height:1.7;">Adjust growth and discount rate assumptions for each scenario. All three use the same base FCF from the main model.</p>
+      <div class="scenario-grid">
+        <!-- Bear -->
+        <div class="scenario-panel bear">
+          <div class="sc-title">🐻 Bear Case</div>
+          <div class="sc-field-group"><label class="sc-field-label">Growth Yr 1–5 %</label><input type="number" id="bear-g1" class="sc-field" placeholder="e.g. 5" step="any"/></div>
+          <div class="sc-field-group"><label class="sc-field-label">Growth Yr 6+ %</label><input type="number" id="bear-g2" class="sc-field" placeholder="e.g. 2" step="any"/></div>
+          <div class="sc-field-group"><label class="sc-field-label">WACC %</label><input type="number" id="bear-wacc" class="sc-field" placeholder="e.g. 12" step="any"/></div>
+          <div class="sc-field-group"><label class="sc-field-label">Terminal Growth %</label><input type="number" id="bear-tg" class="sc-field" placeholder="e.g. 1.5" step="any"/></div>
+          <div class="sc-result"><div class="sc-result-val" id="sc-bear-val">—</div><div class="sc-result-sub">Per share intrinsic value</div></div>
+        </div>
+        <!-- Base -->
+        <div class="scenario-panel base">
+          <div class="sc-title">⚖️ Base Case</div>
+          <div class="sc-field-group"><label class="sc-field-label">Growth Yr 1–5 %</label><input type="number" id="base-g1" class="sc-field" placeholder="e.g. 12" step="any"/></div>
+          <div class="sc-field-group"><label class="sc-field-label">Growth Yr 6+ %</label><input type="number" id="base-g2" class="sc-field" placeholder="e.g. 6" step="any"/></div>
+          <div class="sc-field-group"><label class="sc-field-label">WACC %</label><input type="number" id="base-wacc" class="sc-field" placeholder="e.g. 10" step="any"/></div>
+          <div class="sc-field-group"><label class="sc-field-label">Terminal Growth %</label><input type="number" id="base-tg" class="sc-field" placeholder="e.g. 2.5" step="any"/></div>
+          <div class="sc-result"><div class="sc-result-val" id="sc-base-val">—</div><div class="sc-result-sub">Per share intrinsic value</div></div>
+        </div>
+        <!-- Bull -->
+        <div class="scenario-panel bull">
+          <div class="sc-title">🐂 Bull Case</div>
+          <div class="sc-field-group"><label class="sc-field-label">Growth Yr 1–5 %</label><input type="number" id="bull-g1" class="sc-field" placeholder="e.g. 20" step="any"/></div>
+          <div class="sc-field-group"><label class="sc-field-label">Growth Yr 6+ %</label><input type="number" id="bull-g2" class="sc-field" placeholder="e.g. 10" step="any"/></div>
+          <div class="sc-field-group"><label class="sc-field-label">WACC %</label><input type="number" id="bull-wacc" class="sc-field" placeholder="e.g. 8" step="any"/></div>
+          <div class="sc-field-group"><label class="sc-field-label">Terminal Growth %</label><input type="number" id="bull-tg" class="sc-field" placeholder="e.g. 3.5" step="any"/></div>
+          <div class="sc-result"><div class="sc-result-val" id="sc-bull-val">—</div><div class="sc-result-sub">Per share intrinsic value</div></div>
+        </div>
+      </div>
+      <button class="calc-btn" style="max-width:300px;" onclick="calcScenarios()">Run Scenarios →</button>
+    </div>
+    <div class="panel" id="sc-chart-panel" style="display:none;">
+      <div class="panel-title">Scenario Value Comparison</div>
+      <div class="chart-container"><canvas id="scChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════
+       TAB 3: SENSITIVITY
+  ════════════════════════ -->
+  <div id="tab-sensitivity" class="tab-content">
+    <div class="panel">
+      <div class="panel-title">Sensitivity Analysis — Intrinsic Value vs WACC & Terminal Growth Rate</div>
+      <p style="font-size:0.78rem;color:var(--grey);margin-bottom:20px;line-height:1.7;">
+        Shows how the intrinsic value per share changes across different combinations of WACC and terminal growth rate. Run the main DCF model first. Green cells = above current market price (undervalued). Red cells = below market price.
+      </p>
+      <div class="empty-state" id="sens-empty">
+        <div class="empty-state-icon">🔢</div>
+        <div class="empty-state-text">Run the <strong style="color:var(--gold)">DCF Model</strong> first, then come back here<br/>to see the full sensitivity table.</div>
+      </div>
+      <div id="sens-content" style="display:none;">
+        <div class="sens-axis-label" id="sens-axis-label">WACC (columns) vs Terminal Growth Rate (rows) — values are intrinsic value per share ($)</div>
+        <div class="sens-wrap"><table class="sens-table" id="sens-table"></table></div>
+        <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.7rem;color:var(--grey);"><div style="width:12px;height:12px;background:rgba(74,222,128,0.3);border-radius:2px;"></div> Undervalued vs market price</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.7rem;color:var(--grey);"><div style="width:12px;height:12px;background:rgba(201,168,76,0.15);border-radius:2px;"></div> Within 20% of market price</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.7rem;color:var(--grey);"><div style="width:12px;height:12px;background:rgba(248,113,113,0.2);border-radius:2px;"></div> Overvalued vs market price</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════
+       ADVANCED DCF CTA
+  ════════════════════════ -->
+  <div class="advanced-cta">
+    <div>
+      <div class="cta-tag">Advanced Modelling · Finingale</div>
+      <div class="cta-title">Take Your Valuation <span>Further</span></div>
+      <p style="font-size:0.78rem;color:var(--grey);margin-bottom:14px;line-height:1.7;">This calculator gives you a fast, clean DCF. Our Advanced DCF Modelling tool goes deeper — built for analysts, investors, and anyone who needs institutional-grade output.</p>
+      <div class="cta-features">
+        <span class="cta-feature">📊 Excel Model Export</span>
+        <span class="cta-feature">🏭 Industry-Specific Methods</span>
+        <span class="cta-feature">🤖 AI-Assisted Inputs</span>
+        <span class="cta-feature">📑 Auto PowerPoint Deck</span>
+        <span class="cta-feature">🔄 Multi-Scenario Builder</span>
+        <span class="cta-feature">📈 Live Data Integration</span>
+      </div>
+    </div>
+    <a href="calc-16b-dcf-advanced.html" class="cta-btn">Open Advanced Model <span class="cta-btn-arrow">→</span></a>
+  </div>
+
+  <div class="calc-footer">
+    <div class="brand">Fining<span>ale</span></div>
+    <div class="disclaimer">For educational purposes only. Not financial advice. Intrinsic value estimates are highly sensitive to input assumptions.</div>
+  </div>
+</div>
+
+<script>
+// ─── UTILS ───────────────────────────────
+const fmt   = n => '$' + parseFloat(Math.abs(n).toFixed(2)).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtM  = n => '$' + Math.round(n).toLocaleString('en-US') + 'M';
+const fmtB  = n => { const a=Math.abs(n); return (n<0?'-':'')+'$'+(a>=1000?(a/1000).toFixed(2)+'B':(a).toFixed(0)+'M'); };
+const fmtP  = n => n.toFixed(2)+'%';
+let dcfChart=null, donutChart=null, scChart=null;
+let lastResult = null; // store for sensitivity
+
+// ─── INDUSTRY DEFAULTS ───────────────────
+const industryDefaults = {
+  custom:      { g1:12,  g2:5,   wacc:10,  tg:2.5, method:'gordon' },
+  tech:        { g1:20,  g2:10,  wacc:9,   tg:3,   method:'gordon' },
+  banking:     { g1:8,   g2:4,   wacc:11,  tg:2,   method:'gordon' },
+  consumer:    { g1:8,   g2:4,   wacc:9,   tg:2,   method:'multiple', exitMul:12 },
+  healthcare:  { g1:12,  g2:6,   wacc:9,   tg:2.5, method:'gordon' },
+  energy:      { g1:6,   g2:2,   wacc:10,  tg:1.5, method:'multiple', exitMul:8 },
+  realestate:  { g1:5,   g2:3,   wacc:8,   tg:2,   method:'gordon' },
+  industrials: { g1:7,   g2:3,   wacc:9,   tg:2,   method:'multiple', exitMul:10 },
+  telecom:     { g1:6,   g2:3,   wacc:9,   tg:2,   method:'gordon' },
+};
+
+function applyIndustryDefaults() {
+  const d = industryDefaults[document.getElementById('industry').value];
+  if (!d) return;
+  document.getElementById('growth1').value   = d.g1;
+  document.getElementById('growth2').value   = d.g2;
+  document.getElementById('wacc').value      = d.wacc;
+  document.getElementById('terminal-g').value= d.tg;
+  document.getElementById('tv-method').value = d.method;
+  if (d.exitMul) document.getElementById('exit-multiple').value = d.exitMul;
+  toggleTVMethod();
+}
+
+function resetToIndustry() { applyIndustryDefaults(); }
+
+function toggleTVMethod() {
+  const method = document.getElementById('tv-method').value;
+  document.getElementById('tv-gordon').style.display   = method==='gordon'   ? 'block' : 'none';
+  document.getElementById('tv-multiple').style.display = method==='multiple' ? 'block' : 'none';
+}
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function showError(id, show) {
+  const el=document.getElementById('err-'+id), field=document.getElementById(id);
+  if(!el) return;
+  show ? (el.classList.add('show'), field&&field.classList.add('error'))
+       : (el.classList.remove('show'), field&&field.classList.remove('error'));
+}
+
+// ─── CORE DCF ENGINE ─────────────────────
+function runDCF(baseFCF, g1, g2, wacc, terminalG, projYears, method, exitMul, ebitdaMargin) {
+  const r = wacc / 100;
+  const fcfs = [], pvFCFs = [];
+  let fcf = baseFCF;
+
+  for (let y = 1; y <= projYears; y++) {
+    const g = y <= 5 ? g1/100 : g2/100;
+    fcf = fcf * (1 + g);
+    const pv = fcf / Math.pow(1+r, y);
+    fcfs.push(fcf);
+    pvFCFs.push(pv);
+  }
+
+  const pvSum = pvFCFs.reduce((a,b)=>a+b, 0);
+  let terminalValue, pvTV;
+
+  if (method === 'gordon') {
+    const tg = terminalG / 100;
+    if (tg >= r) return null; // invalid
+    terminalValue = fcfs[projYears-1] * (1+tg) / (r - tg);
+  } else {
+    const finalRevenue = fcfs[projYears-1] / (ebitdaMargin/100);
+    const finalEBITDA  = fcfs[projYears-1] / (ebitdaMargin/100) * (ebitdaMargin/100);
+    terminalValue = finalEBITDA * exitMul;
+  }
+
+  pvTV = terminalValue / Math.pow(1+r, projYears);
+  const enterpriseValue = pvSum + pvTV;
+
+  return { fcfs, pvFCFs, pvSum, terminalValue, pvTV, enterpriseValue };
+}
+
+// ─── MAIN DCF CALC ───────────────────────
+function calcDCF() {
+  const baseFCF   = parseFloat(document.getElementById('base-fcf').value);
+  const g1        = parseFloat(document.getElementById('growth1').value);
+  const g2        = parseFloat(document.getElementById('growth2').value)||g1;
+  const wacc      = parseFloat(document.getElementById('wacc').value);
+  const projYears = parseInt(document.getElementById('proj-years').value)||10;
+  const method    = document.getElementById('tv-method').value;
+  const terminalG = parseFloat(document.getElementById('terminal-g').value)||2.5;
+  const exitMul   = parseFloat(document.getElementById('exit-multiple').value)||10;
+  const ebitdaMgn = parseFloat(document.getElementById('ebitda-margin').value)||20;
+  const shares    = parseFloat(document.getElementById('shares').value)||0;
+  const netDebt   = parseFloat(document.getElementById('net-debt').value)||0;
+  const mktPrice  = parseFloat(document.getElementById('share-price').value)||0;
+
+  let valid = true;
+  if (isNaN(baseFCF))  { showError('base-fcf', true); valid=false; } else showError('base-fcf', false);
+  if (isNaN(g1))       { showError('growth1',  true); valid=false; } else showError('growth1',  false);
+  if (isNaN(wacc)||wacc<=0) { showError('wacc', true); valid=false; } else showError('wacc', false);
+  if (method==='gordon' && terminalG>=wacc) { showError('terminal-g',true); valid=false; } else showError('terminal-g',false);
+  if (!valid) return;
+
+  const res = runDCF(baseFCF, g1, g2, wacc, terminalG, projYears, method, exitMul, ebitdaMgn);
+  if (!res) { alert('Terminal growth rate must be less than WACC.'); return; }
+
+  const { fcfs, pvFCFs, pvSum, pvTV, enterpriseValue } = res;
+  const equityValue   = enterpriseValue - netDebt;
+  const intrinsicPS   = shares > 0 ? equityValue / shares : 0;
+  const mos           = mktPrice > 0 && intrinsicPS > 0 ? ((intrinsicPS - mktPrice) / mktPrice * 100) : 0;
+  const tvPct         = (pvTV / enterpriseValue * 100).toFixed(1);
+
+  // Store for sensitivity
+  lastResult = { baseFCF, g1, g2, wacc, terminalG, projYears, method, exitMul, ebitdaMgn, shares, netDebt, mktPrice };
+
+  document.getElementById('dcf-empty').style.display   = 'none';
+  document.getElementById('dcf-results').style.display = 'block';
+
+  document.getElementById('res-intrinsic').textContent     = intrinsicPS > 0 ? fmt(intrinsicPS) : fmtB(equityValue);
+  document.getElementById('res-intrinsic-sub').textContent = intrinsicPS > 0 ? 'Per share fair value' : 'Total equity value';
+  document.getElementById('res-market').textContent        = mktPrice > 0 ? fmt(mktPrice) : 'Not entered';
+  document.getElementById('res-ev').textContent            = fmtB(enterpriseValue);
+  document.getElementById('res-equity-val').textContent    = fmtB(equityValue);
+  document.getElementById('res-pv-fcf').textContent        = fmtB(pvSum);
+  document.getElementById('res-pv-tv').textContent         = fmtB(pvTV);
+  document.getElementById('res-tv-pct').textContent        = tvPct + '% of enterprise value';
+  document.getElementById('res-wacc-used').textContent     = fmtP(wacc);
+
+  // Implied P/E (rough: equity value / (baseFCF * 1.1))
+  const impliedPE = equityValue > 0 && baseFCF > 0 ? (equityValue / (baseFCF * 1.2)).toFixed(1) + '×' : '—';
+  document.getElementById('res-pe').textContent = impliedPE;
+
+  // Margin of safety
+  const mosCard = document.getElementById('mos-card');
+  const mosEl   = document.getElementById('res-mos');
+  const mosSub  = document.getElementById('res-mos-sub');
+  if (mktPrice > 0 && intrinsicPS > 0) {
+    mosEl.textContent   = (mos >= 0 ? '+' : '') + mos.toFixed(1) + '%';
+    mosEl.style.color   = mos >= 20 ? '#4ade80' : mos >= 0 ? '#E8C96B' : '#f87171';
+    mosSub.textContent  = mos >= 0 ? 'Stock appears undervalued' : 'Stock appears overvalued';
+    mosCard.className   = 'val-card margin' + (mos < 0 ? ' negative' : '');
+  } else {
+    mosEl.textContent   = '—';
+    mosSub.textContent  = 'Enter share price above';
+  }
+
+  // Verdict
+  const vb = document.getElementById('verdict-box');
+  const vt = document.getElementById('verdict-text');
+  if (!mktPrice || !intrinsicPS) {
+    vb.className='verdict-box fair'; vb.querySelector('.verdict-icon').textContent='ℹ️';
+    vt.textContent='Enter the current share price and shares outstanding to get an over/undervalued verdict.';
+  } else if (mos >= 20) {
+    vb.className='verdict-box undervalued'; vb.querySelector('.verdict-icon').textContent='✅';
+    vt.innerHTML=`<strong>Potentially Undervalued.</strong> The DCF suggests intrinsic value of ${fmt(intrinsicPS)} vs market price of ${fmt(mktPrice)} — a margin of safety of ${mos.toFixed(1)}%. This does not constitute a buy recommendation. Verify all assumptions carefully.`;
+  } else if (mos < -10) {
+    vb.className='verdict-box overvalued'; vb.querySelector('.verdict-icon').textContent='⚠️';
+    vt.innerHTML=`<strong>Potentially Overvalued.</strong> At current assumptions, the market price of ${fmt(mktPrice)} exceeds the DCF intrinsic value of ${fmt(intrinsicPS)} by ${Math.abs(mos).toFixed(1)}%. Either growth assumptions need to be higher, or the stock may be priced for perfection.`;
+  } else {
+    vb.className='verdict-box fair'; vb.querySelector('.verdict-icon').textContent='⚖️';
+    vt.innerHTML=`<strong>Fairly Valued.</strong> The DCF intrinsic value of ${fmt(intrinsicPS)} is close to the current market price of ${fmt(mktPrice)}. The stock appears fairly priced under these assumptions.`;
+  }
+
+  // FCF schedule table
+  let schedHTML = `<table style="width:100%;border-collapse:collapse;font-size:0.7rem;">
+    <thead><tr>
+      <th style="padding:6px 8px;color:var(--gold);font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid rgba(201,168,76,0.15);text-align:left;">Year</th>
+      <th style="padding:6px 8px;color:var(--gold);font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid rgba(201,168,76,0.15);text-align:right;">FCF</th>
+      <th style="padding:6px 8px;color:var(--gold);font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid rgba(201,168,76,0.15);text-align:right;">PV of FCF</th>
+    </tr></thead><tbody>`;
+  fcfs.forEach((f,i) => {
+    schedHTML += `<tr>
+      <td style="padding:5px 8px;color:var(--white);border-bottom:1px solid rgba(255,255,255,0.04);">Year ${i+1}</td>
+      <td style="padding:5px 8px;color:var(--grey);border-bottom:1px solid rgba(255,255,255,0.04);text-align:right;">${fmtB(f)}</td>
+      <td style="padding:5px 8px;color:var(--blue);border-bottom:1px solid rgba(255,255,255,0.04);text-align:right;">${fmtB(pvFCFs[i])}</td>
+    </tr>`;
+  });
+  schedHTML += `<tr><td style="padding:5px 8px;color:var(--gold);font-weight:700;">Terminal</td><td style="padding:5px 8px;text-align:right;"></td><td style="padding:5px 8px;color:var(--gold2);text-align:right;font-weight:700;">${fmtB(pvTV)}</td></tr>`;
+  schedHTML += '</tbody></table>';
+  document.getElementById('fcf-schedule').innerHTML = schedHTML;
+
+  // Bar chart
+  const ctx = document.getElementById('dcfChart').getContext('2d');
+  const barLabels = fcfs.map((_,i) => 'Yr '+(i+1));
+  const fcfGrad = ctx.createLinearGradient(0,0,0,280);
+  fcfGrad.addColorStop(0,'rgba(96,165,250,0.8)');
+  fcfGrad.addColorStop(1,'rgba(96,165,250,0.2)');
+  const pvGrad = ctx.createLinearGradient(0,0,0,280);
+  pvGrad.addColorStop(0,'rgba(201,168,76,0.8)');
+  pvGrad.addColorStop(1,'rgba(201,168,76,0.2)');
+
+  if (dcfChart) dcfChart.destroy();
+  dcfChart = new Chart(ctx, {
+    type:'bar',
+    data:{ labels:barLabels, datasets:[
+      { label:'FCF (Nominal)', data:fcfs.map(f=>Math.round(f)), backgroundColor:fcfGrad, borderRadius:3, borderSkipped:false },
+      { label:'PV of FCF',    data:pvFCFs.map(f=>Math.round(f)), backgroundColor:pvGrad, borderRadius:3, borderSkipped:false }
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation:{duration:700,easing:'easeInOutQuart'},
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#8A95A3',font:{family:'DM Sans',size:11},boxWidth:12}},
+        tooltip:{backgroundColor:'#0E1F3D',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#C9A84C',bodyColor:'#F8F5EE',padding:12,callbacks:{label:c=>' '+c.dataset.label+': '+fmtB(c.raw)}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#8A95A3',font:{family:'DM Sans',size:9}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8A95A3',font:{family:'DM Sans',size:10},callback:v=>fmtB(v)}}
+      }
+    }
+  });
+
+  // Donut
+  const dCtx = document.getElementById('donutChart').getContext('2d');
+  if (donutChart) donutChart.destroy();
+  donutChart = new Chart(dCtx,{
+    type:'doughnut',
+    data:{labels:['PV of FCFs','PV of Terminal Value'],datasets:[{data:[Math.round(pvSum),Math.round(pvTV)],backgroundColor:['#60a5fa','#C9A84C'],borderColor:'#0E1F3D',borderWidth:3,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'70%',animation:{duration:700},plugins:{legend:{labels:{color:'#8A95A3',font:{family:'DM Sans',size:10},boxWidth:10}},tooltip:{backgroundColor:'#0E1F3D',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#C9A84C',bodyColor:'#F8F5EE',padding:10,callbacks:{label:c=>' '+c.label+': '+fmtB(c.raw)}}}}
+  });
+
+  // Build sensitivity table
+  buildSensitivity();
+}
+
+// ─── SCENARIOS ────────────────────────────
+function calcScenarios() {
+  const baseFCF   = parseFloat(document.getElementById('base-fcf').value);
+  const shares    = parseFloat(document.getElementById('shares').value)||1;
+  const netDebt   = parseFloat(document.getElementById('net-debt').value)||0;
+  const projYears = parseInt(document.getElementById('proj-years').value)||10;
+  const mktPrice  = parseFloat(document.getElementById('share-price').value)||0;
+  if (isNaN(baseFCF)) { alert('Please enter Base Year FCF in the DCF Model tab first.'); return; }
+
+  const scenarios = [
+    { id:'bear', g1:parseFloat(document.getElementById('bear-g1').value)||5, g2:parseFloat(document.getElementById('bear-g2').value)||2, wacc:parseFloat(document.getElementById('bear-wacc').value)||12, tg:parseFloat(document.getElementById('bear-tg').value)||1.5 },
+    { id:'base', g1:parseFloat(document.getElementById('base-g1').value)||12, g2:parseFloat(document.getElementById('base-g2').value)||6, wacc:parseFloat(document.getElementById('base-wacc').value)||10, tg:parseFloat(document.getElementById('base-tg').value)||2.5 },
+    { id:'bull', g1:parseFloat(document.getElementById('bull-g1').value)||20, g2:parseFloat(document.getElementById('bull-g2').value)||10, wacc:parseFloat(document.getElementById('bull-wacc').value)||8, tg:parseFloat(document.getElementById('bull-tg').value)||3.5 },
+  ];
+
+  const vals = scenarios.map(s => {
+    const res = runDCF(baseFCF, s.g1, s.g2, s.wacc, s.tg, projYears, 'gordon', 10, 20);
+    if (!res) return 0;
+    const eq = res.enterpriseValue - netDebt;
+    return shares > 0 ? eq / shares : eq;
+  });
+
+  vals.forEach((v, i) => {
+    document.getElementById('sc-'+scenarios[i].id+'-val').textContent = v > 0 ? fmt(v) : '—';
+  });
+
+  document.getElementById('sc-chart-panel').style.display = 'block';
+  const ctx3 = document.getElementById('scChart').getContext('2d');
+  if (scChart) scChart.destroy();
+  const colors = ['#f87171','#E8C96B','#4ade80'];
+  const bgColors = ['rgba(248,113,113,0.15)','rgba(232,201,107,0.15)','rgba(74,222,128,0.15)'];
+  scChart = new Chart(ctx3,{
+    type:'bar',
+    data:{labels:['🐻 Bear Case','⚖️ Base Case','🐂 Bull Case'],datasets:[
+      { label:'Intrinsic Value Per Share', data:vals.map(v=>parseFloat(v.toFixed(2))), backgroundColor:bgColors, borderColor:colors, borderWidth:2, borderRadius:6 },
+      mktPrice > 0 ? { label:'Current Market Price', data:[mktPrice,mktPrice,mktPrice], type:'line', borderColor:'rgba(96,165,250,0.7)', borderWidth:2, borderDash:[6,3], fill:false, pointRadius:0 } : null
+    ].filter(Boolean)},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation:{duration:700,easing:'easeInOutQuart'},
+      plugins:{
+        legend:{labels:{color:'#8A95A3',font:{family:'DM Sans',size:11},boxWidth:12}},
+        tooltip:{backgroundColor:'#0E1F3D',borderColor:'rgba(201,168,76,0.3)',borderWidth:1,titleColor:'#C9A84C',bodyColor:'#F8F5EE',padding:12,callbacks:{label:c=>' '+c.dataset.label+': '+fmt(c.raw)}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#8A95A3',font:{family:'DM Sans',size:11}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8A95A3',font:{family:'DM Sans',size:10},callback:v=>'$'+v.toFixed(0)}}
+      }
+    }
+  });
+}
+
+// ─── SENSITIVITY TABLE ────────────────────
+function buildSensitivity() {
+  if (!lastResult) return;
+  const { baseFCF, g1, g2, projYears, method, exitMul, ebitdaMgn, shares, netDebt, mktPrice } = lastResult;
+
+  const waccRange = [-2,-1,0,1,2].map(d => parseFloat((lastResult.wacc + d).toFixed(1)));
+  const tgRange   = [-1,-0.5,0,0.5,1].map(d => parseFloat((lastResult.terminalG + d).toFixed(1)));
+
+  document.getElementById('sens-empty').style.display   = 'none';
+  document.getElementById('sens-content').style.display = 'block';
+
+  let html = '<thead><tr><th>TG \\ WACC</th>';
+  waccRange.forEach(w => html += `<th>${w.toFixed(1)}%</th>`);
+  html += '</tr></thead><tbody>';
+
+  tgRange.reverse().forEach(tg => {
+    html += `<tr><th>${tg.toFixed(1)}%</th>`;
+    waccRange.forEach(w => {
+      if (tg >= w) { html += `<td style="color:var(--grey)">n/a</td>`; return; }
+      const res = runDCF(baseFCF, g1, g2, w, tg, projYears, method, exitMul, ebitdaMgn);
+      if (!res) { html += '<td>—</td>'; return; }
+      const eq = res.enterpriseValue - netDebt;
+      const val = shares > 0 ? eq / shares : eq;
+      let cellClass = '';
+      if (mktPrice > 0) {
+        if (val > mktPrice * 1.1) cellClass = 'sens-cell-high';
+        else if (val > mktPrice * 0.9) cellClass = 'sens-cell-mid';
+        else cellClass = 'sens-cell-low';
+      } else {
+        cellClass = val > 0 ? 'sens-cell-high' : 'sens-cell-low';
+      }
+      html += `<td class="${cellClass}">${shares > 0 ? '$'+val.toFixed(1) : fmtB(val)}</td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody>';
+  document.getElementById('sens-table').innerHTML = html;
+}
+
+// Init defaults
+applyIndustryDefaults();
+</script>
+</body>
+</html>
