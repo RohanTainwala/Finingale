@@ -338,6 +338,32 @@
     text-transform: uppercase; letter-spacing: 0.08em;
   }
 
+  /* ── ARTICLES GRID ── */
+  .articles-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+  .article-card { background:var(--navy2); border:1px solid rgba(201,168,76,0.13); border-radius:6px; overflow:hidden; display:flex; flex-direction:column; text-decoration:none; color:var(--white); transition:border-color 0.2s,transform 0.2s; }
+  .article-card:hover { border-color:rgba(201,168,76,0.4); transform:translateY(-3px); }
+  .coming-soon-card { opacity:0.55; pointer-events:none; }
+  .article-card-thumb { height:160px; background:linear-gradient(135deg,var(--navy3) 0%,#1a3355 100%); position:relative; display:flex; flex-direction:column; justify-content:flex-end; padding:20px; overflow:hidden; }
+  .article-card-thumb::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(201,168,76,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.05) 1px,transparent 1px); background-size:28px 28px; }
+  .article-card-thumb::after { content:''; position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(transparent,rgba(10,22,40,0.85)); }
+  .coming-soon-thumb { background:linear-gradient(135deg,var(--navy2),var(--navy3)); justify-content:center; align-items:center; }
+  .coming-soon-inner { text-align:center; position:relative; z-index:1; }
+  .coming-soon-icon { font-size:1.8rem; margin-bottom:8px; }
+  .coming-soon-label { font-size:0.65rem; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--grey); }
+  .thumb-category { font-size:0.6rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold); position:relative; z-index:1; margin-bottom:5px; }
+  .thumb-title { font-family:'Playfair Display',serif; font-size:0.95rem; font-weight:700; color:var(--white); line-height:1.3; position:relative; z-index:1; }
+  .article-card-body { padding:20px; flex:1; display:flex; flex-direction:column; }
+  .article-card-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .article-tag { font-size:0.6rem; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--navy); background:var(--gold); padding:3px 8px; border-radius:2px; }
+  .article-read-time { font-size:0.68rem; color:var(--grey); }
+  .article-card-title { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; line-height:1.35; margin-bottom:10px; color:var(--white); }
+  .article-card-desc { font-size:0.8rem; color:var(--grey); line-height:1.65; font-weight:300; flex:1; }
+  .article-card-footer { display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:14px; border-top:1px solid rgba(201,168,76,0.1); }
+  .article-card-author { font-size:0.72rem; color:var(--grey); }
+  .article-card-link { font-size:0.72rem; font-weight:700; color:var(--gold); letter-spacing:0.06em; text-transform:uppercase; transition:letter-spacing 0.2s; }
+  .article-card:hover .article-card-link { letter-spacing:0.12em; }
+  @media(max-width:900px){ .articles-grid{ grid-template-columns:1fr; } }
+
   /* ── MARQUEE WORDS ── */
   .marquee-section {
     padding: 48px 0; overflow: hidden;
@@ -452,13 +478,13 @@
 <nav>
   <a href="#" class="nav-logo">Fining<span>ale</span></a>
   <ul class="nav-links">
-    <li><a href="#">Home</a></li>
-    <li><a href="#">Articles</a></li>
-    <li><a href="#">Calculators</a></li>
-    <li><a href="#">Models</a></li>
+    <li><a href="finingale-homepage.html">Home</a></li>
+    <li><a href="articles.html">Articles</a></li>
+    <li><a href="calculators.html">Calculators</a></li>
+    <li><a href="models.html">Models</a></li>
     <li><a href="#">Let's Talk</a></li>
   </ul>
-  <a href="#" class="nav-cta">Let's Talk →</a>
+  <a href="lets-talk.html" class="nav-cta">Let's Talk →</a>
 </nav>
 
 <!-- ── HERO ── -->
@@ -471,18 +497,18 @@
     A sophisticated hub for advanced financial modelling, quantitative analysis, and interactive learning resources — bridging the gap between theory and actionable market intelligence.
   </p>
   <div class="hero-actions">
-    <a href="#" class="btn-primary">Explore Tools</a>
-    <a href="#" class="btn-outline">Read Articles</a>
+    <a href="calculators.html" class="btn-primary">Explore Tools</a>
+    <a href="articles.html" class="btn-outline">Read Articles</a>
   </div>
 
   <div class="hero-stats">
     <div class="stat-card">
-      <div class="stat-value">4+</div>
-      <div class="stat-label">Calculators</div>
+      <div class="stat-value">16</div>
+      <div class="stat-label">Free Calculators</div>
     </div>
     <div class="stat-card">
-      <div class="stat-value">5+</div>
-      <div class="stat-label">Financial Models</div>
+      <div class="stat-value">Zero</div>
+      <div class="stat-label">Sign-up Required</div>
     </div>
     <div class="stat-card">
       <div class="stat-value">Free</div>
@@ -523,27 +549,27 @@
   <div class="features-grid">
     <div class="feature-card">
       <div class="feature-icon">📊</div>
-      <div class="feature-title">Calculators</div>
+      <div class="feature-title">Free Calculators</div>
       <div class="feature-desc">Compound interest, loan repayments, SIP, and retirement savings — all interactive, all free.</div>
-      <a href="#" class="feature-link">Explore ↗</a>
+      <a href="#" class="feature-link" href="calculators.html">Explore All 16 ↗</a>
     </div>
     <div class="feature-card">
       <div class="feature-icon">🏗️</div>
-      <div class="feature-title">Financial Models</div>
+      <div class="feature-title">Sign-up Required</div>
       <div class="feature-desc">DCF valuations, portfolio optimization, Monte Carlo simulations — with downloadable Excel files.</div>
-      <a href="#" class="feature-link">Explore ↗</a>
+      <a href="models.html" class="feature-link">Explore ↗</a>
     </div>
     <div class="feature-card">
       <div class="feature-icon">✍️</div>
       <div class="feature-title">Articles</div>
       <div class="feature-desc">Sharp, jargon-free breakdowns of financial concepts, markets, and real-world investing.</div>
-      <a href="#" class="feature-link">Read ↗</a>
+      <a href="articles.html" class="feature-link">Read ↗</a>
     </div>
     <div class="feature-card">
       <div class="feature-icon">🤖</div>
       <div class="feature-title">AI Guide</div>
       <div class="feature-desc">An AI-powered assistant walks you through every financial model so you understand, not just calculate.</div>
-      <a href="#" class="feature-link">Coming Soon ↗</a>
+      <a href="calc-16b-dcf-advanced.html" class="feature-link">Try It ↗</a>
     </div>
   </div>
 </section>
@@ -572,53 +598,120 @@
 
 <!-- ── TOOLS PREVIEW ── -->
 <section class="reveal">
-  <div class="section-label">Tools Roadmap</div>
-  <h2 class="section-title">Everything You Need</h2>
+  <div class="section-label">Featured Tools</div>
+  <h2 class="section-title">Start Calculating</h2>
   <p class="section-sub">From simple calculators to institutional-quality models — built to grow with you.</p>
 
   <div class="tools-row">
-    <a href="#" class="tool-pill">
+    <a href="calc-01-compound-interest (2).html" class="tool-pill">
       <span class="tool-pill-icon">📈</span>
       <div>
         <div class="tool-pill-name">Compound Interest</div>
         <div class="tool-pill-tag">Calculator · Live</div>
       </div>
     </a>
-    <a href="#" class="tool-pill">
-      <span class="tool-pill-icon">🏠</span>
+    <a href="calc-02-emi-loan (2).html" class="tool-pill">
+      <span class="tool-pill-icon">🏦</span>
       <div>
-        <div class="tool-pill-name">Mortgage Calculator</div>
+        <div class="tool-pill-name">EMI Calculator</div>
         <div class="tool-pill-tag">Calculator · Live</div>
       </div>
     </a>
-    <a href="#" class="tool-pill">
+    <a href="calc-03-sip (1).html" class="tool-pill">
       <span class="tool-pill-icon">💰</span>
       <div>
         <div class="tool-pill-name">SIP Calculator</div>
         <div class="tool-pill-tag">Calculator · Live</div>
       </div>
     </a>
-    <a href="#" class="tool-pill">
+    <a href="calc-04-retirement (1).html" class="tool-pill">
       <span class="tool-pill-icon">🎯</span>
       <div>
         <div class="tool-pill-name">Retirement Planner</div>
         <div class="tool-pill-tag">Calculator · Live</div>
       </div>
     </a>
-    <a href="#" class="tool-pill">
+    <a href="calc-16-dcf.html" class="tool-pill">
       <span class="tool-pill-icon">🔍</span>
       <div>
-        <div class="tool-pill-name">DCF Model</div>
-        <div class="tool-pill-tag">Model · Coming Soon</div>
+        <div class="tool-pill-name">DCF Valuation</div>
+        <div class="tool-pill-tag">Calculator · Live</div>
       </div>
     </a>
-    <a href="#" class="tool-pill">
+    <a href="calc-11-black-scholes.html" class="tool-pill">
       <span class="tool-pill-icon">📉</span>
       <div>
-        <div class="tool-pill-name">Monte Carlo</div>
-        <div class="tool-pill-tag">Model · Coming Soon</div>
+        <div class="tool-pill-name">Black-Scholes</div>
+        <div class="tool-pill-tag">Calculator · Live</div>
       </div>
     </a>
+  <div style="text-align:center;margin-top:36px;">
+    <a href="calculators.html" class="btn-gold-outline">View All 16 Calculators &rarr;</a>
+  </div>
+</section>
+
+<!-- LATEST ARTICLES -->
+<section class="reveal">
+  <div class="section-label">From the Blog</div>
+  <h2 class="section-title">Latest Articles</h2>
+  <p class="section-sub">Sharp, jargon-free thinking on investing, markets, and building wealth &#8212; written by a finance professional, not a content machine.</p>
+  <div class="articles-grid">
+
+    <a href="article-01-the-investor-nobody-talks-about.html" class="article-card">
+      <div class="article-card-thumb">
+        <div class="thumb-category">Personal Finance</div>
+        <div class="thumb-title">The Investor Nobody Talks About</div>
+      </div>
+      <div class="article-card-body">
+        <div class="article-card-meta"><span class="article-tag">Personal Finance</span><span class="article-read-time">7 min read</span></div>
+        <div class="article-card-title">The Investor Nobody Talks About</div>
+        <div class="article-card-desc">The strategy, the stock, the timing — none of it matters if you cannot do this one thing. Why discipline beats intelligence every single time.</div>
+        <div class="article-card-footer"><span class="article-card-author">Rohan Tainwala</span><span class="article-card-link">Read Article &rarr;</span></div>
+      </div>
+    </a>
+
+    <a href="article-02-kelly-criterion.html" class="article-card">
+      <div class="article-card-thumb">
+        <div class="thumb-category">Risk &amp; Strategy</div>
+        <div class="thumb-title">The Kelly Criterion</div>
+      </div>
+      <div class="article-card-body">
+        <div class="article-card-meta"><span class="article-tag">Risk &amp; Strategy</span><span class="article-read-time">8 min read</span></div>
+        <div class="article-card-title">The Kelly Criterion: How Much Should You Actually Bet?</div>
+        <div class="article-card-desc">A Bell Labs mathematician solved position sizing in 1956. Most investors still ignore it. The formula that tells you exactly how much of your capital to risk on any trade.</div>
+        <div class="article-card-footer"><span class="article-card-author">Rohan Tainwala</span><span class="article-card-link">Read Article &rarr;</span></div>
+      </div>
+    </a>
+
+    <a href="article-03-esg.html" class="article-card">
+      <div class="article-card-thumb">
+        <div class="thumb-category">ESG &amp; Sustainability</div>
+        <div class="thumb-title">Science and Finance: The New Sci-Fi</div>
+      </div>
+      <div class="article-card-body">
+        <div class="article-card-meta"><span class="article-tag">ESG &amp; Sustainability</span><span class="article-read-time">11 min read</span></div>
+        <div class="article-card-title">Science and Finance: The New Sci-Fi</div>
+        <div class="article-card-desc">ESG is not a values exercise. It is a risk framework. And the finance professionals who understand that distinction are already years ahead of those who do not.</div>
+        <div class="article-card-footer"><span class="article-card-author">Rohan Tainwala</span><span class="article-card-link">Read Article &rarr;</span></div>
+      </div>
+    </a>
+
+    <a href="article-04-risk-free-rate.html" class="article-card">
+      <div class="article-card-thumb">
+        <div class="thumb-category">Financial Theory</div>
+        <div class="thumb-title">Risk-Free, Is It Though?</div>
+      </div>
+      <div class="article-card-body">
+        <div class="article-card-meta"><span class="article-tag">Financial Theory</span><span class="article-read-time">6 min read</span></div>
+        <div class="article-card-title">Risk-Free, Is It Though?</div>
+        <div class="article-card-desc">Textbooks treat the risk-free rate as a settled concept. It is not. And the casual use of that term has been quietly misleading finance students and practitioners for decades.</div>
+        <div class="article-card-footer"><span class="article-card-author">Rohan Tainwala</span><span class="article-card-link">Read Article &rarr;</span></div>
+      </div>
+    </a>
+
+  </div>
+  <div style="text-align:center;margin-top:36px;">
+    <a href="articles.html" class="btn-gold-outline">View All Articles &rarr;</a>
   </div>
 </section>
 
@@ -634,7 +727,7 @@
     <div class="about-text">
       <p>Finingale is built by Rohan Tainwala — CFA Level 1 cleared, MFin, MoM, BBA, NISM XIX-C certified. A finance professional who believes institutional-quality tools should be accessible to everyone.</p>
       <p>Every calculator, model, and article here is designed to teach, not just output numbers. Empowering investors and analysts with statistical precision across global equities, alternative assets, and emerging digital economies.</p>
-      <a href="#" class="btn-outline" style="margin-top:8px;">About Me →</a>
+      <a href="lets-talk.html" class="btn-outline" style="margin-top:8px;">About Me →</a>
     </div>
   </div>
 </section>
@@ -642,7 +735,7 @@
 <!-- ── CTA BAND ── -->
 <div class="cta-band reveal">
   <div class="cta-band-title">Have a question or just want to connect?</div>
-  <a href="#" class="btn-dark">Let's Talk →</a>
+  <a href="lets-talk.html" class="btn-dark">Let's Talk →</a>
 </div>
 
 <!-- ── FOOTER ── -->
@@ -656,19 +749,19 @@
       <div class="footer-col">
         <h4>Pages</h4>
         <ul>
-          <li><a href="#">Home</a></li>
-          <li><a href="#">Articles</a></li>
-          <li><a href="#">Calculators</a></li>
-          <li><a href="#">Models</a></li>
+          <li><a href="finingale-homepage.html">Home</a></li>
+          <li><a href="articles.html">Articles</a></li>
+          <li><a href="calculators.html">Calculators</a></li>
+          <li><a href="models.html">Models</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Tools</h4>
         <ul>
-          <li><a href="#">Compound Interest</a></li>
-          <li><a href="#">Mortgage Calculator</a></li>
-          <li><a href="#">SIP Calculator</a></li>
-          <li><a href="#">DCF Model</a></li>
+          <li><a href="calc-01-compound-interest (2).html">Compound Interest</a></li>
+          <li><a href="calc-02-emi-loan (2).html">EMI Calculator</a></li>
+          <li><a href="calc-03-sip (1).html">SIP Calculator</a></li>
+          <li><a href="calc-16-dcf.html">DCF Valuation</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -677,7 +770,7 @@
           <li><a href="http://www.linkedin.com" target="_blank">LinkedIn</a></li>
           <li><a href="http://www.instagram.com" target="_blank">Instagram</a></li>
           <li><a href="http://www.youtube.com" target="_blank">YouTube</a></li>
-          <li><a href="mailto:rohantainwala@outlook.com">Email</a></li>
+          <li><a href="/cdn-cgi/l/email-protection#c9bba6a1a8a7bda8a0a7bea8a5a889a6bcbda5a6a6a2e7aaa6a4">Email</a></li>
         </ul>
       </div>
     </div>
@@ -688,7 +781,7 @@
   </div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // Scroll reveal animation
   const reveals = document.querySelectorAll('.reveal');
   const observer = new IntersectionObserver((entries) => {
@@ -700,6 +793,13 @@
     });
   }, { threshold: 0.1 });
   reveals.forEach(el => observer.observe(el));
+  // Also reveal anything already in viewport on load
+  setTimeout(() => {
+    reveals.forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight) el.classList.add('visible');
+    });
+  }, 100);
 </script>
 </body>
 </html>
