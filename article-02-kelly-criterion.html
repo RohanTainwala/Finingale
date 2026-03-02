@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How Much Should You Bet? The Kelly Criterion Explained | Finingale</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0A1628;--navy2:#0E1F3D;--navy3:#162847;
+  --gold:#C9A84C;--gold2:#E8C96B;
+  --white:#F8F5EE;--grey:#8A95A3;--light:#D6DAE0;
+  --text:#E8E4DC;--text2:#B8B4AC;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);overflow-x:hidden;line-height:1.8;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0;}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,22,40,0.9);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.15);}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--white);text-decoration:none;letter-spacing:-0.5px;}
+.nav-logo span{color:var(--gold);}
+.nav-links{display:flex;gap:36px;list-style:none;}
+.nav-links a{font-size:0.85rem;font-weight:500;color:var(--light);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--gold2);}
+.nav-cta{padding:10px 22px;border:1px solid var(--gold);color:var(--gold);font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;border-radius:2px;transition:background 0.2s,color 0.2s;}
+.nav-cta:hover{background:var(--gold);color:var(--navy);}
+
+.article-hero{padding:140px 48px 72px;max-width:860px;margin:0 auto;position:relative;z-index:1;}
+.article-meta-top{display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
+.article-category{font-size:0.65rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--navy);background:var(--gold);padding:4px 12px;border-radius:2px;}
+.article-date{font-size:0.75rem;color:var(--grey);}
+.article-read-time{font-size:0.75rem;color:var(--grey);}
+.article-read-time::before{content:'·';margin-right:8px;}
+.article-title{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5vw,3.8rem);font-weight:900;line-height:1.08;letter-spacing:-0.5px;color:var(--white);margin-bottom:20px;}
+.article-title span{color:var(--gold);}
+.article-subtitle{font-family:'DM Serif Display',serif;font-size:1.15rem;font-style:italic;color:var(--grey);line-height:1.65;margin-bottom:36px;max-width:680px;}
+.article-author{display:flex;align-items:center;gap:14px;padding:20px 0;border-top:1px solid rgba(201,168,76,0.15);border-bottom:1px solid rgba(201,168,76,0.15);}
+.author-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--navy3));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1rem;font-weight:900;color:var(--navy);flex-shrink:0;}
+.author-name{font-size:0.85rem;font-weight:600;color:var(--white);}
+.author-credentials{font-size:0.72rem;color:var(--grey);}
+
+.famous-quote{margin:48px 0;padding:36px 40px;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.15);border-radius:6px;position:relative;}
+.famous-quote::before{content:'\201C';font-family:'Playfair Display',serif;font-size:6rem;color:rgba(201,168,76,0.15);position:absolute;top:-10px;left:24px;line-height:1;}
+.famous-quote-text{font-family:'Playfair Display',serif;font-size:1.25rem;font-style:italic;color:var(--white);line-height:1.7;margin-bottom:16px;position:relative;z-index:1;}
+.famous-quote-attribution{font-size:0.75rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);}
+
+.article-body{max-width:720px;margin:0 auto;padding:0 48px 80px;position:relative;z-index:1;}
+.article-body .lead-para::first-letter{font-family:'Playfair Display',serif;font-size:4.5rem;font-weight:900;color:var(--gold);float:left;line-height:0.75;margin-right:10px;margin-top:10px;}
+.article-body p{font-size:1.05rem;line-height:1.9;color:var(--text);margin-bottom:24px;font-weight:300;}
+.article-body h2{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--white);margin:48px 0 16px;line-height:1.25;}
+
+.pull-quote{border-left:3px solid var(--gold);padding:20px 28px;margin:40px 0;background:rgba(201,168,76,0.04);}
+.pull-quote p{font-family:'Playfair Display',serif;font-size:1.3rem;font-style:italic;color:var(--white);line-height:1.6;margin-bottom:0;}
+
+.callout{background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:6px;padding:24px 28px;margin:36px 0;}
+.callout-label{font-size:0.62rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+.callout p{font-size:0.92rem;color:var(--text2);margin-bottom:0;line-height:1.75;}
+.callout p strong{color:var(--white);}
+
+/* Formula block */
+.formula-block{background:var(--navy3);border:1px solid rgba(201,168,76,0.25);border-radius:6px;padding:28px 32px;margin:36px 0;text-align:center;}
+.formula-label{font-size:0.62rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;}
+.formula-main{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--white);margin-bottom:20px;letter-spacing:0.02em;}
+.formula-main span{color:var(--gold2);}
+.formula-legend{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-top:4px;}
+.formula-term{font-size:0.78rem;color:var(--text2);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:3px;padding:6px 14px;}
+.formula-term strong{color:var(--gold2);}
+
+/* Example scenario box */
+.example-box{border:1px solid rgba(201,168,76,0.2);border-radius:6px;overflow:hidden;margin:36px 0;}
+.example-box-header{background:rgba(201,168,76,0.08);padding:14px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(201,168,76,0.15);}
+.example-box-tag{font-size:0.6rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--navy);background:var(--gold);padding:3px 8px;border-radius:2px;}
+.example-box-title{font-size:0.88rem;font-weight:600;color:var(--white);}
+.example-box-body{padding:24px;}
+.example-box-body p{font-size:0.92rem;color:var(--text2);margin-bottom:12px;line-height:1.75;}
+.example-box-body p:last-child{margin-bottom:0;}
+.example-calc{background:var(--navy3);border-radius:4px;padding:16px 20px;margin:16px 0;font-family:'DM Serif Display',serif;font-size:1rem;color:var(--white);line-height:1.9;}
+.example-calc .result{color:var(--gold2);font-weight:700;font-size:1.1rem;}
+.example-box-body strong{color:var(--white);}
+
+/* Comparison table */
+.comparison-table{width:100%;border-collapse:collapse;margin:28px 0;font-size:0.88rem;}
+.comparison-table th{background:rgba(201,168,76,0.1);color:var(--gold2);font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:12px 16px;text-align:left;border-bottom:1px solid rgba(201,168,76,0.2);}
+.comparison-table td{padding:12px 16px;color:var(--text);border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:top;line-height:1.6;}
+.comparison-table tr:last-child td{border-bottom:none;}
+.comparison-table tr:hover td{background:rgba(201,168,76,0.03);}
+.td-good{color:#4ade80;}
+.td-bad{color:#f87171;}
+.td-mid{color:var(--gold2);}
+
+/* Warning box */
+.warning-box{background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.2);border-radius:6px;padding:24px 28px;margin:36px 0;}
+.warning-label{font-size:0.62rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#f87171;margin-bottom:10px;}
+.warning-box p{font-size:0.92rem;color:var(--text2);margin-bottom:0;line-height:1.75;}
+.warning-box p strong{color:var(--white);}
+
+/* Calculator CTA */
+.calc-cta{background:linear-gradient(135deg,var(--navy2),var(--navy3));border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:32px;margin:40px 0;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.calc-cta-icon{font-size:2.5rem;flex-shrink:0;}
+.calc-cta-text{flex:1;min-width:200px;}
+.calc-cta-label{font-size:0.62rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.calc-cta-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--white);margin-bottom:6px;}
+.calc-cta-desc{font-size:0.82rem;color:var(--grey);line-height:1.6;}
+.calc-cta-btn{padding:12px 24px;background:var(--gold);color:var(--navy);font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;border-radius:3px;white-space:nowrap;transition:background 0.2s;}
+.calc-cta-btn:hover{background:var(--gold2);}
+
+.stat-inline{display:inline-block;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);border-radius:3px;padding:2px 10px;font-family:'Playfair Display',serif;font-weight:700;color:var(--gold2);font-size:1.05rem;}
+
+.article-footer{max-width:720px;margin:0 auto;padding:0 48px 80px;position:relative;z-index:1;}
+.article-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent);margin-bottom:48px;}
+.next-up{background:var(--navy2);border:1px solid rgba(201,168,76,0.2);border-radius:8px;padding:32px;margin-bottom:32px;}
+.next-up-label{font-size:0.62rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.next-up-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--white);margin-bottom:8px;line-height:1.3;}
+.next-up-desc{font-size:0.85rem;color:var(--grey);line-height:1.65;margin-bottom:20px;}
+.next-up-link{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--gold);color:var(--navy);font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;border-radius:3px;transition:background 0.2s,gap 0.2s;}
+.next-up-link:hover{background:var(--gold2);gap:12px;}
+
+footer{background:#060E1A;padding:48px;border-top:1px solid rgba(201,168,76,0.15);}
+.footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;}
+.footer-brand{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;}
+.footer-brand span{color:var(--gold);}
+.footer-bottom-text{font-size:0.75rem;color:var(--grey);}
+
+.reading-progress{position:fixed;top:0;left:0;height:2px;background:var(--gold);z-index:200;transition:width 0.1s linear;width:0%;}
+
+@media(max-width:860px){
+  nav{padding:18px 24px;}
+  .nav-links{display:none;}
+  .article-hero{padding:110px 24px 48px;}
+  .article-body,.article-footer{padding-left:24px;padding-right:24px;}
+  .famous-quote{padding:24px 20px;}
+  .calc-cta{flex-direction:column;text-align:center;}
+  .formula-main{font-size:1.2rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="reading-progress" id="progress"></div>
+
+<nav>
+  <a href="finingale-homepage.html" class="nav-logo">Fining<span>ale</span></a>
+  <ul class="nav-links">
+    <li><a href="finingale-homepage.html">Home</a></li>
+    <li><a href="articles.html" class="active">Articles</a></li>
+    <li><a href="calculators.html">Calculators</a></li>
+    <li><a href="models.html">Models</a></li>
+    <li><a href="lets-talk.html">Let's Talk</a></li>
+  </ul>
+  <a href="lets-talk.html" class="nav-cta">Let's Talk &rarr;</a>
+</nav>
+
+<div class="article-hero">
+  <div class="article-meta-top">
+    <span class="article-category">Risk Management</span>
+    <span class="article-date">March 2026</span>
+    <span class="article-read-time">9 min read</span>
+  </div>
+  <h1 class="article-title">How Much Should You <span>Bet?</span></h1>
+  <p class="article-subtitle">Most investors obsess over what to buy. The Kelly Criterion answers a more important question: how much of your capital should you actually put in.</p>
+  <div class="article-author">
+    <div class="author-avatar">R</div>
+    <div>
+      <div class="author-name">Rohan Tainwala</div>
+      <div class="author-credentials">CFA L1 · MFin · MoM · BBA · NISM XIX-C</div>
+    </div>
+  </div>
+</div>
+
+<div class="article-body">
+
+  <p class="lead-para">In 1956, a mathematician at Bell Labs named John Kelly published a paper on information theory. He was not writing about investing. He was solving a problem about signal transmission over noisy telephone lines. And yet, the formula he derived went on to become one of the most quietly influential ideas in the history of money management. Hedge funds use it. Professional poker players swear by it. And most retail investors have never heard of it.</p>
+
+  <p>It is called the Kelly Criterion. And it answers a question that most people never think to ask: not what to invest in, but exactly how much of your capital to put behind any given bet.</p>
+
+  <p>Get this wrong in one direction and you are under-investing, leaving returns on the table. Get it wrong in the other direction and a single bad run can wipe you out. The Kelly Criterion finds the precise point in between.</p>
+
+  <div class="famous-quote">
+    <p class="famous-quote-text">Risk comes from not knowing what you are doing.</p>
+    <div class="famous-quote-attribution">Warren Buffett</div>
+  </div>
+
+  <h2>The Problem Kelly Was Solving</h2>
+
+  <p>Before we get to the formula, it helps to understand the problem. Imagine you have an edge. Not a huge one, but a real one. You win 55% of the time on a bet that pays 1:1. Over time, you should make money. That much is obvious.</p>
+
+  <p>But here is what is not obvious: how much you bet on each round matters enormously. Bet too little and your edge compounds slowly. Bet too much and a string of losses, which will come eventually, can destroy your capital before the edge has time to work in your favour. Even if you have a genuine advantage, reckless sizing can ruin you.</p>
+
+  <p>Kelly's insight was that there is a mathematically optimal fraction of your capital to wager on each bet, given your win probability and the payoff ratio. Bet that fraction consistently and you maximise the long-run growth rate of your wealth. Bet more than that fraction and your growth rate actually falls. Bet twice the Kelly amount and you are, on average, going nowhere at all.</p>
+
+  <div class="pull-quote">
+    <p>Position sizing is not a secondary concern. It is the difference between a good strategy working and a good strategy destroying you.</p>
+  </div>
+
+  <h2>The Formula</h2>
+
+  <p>The Kelly Criterion is expressed as a fraction of your total capital to deploy on a single opportunity. Here it is:</p>
+
+  <div class="formula-block">
+    <div class="formula-label">The Kelly Criterion</div>
+    <div class="formula-main"><span>f*</span> = p &#8722; (1 &#8722; p) / b</div>
+    <div class="formula-legend">
+      <span class="formula-term"><strong>f*</strong> Fraction of capital to invest</span>
+      <span class="formula-term"><strong>p</strong> Probability of winning</span>
+      <span class="formula-term"><strong>1&#8722;p</strong> Probability of losing</span>
+      <span class="formula-term"><strong>b</strong> Net odds received on the bet</span>
+    </div>
+  </div>
+
+  <p>The variable <strong>b</strong> is the net profit per unit risked. If you invest &#8377;100 and a win returns &#8377;150, your net gain is &#8377;50, so b = 0.5. If you invest &#8377;100 and a win returns &#8377;200, your net gain is &#8377;100, so b = 1. Think of it as the reward-to-risk ratio of the opportunity.</p>
+
+  <p>Let us work through a clean example before things get more interesting.</p>
+
+  <div class="example-box">
+    <div class="example-box-header">
+      <span class="example-box-tag">Example 1</span>
+      <span class="example-box-title">The Coin Flip With an Edge</span>
+    </div>
+    <div class="example-box-body">
+      <p>You are offered a coin flip. Heads you win 2x your stake, tails you lose your stake. Someone has verified this coin lands heads 60% of the time. You have &#8377;1,00,000 to deploy. How much should you bet?</p>
+      <p><strong>Your inputs:</strong> p = 0.60, b = 2 (you win double your stake on a win), so (1 - p) = 0.40</p>
+      <div class="example-calc">
+        f* = 0.60 &#8722; (0.40 / 2)<br/>
+        f* = 0.60 &#8722; 0.20<br/>
+        f* = <span class="result">0.40, or 40% of your capital</span>
+      </div>
+      <p>Kelly says bet &#8377;40,000. Not &#8377;10,000 because you feel cautious. Not &#8377;80,000 because you feel confident. Exactly &#8377;40,000, because that is the fraction that maximises the long-run growth of your wealth given this specific edge.</p>
+    </div>
+  </div>
+
+  <h2>Now Apply It to Investing</h2>
+
+  <p>Coins are a clean teaching tool. But investing is messier. You rarely know your win probability with precision. You are dealing with partial positions, transaction costs, and opportunities that do not reset cleanly after each round. So how does Kelly translate?</p>
+
+  <p>The honest answer is: it translates as a framework for thinking, not as an exact prescription. The inputs are never perfectly known in markets. But the discipline the formula enforces is enormously valuable even when the numbers are approximate.</p>
+
+  <div class="example-box">
+    <div class="example-box-header">
+      <span class="example-box-tag">Example 2</span>
+      <span class="example-box-title">A Stock Position</span>
+    </div>
+    <div class="example-box-body">
+      <p>You have done your analysis on a stock. Based on your research, you believe there is a 65% probability it rises 40% over the next year. You also believe there is a 35% chance it falls 20%.</p>
+      <p><strong>Your inputs:</strong> p = 0.65, b = 0.40 / 0.20 = 2 (reward-to-risk ratio), (1 - p) = 0.35</p>
+      <div class="example-calc">
+        f* = 0.65 &#8722; (0.35 / 2)<br/>
+        f* = 0.65 &#8722; 0.175<br/>
+        f* = <span class="result">0.475, or approximately 47% of your capital</span>
+      </div>
+      <p>This is the Full Kelly. In practice, most professional investors use Half Kelly or even Quarter Kelly, which we will come to shortly. But this number tells you something important: given your stated edge on this trade, concentrating nearly half your portfolio here is mathematically defensible. Most people would never go that high. The formula asks why not.</p>
+    </div>
+  </div>
+
+  <div class="example-box">
+    <div class="example-box-header">
+      <span class="example-box-tag">Example 3</span>
+      <span class="example-box-title">When There Is No Edge</span>
+    </div>
+    <div class="example-box-body">
+      <p>You are looking at a trade where your honest assessment gives you a 50% win probability and a 1:1 payoff ratio. Equal chance of winning or losing the same amount.</p>
+      <div class="example-calc">
+        f* = 0.50 &#8722; (0.50 / 1)<br/>
+        f* = 0.50 &#8722; 0.50<br/>
+        f* = <span class="result">0.00, or invest nothing</span>
+      </div>
+      <p>Kelly returns zero. The formula is telling you clearly: there is no edge here, so the optimal bet is to not play. This is perhaps the most useful output Kelly produces. It forces you to confront whether you actually have an edge before you deploy capital.</p>
+    </div>
+  </div>
+
+  <h2>Full Kelly, Half Kelly, and Why Professionals Go Smaller</h2>
+
+  <p>The Full Kelly fraction maximises long-run geometric growth. Theoretically it is optimal. In practice, very few professionals use it without modification. Here is why.</p>
+
+  <p>The Kelly formula assumes you know your win probability precisely. You never do. If you overestimate your edge even slightly, and most people do, Full Kelly leads to over-betting. And over-betting at Kelly is not just suboptimal. The mathematics are surprisingly punishing about it.</p>
+
+  <p>Bet 2x Kelly and your long-run growth rate drops to zero. Bet 3x Kelly and you are actively destroying wealth in expectation. The curve between Kelly and ruin is steep and asymmetric.</p>
+
+  <table class="comparison-table">
+    <thead>
+      <tr>
+        <th>Strategy</th>
+        <th>Capital Deployed</th>
+        <th>Growth Rate</th>
+        <th>Drawdown Risk</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Quarter Kelly</td>
+        <td>25% of f*</td>
+        <td class="td-mid">Moderate</td>
+        <td class="td-good">Very Low</td>
+      </tr>
+      <tr>
+        <td>Half Kelly</td>
+        <td>50% of f*</td>
+        <td class="td-good">75% of max growth</td>
+        <td class="td-good">Low</td>
+      </tr>
+      <tr>
+        <td>Full Kelly</td>
+        <td>100% of f*</td>
+        <td class="td-good">Maximum theoretical</td>
+        <td class="td-mid">Significant volatility</td>
+      </tr>
+      <tr>
+        <td>2x Kelly</td>
+        <td>200% of f*</td>
+        <td class="td-bad">Zero or negative</td>
+        <td class="td-bad">Very High</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Half Kelly is a particularly elegant compromise. You give up only 25% of the maximum possible growth rate, but you dramatically reduce the volatility of your equity curve. For most investors who are honest about the uncertainty in their probability estimates, Half Kelly is the more rational choice.</p>
+
+  <div class="pull-quote">
+    <p>The Kelly fraction is a ceiling, not a target. In real markets, with uncertain inputs, starting below it is almost always the wiser choice.</p>
+  </div>
+
+  <h2>The Pitfalls You Need to Know</h2>
+
+  <p>Kelly is a powerful tool. It is also easy to misuse. There are a few failure modes worth understanding before you apply it.</p>
+
+  <p><strong>Overconfidence in your probability estimates.</strong> The formula is only as good as its inputs. If you think you win 65% of your trades but your actual win rate over a large sample is 52%, the Kelly fraction you calculate will be far too large. The formula cannot save you from bad self-assessment. Be conservative with your probability estimates, especially early on.</p>
+
+  <p><strong>Applying Kelly to correlated positions.</strong> The formula assumes independence between bets. In a portfolio context, if your positions are correlated, which most equity positions are during market stress, the effective Kelly fraction for the portfolio is lower than the sum of the individual Kelly fractions. Running multi-asset Kelly requires adjusting for correlation, which most simplified implementations ignore.</p>
+
+  <p><strong>Ignoring liquidity and time horizon.</strong> Kelly optimises for long-run growth. If you need capital back within a year, the short-run volatility of a Full Kelly strategy can be brutal. This connects directly back to the golden rule from our first article: never invest money you might need in the short term.</p>
+
+  <div class="warning-box">
+    <div class="warning-label">Important Limitation</div>
+    <p>Kelly assumes you can estimate win probability accurately and that outcomes are independent across bets. In real markets, <strong>neither condition holds perfectly.</strong> Use Kelly as a framework for disciplined sizing, not as a precision instrument. When uncertain, size down, not up.</p>
+  </div>
+
+  <h2>What Kelly Actually Teaches You</h2>
+
+  <p>Beyond the arithmetic, the Kelly Criterion forces a discipline that most investors lack. Before you deploy capital on any trade or investment, it demands that you answer three specific questions. What is the probability I am right? What do I win if I am right? What do I lose if I am wrong?</p>
+
+  <p>Most people skip all three. They buy because a stock looks interesting, or because someone they respect mentioned it, or because it has gone up recently and feels like it will keep going. Kelly has no patience for any of that. It requires you to quantify your edge, or admit you do not have one.</p>
+
+  <p>That process alone, separate from any calculation, is worth the effort. Sitting down and honestly estimating your probability of being right on a trade is a humbling exercise for most people. It should be. Most trades have thinner edges than their owners believe.</p>
+
+  <p>The investors who internalise Kelly tend to do two things differently as a result. They take larger positions on their highest-conviction ideas than they would have otherwise. And they walk away from low-edge opportunities they might previously have taken out of boredom or FOMO. Both of those adjustments, taken together, tend to meaningfully improve long-run outcomes.</p>
+
+  <div class="calc-cta">
+    <div class="calc-cta-icon">&#127919;</div>
+    <div class="calc-cta-text">
+      <div class="calc-cta-label">Try It Yourself</div>
+      <div class="calc-cta-title">Kelly Criterion Calculator</div>
+      <div class="calc-cta-desc">Plug in your own win probability and payoff ratio. The calculator runs Full Kelly, Half Kelly, and Quarter Kelly side by side, and includes a strategy simulator that shows you exactly what happens when you over-bet across 100 trades.</div>
+    </div>
+    <a href="calc-15-kelly-criterion.html" class="calc-cta-btn">Open Calculator &rarr;</a>
+  </div>
+
+  <h2>A Practical Starting Point</h2>
+
+  <p>If you want to start using Kelly in your own investing, here is a sensible approach. Start by using it diagnostically rather than prescriptively. For your next ten investment ideas, before you size the position, run the Kelly calculation. Use conservative probability estimates. See what the formula tells you relative to what you were planning to do.</p>
+
+  <p>You will likely find one of two things. Either you were significantly under-sizing your best ideas, holding back on your highest-conviction positions out of a general instinct for caution. Or you were over-sizing mediocre opportunities where, when forced to state your win probability explicitly, your edge is thinner than you thought.</p>
+
+  <p>Both discoveries are valuable. Kelly does not guarantee good returns. No formula does. What it provides is a rational framework for translating conviction into capital allocation, one that has stood up to scrutiny across decades of professional use in markets, sports betting, and beyond.</p>
+
+  <p>Most people focus relentlessly on finding better opportunities. Kelly reminds you that knowing how much to bet on the opportunities you already have is just as important. Often more so.</p>
+
+  <div class="callout">
+    <div class="callout-label">Coming Next</div>
+    <p>In the next article, we move from position sizing to portfolio construction. <strong>How do you build a portfolio that reflects your risk appetite, your time horizon, and your actual life,</strong> without defaulting to someone else's generic template? We will work through it from first principles.</p>
+  </div>
+
+</div>
+
+<div class="article-footer">
+  <div class="article-divider"></div>
+
+  <div class="next-up">
+    <div class="next-up-label">Also on Finingale</div>
+    <div class="next-up-title">The Investor Nobody Talks About</div>
+    <div class="next-up-desc">Before sizing your bets, you need the foundation. Discipline, consistency, and the four golden rules of long-term investing. Start here if you have not already.</div>
+    <a href="article-01-the-investor-nobody-talks-about.html" class="next-up-link">Read Article &rarr;</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">Fining<span>ale</span></div>
+    <div class="footer-bottom-text">&#169; 2026 Finingale &middot; Rohan Tainwala &middot; For educational purposes only, not financial advice.</div>
+  </div>
+</footer>
+
+<script>
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progress').style.width = progress + '%';
+});
+</script>
+</body>
+</html>

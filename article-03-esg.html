@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Science and Finance: The New Sci-Fi | Finingale</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0A1628;--navy2:#0E1F3D;--navy3:#162847;
+  --gold:#C9A84C;--gold2:#E8C96B;
+  --white:#F8F5EE;--grey:#8A95A3;--light:#D6DAE0;
+  --text:#E8E4DC;--text2:#B8B4AC;
+  --green:#4ade80;--green2:rgba(74,222,128,0.1);--green3:rgba(74,222,128,0.2);
+}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);overflow-x:hidden;line-height:1.8;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0;}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,22,40,0.9);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.15);}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--white);text-decoration:none;letter-spacing:-0.5px;}
+.nav-logo span{color:var(--gold);}
+.nav-links{display:flex;gap:36px;list-style:none;}
+.nav-links a{font-size:0.85rem;font-weight:500;color:var(--light);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--gold2);}
+.nav-cta{padding:10px 22px;border:1px solid var(--gold);color:var(--gold);font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;border-radius:2px;transition:background 0.2s,color 0.2s;}
+.nav-cta:hover{background:var(--gold);color:var(--navy);}
+
+.article-hero{padding:140px 48px 72px;max-width:860px;margin:0 auto;position:relative;z-index:1;}
+.article-meta-top{display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
+.article-category{font-size:0.65rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--navy);background:var(--green);padding:4px 12px;border-radius:2px;}
+.article-date{font-size:0.75rem;color:var(--grey);}
+.article-read-time{font-size:0.75rem;color:var(--grey);}
+.article-read-time::before{content:'·';margin-right:8px;}
+.article-title{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5vw,3.8rem);font-weight:900;line-height:1.08;letter-spacing:-0.5px;color:var(--white);margin-bottom:20px;}
+.article-title span{color:var(--green);}
+.article-subtitle{font-family:'DM Serif Display',serif;font-size:1.15rem;font-style:italic;color:var(--grey);line-height:1.65;margin-bottom:36px;max-width:680px;}
+.article-author{display:flex;align-items:center;gap:14px;padding:20px 0;border-top:1px solid rgba(201,168,76,0.15);border-bottom:1px solid rgba(201,168,76,0.15);}
+.author-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--navy3));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1rem;font-weight:900;color:var(--navy);flex-shrink:0;}
+.author-name{font-size:0.85rem;font-weight:600;color:var(--white);}
+.author-credentials{font-size:0.72rem;color:var(--grey);}
+
+/* Original quote highlight */
+.original-quote{margin:48px 0;padding:40px;background:linear-gradient(135deg,rgba(74,222,128,0.06),rgba(201,168,76,0.06));border:1px solid rgba(74,222,128,0.2);border-radius:6px;text-align:center;position:relative;overflow:hidden;}
+.original-quote::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(74,222,128,0.08),transparent 70%);pointer-events:none;}
+.original-quote-text{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--white);line-height:1.5;margin-bottom:16px;position:relative;z-index:1;}
+.original-quote-text em{color:var(--green);font-style:normal;}
+.original-quote-attr{font-size:0.72rem;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);}
+
+.famous-quote{margin:48px 0;padding:36px 40px;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.15);border-radius:6px;position:relative;}
+.famous-quote::before{content:'\201C';font-family:'Playfair Display',serif;font-size:6rem;color:rgba(201,168,76,0.15);position:absolute;top:-10px;left:24px;line-height:1;}
+.famous-quote-text{font-family:'Playfair Display',serif;font-size:1.25rem;font-style:italic;color:var(--white);line-height:1.7;margin-bottom:16px;position:relative;z-index:1;}
+.famous-quote-attribution{font-size:0.75rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);}
+
+.article-body{max-width:720px;margin:0 auto;padding:0 48px 80px;position:relative;z-index:1;}
+.article-body .lead-para::first-letter{font-family:'Playfair Display',serif;font-size:4.5rem;font-weight:900;color:var(--green);float:left;line-height:0.75;margin-right:10px;margin-top:10px;}
+.article-body p{font-size:1.05rem;line-height:1.9;color:var(--text);margin-bottom:24px;font-weight:300;}
+.article-body h2{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--white);margin:52px 0 16px;line-height:1.25;}
+
+.pull-quote{border-left:3px solid var(--green);padding:20px 28px;margin:40px 0;background:rgba(74,222,128,0.04);}
+.pull-quote p{font-family:'Playfair Display',serif;font-size:1.3rem;font-style:italic;color:var(--white);line-height:1.6;margin-bottom:0;}
+
+.callout{background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:6px;padding:24px 28px;margin:36px 0;}
+.callout-label{font-size:0.62rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+.callout p{font-size:0.92rem;color:var(--text2);margin-bottom:0;line-height:1.75;}
+.callout p strong{color:var(--white);}
+
+/* ESG pillar cards */
+.esg-pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.1);border-radius:6px;overflow:hidden;margin:36px 0;}
+.esg-pillar{background:var(--navy2);padding:24px 20px;}
+.esg-pillar-letter{font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900;line-height:1;margin-bottom:8px;}
+.esg-pillar-title{font-size:0.78rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;}
+.esg-pillar-desc{font-size:0.78rem;color:var(--grey);line-height:1.65;}
+.pillar-e .esg-pillar-letter{color:var(--green);}
+.pillar-e .esg-pillar-title{color:var(--green);}
+.pillar-s .esg-pillar-letter{color:#60a5fa;}
+.pillar-s .esg-pillar-title{color:#60a5fa;}
+.pillar-g .esg-pillar-letter{color:var(--gold2);}
+.pillar-g .esg-pillar-title{color:var(--gold2);}
+
+/* Framework comparison */
+.framework-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:28px 0;}
+.framework-card{background:var(--navy2);border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:20px 22px;transition:border-color 0.2s;}
+.framework-card:hover{border-color:rgba(74,222,128,0.25);}
+.framework-name{font-size:0.7rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--green);margin-bottom:6px;}
+.framework-full{font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:700;color:var(--white);margin-bottom:8px;line-height:1.3;}
+.framework-desc{font-size:0.78rem;color:var(--grey);line-height:1.6;}
+.framework-tag{display:inline-block;margin-top:10px;font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:3px 8px;border-radius:2px;background:var(--green2);color:var(--green);border:1px solid var(--green3);}
+
+/* Scenario analysis box */
+.scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:28px 0;}
+.scenario-card{border-radius:5px;padding:20px 16px;border:1px solid;}
+.scenario-hot{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.2);}
+.scenario-base{background:rgba(201,168,76,0.05);border-color:rgba(201,168,76,0.2);}
+.scenario-ord{background:rgba(74,222,128,0.05);border-color:rgba(74,222,128,0.2);}
+.scenario-label{font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;}
+.scenario-hot .scenario-label{color:#f87171;}
+.scenario-base .scenario-label{color:var(--gold2);}
+.scenario-ord .scenario-label{color:var(--green);}
+.scenario-title{font-family:'Playfair Display',serif;font-size:0.9rem;font-weight:700;color:var(--white);margin-bottom:8px;line-height:1.3;}
+.scenario-desc{font-size:0.75rem;color:var(--grey);line-height:1.6;}
+.scenario-impact{font-size:0.72rem;font-weight:600;margin-top:10px;}
+.scenario-hot .scenario-impact{color:#f87171;}
+.scenario-base .scenario-impact{color:var(--gold2);}
+.scenario-ord .scenario-impact{color:var(--green);}
+
+/* Real world project */
+.project-box{border:1px solid rgba(74,222,128,0.18);border-radius:6px;overflow:hidden;margin:36px 0;}
+.project-box-header{background:rgba(74,222,128,0.07);padding:16px 24px;border-bottom:1px solid rgba(74,222,128,0.12);}
+.project-box-tag{font-size:0.6rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--navy);background:var(--green);padding:3px 8px;border-radius:2px;display:inline-block;margin-bottom:8px;}
+.project-box-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--white);line-height:1.3;}
+.project-box-body{padding:24px;}
+.project-box-body p{font-size:0.92rem;color:var(--text2);margin-bottom:12px;line-height:1.75;}
+.project-box-body p:last-child{margin-bottom:0;}
+.project-box-body strong{color:var(--white);}
+.project-stats{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0;}
+.project-stat{background:var(--navy3);border:1px solid rgba(74,222,128,0.15);border-radius:4px;padding:10px 16px;flex:1;min-width:120px;}
+.project-stat-val{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--green);}
+.project-stat-label{font-size:0.65rem;color:var(--grey);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;}
+
+/* Scope emissions */
+.scope-list{list-style:none;margin:20px 0 28px;padding:0;}
+.scope-list li{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.05);align-items:flex-start;}
+.scope-list li:last-child{border-bottom:none;}
+.scope-badge{flex-shrink:0;width:56px;height:28px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
+.scope-1{background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.25);}
+.scope-2{background:rgba(251,191,36,0.12);color:#fbbf24;border:1px solid rgba(251,191,36,0.2);}
+.scope-3{background:rgba(96,165,250,0.12);color:#60a5fa;border:1px solid rgba(96,165,250,0.2);}
+.scope-text{font-size:0.88rem;color:var(--text);line-height:1.65;}
+.scope-text strong{color:var(--white);display:block;margin-bottom:2px;}
+
+/* Accounting bridge */
+.accounting-bridge{background:var(--navy2);border:1px solid rgba(201,168,76,0.15);border-radius:6px;padding:28px;margin:36px 0;}
+.accounting-bridge-label{font-size:0.62rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;}
+.bridge-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.bridge-row:last-child{margin-bottom:0;}
+.bridge-left{flex:1;min-width:160px;background:var(--navy3);border:1px solid rgba(255,255,255,0.07);border-radius:4px;padding:10px 14px;font-size:0.82rem;color:var(--text);}
+.bridge-arrow{color:var(--gold);font-size:1rem;flex-shrink:0;}
+.bridge-right{flex:1;min-width:160px;background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.15);border-radius:4px;padding:10px 14px;font-size:0.82rem;color:var(--green);}
+
+.article-footer{max-width:720px;margin:0 auto;padding:0 48px 80px;position:relative;z-index:1;}
+.article-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent);margin-bottom:48px;}
+.next-up{background:var(--navy2);border:1px solid rgba(201,168,76,0.2);border-radius:8px;padding:32px;margin-bottom:32px;}
+.next-up-label{font-size:0.62rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.next-up-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--white);margin-bottom:8px;line-height:1.3;}
+.next-up-desc{font-size:0.85rem;color:var(--grey);line-height:1.65;margin-bottom:20px;}
+.next-up-link{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--gold);color:var(--navy);font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;border-radius:3px;transition:background 0.2s,gap 0.2s;}
+.next-up-link:hover{background:var(--gold2);gap:12px;}
+
+footer{background:#060E1A;padding:48px;border-top:1px solid rgba(201,168,76,0.15);}
+.footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;}
+.footer-brand{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;}
+.footer-brand span{color:var(--gold);}
+.footer-bottom-text{font-size:0.75rem;color:var(--grey);}
+.reading-progress{position:fixed;top:0;left:0;height:2px;background:var(--green);z-index:200;transition:width 0.1s linear;width:0%;}
+
+@media(max-width:860px){
+  nav{padding:18px 24px;}
+  .nav-links{display:none;}
+  .article-hero{padding:110px 24px 48px;}
+  .article-body,.article-footer{padding-left:24px;padding-right:24px;}
+  .esg-pillars{grid-template-columns:1fr;}
+  .framework-grid{grid-template-columns:1fr;}
+  .scenario-grid{grid-template-columns:1fr;}
+  .original-quote{padding:28px 20px;}
+  .original-quote-text{font-size:1.2rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="reading-progress" id="progress"></div>
+
+<nav>
+  <a href="finingale-homepage.html" class="nav-logo">Fining<span>ale</span></a>
+  <ul class="nav-links">
+    <li><a href="finingale-homepage.html">Home</a></li>
+    <li><a href="articles.html" class="active">Articles</a></li>
+    <li><a href="calculators.html">Calculators</a></li>
+    <li><a href="models.html">Models</a></li>
+    <li><a href="lets-talk.html">Let's Talk</a></li>
+  </ul>
+  <a href="lets-talk.html" class="nav-cta">Let's Talk &rarr;</a>
+</nav>
+
+<div class="article-hero">
+  <div class="article-meta-top">
+    <span class="article-category">ESG &amp; Sustainability</span>
+    <span class="article-date">March 2026</span>
+    <span class="article-read-time">11 min read</span>
+  </div>
+  <h1 class="article-title">Science and Finance:<br/><span>The New Sci-Fi</span></h1>
+  <p class="article-subtitle">ESG is not a values exercise. It is a risk framework. And the finance professionals who understand that distinction are already years ahead of those who do not.</p>
+  <div class="article-author">
+    <div class="author-avatar">R</div>
+    <div>
+      <div class="author-name">Rohan Tainwala</div>
+      <div class="author-credentials">CFA L1 · MFin · MoM · BBA · NISM XIX-C</div>
+    </div>
+  </div>
+</div>
+
+<div class="article-body">
+
+  <p class="lead-para">For a long time, the relationship between science and finance was polite but distant. Scientists studied the physical world. Finance professionals priced it. The two disciplines shared a language of numbers but almost nothing else. That separation is over. What is replacing it is something genuinely new, and genuinely consequential for anyone who works with capital.</p>
+
+  <p>The days of science fiction are over. Science and Finance is the new Sci-Fi.</p>
+
+  <p>That is not a metaphor about technology or innovation. It is a statement about how the physical reality of our planet has become inseparable from the financial reality of portfolios, balance sheets, and valuations. Climate models now feed into discount rates. Biodiversity loss shows up in sovereign credit ratings. Flood probability maps are being integrated into mortgage underwriting. The boundary dissolved faster than most of the finance industry was prepared for.</p>
+
+  <p>ESG sits at the centre of this convergence. And if you still think of it primarily as a values framework or a PR exercise, this article is written specifically for you.</p>
+
+  <div class="famous-quote">
+    <p class="famous-quote-text">Climate change is the greatest market failure the world has ever seen.</p>
+    <div class="famous-quote-attribution">Nicholas Stern, Economist and Author of the Stern Review</div>
+  </div>
+
+  <h2>What ESG Actually Is</h2>
+
+  <p>Environmental, Social, and Governance. Three letters that have accumulated so much noise around them that their actual content gets lost. Let us strip that away.</p>
+
+  <div class="esg-pillars">
+    <div class="esg-pillar pillar-e">
+      <div class="esg-pillar-letter">E</div>
+      <div class="esg-pillar-title">Environmental</div>
+      <div class="esg-pillar-desc">Carbon emissions, water usage, land use, biodiversity impact, physical climate risk exposure, transition risk from policy change and shifting energy economics.</div>
+    </div>
+    <div class="esg-pillar pillar-s">
+      <div class="esg-pillar-letter">S</div>
+      <div class="esg-pillar-title">Social</div>
+      <div class="esg-pillar-desc">Labour practices, supply chain conditions, community impact, product safety, data privacy, human capital development, diversity across leadership and workforce.</div>
+    </div>
+    <div class="esg-pillar pillar-g">
+      <div class="esg-pillar-letter">G</div>
+      <div class="esg-pillar-title">Governance</div>
+      <div class="esg-pillar-desc">Board structure and independence, executive pay alignment, shareholder rights, audit quality, anti-corruption controls, transparency of reporting and disclosure.</div>
+    </div>
+  </div>
+
+  <p>None of these are inherently ethical concepts. They are risk categories. Environmental exposure can impair asset values, disrupt supply chains, and create stranded assets. Social failures generate regulatory penalties, reputational damage, and talent loss. Governance failures are historically the most direct route to financial fraud and destruction of shareholder value. Enron was a governance failure. Volkswagen's emissions scandal was an environmental and governance failure. Both destroyed billions in market capitalisation.</p>
+
+  <p>The question ESG asks of any company or asset is simple: what non-financial risks are embedded here that will eventually show up in financial outcomes? The word "eventually" is doing a lot of work in that sentence, and we will come back to it.</p>
+
+  <div class="pull-quote">
+    <p>ESG is not about making your portfolio feel better. It is about seeing risks that traditional financial analysis was designed to miss.</p>
+  </div>
+
+  <h2>The Reporting Frameworks: GRI, TCFD, and ISSB</h2>
+
+  <p>One of the genuine complications in ESG analysis is that disclosure has historically been voluntary and inconsistent. A company could choose what to report, how to measure it, and how to present it. That created enormous comparability problems for investors and analysts trying to use ESG data meaningfully.</p>
+
+  <p>Three frameworks have become increasingly central to how companies report and how investors interpret that reporting.</p>
+
+  <div class="framework-grid">
+    <div class="framework-card">
+      <div class="framework-name">GRI</div>
+      <div class="framework-full">Global Reporting Initiative</div>
+      <div class="framework-desc">The longest-established framework, focused on how a company's activities affect the world. GRI uses a concept called double materiality: what impacts the company financially, and what the company's activities impact on society and the environment. It is the most widely adopted reporting standard globally, used by over 10,000 organisations.</div>
+      <span class="framework-tag">Double Materiality</span>
+    </div>
+    <div class="framework-card">
+      <div class="framework-name">TCFD</div>
+      <div class="framework-full">Task Force on Climate-related Financial Disclosures</div>
+      <div class="framework-desc">Developed by the Financial Stability Board, TCFD focuses specifically on climate risk and is structured around four pillars: governance, strategy, risk management, and metrics and targets. Its scenario analysis requirement, asking companies to model their performance under different climate futures, is the most analytically demanding component. Now mandatory in many jurisdictions.</div>
+      <span class="framework-tag">Climate-Specific</span>
+    </div>
+    <div class="framework-card">
+      <div class="framework-name">ISSB</div>
+      <div class="framework-full">International Sustainability Standards Board</div>
+      <div class="framework-desc">The newest and most significant development. Established by the IFRS Foundation in 2021, ISSB issued its first two standards in 2023: IFRS S1 for general sustainability disclosures and IFRS S2 for climate-related disclosures. The explicit goal is a single global baseline, bringing sustainability reporting into the same institutional infrastructure as financial reporting. Several major jurisdictions have already adopted it.</div>
+      <span class="framework-tag">Global Baseline</span>
+    </div>
+    <div class="framework-card">
+      <div class="framework-name">SASB</div>
+      <div class="framework-full">Sustainability Accounting Standards Board</div>
+      <div class="framework-desc">Industry-specific sustainability standards covering 77 industries. SASB identifies the subset of ESG issues most likely to be financially material for each sector, giving analysts a sector-specific lens rather than a one-size-fits-all checklist. Now consolidated under the IFRS Foundation alongside ISSB, which draws heavily on its industry-specific logic.</div>
+      <span class="framework-tag">Industry-Specific</span>
+    </div>
+  </div>
+
+  <p>The practical implication for finance professionals is this. These frameworks are converging. ISSB is the clearest signal of where reporting is heading: mandatory, standardised, and auditable, sitting alongside the financial statements rather than in a separate sustainability report that nobody reads. The analyst who already understands how to read TCFD disclosures and IFRS S2 filings has a genuine edge over the one who is waiting to be forced to learn.</p>
+
+  <h2>Scope 1, 2, and 3: Where the Numbers Come From</h2>
+
+  <p>When companies report emissions, they do so across three categories. Understanding the distinction matters enormously for interpreting what the numbers actually mean.</p>
+
+  <ul class="scope-list">
+    <li>
+      <span class="scope-badge scope-1">Scope 1</span>
+      <div class="scope-text"><strong>Direct emissions owned or controlled by the company.</strong> The gas burned in company-owned facilities, the fuel in the company vehicle fleet, the process emissions from manufacturing. These are the easiest to measure, the most under the company's direct control, and typically the smallest share of total footprint for most businesses.</div>
+    </li>
+    <li>
+      <span class="scope-badge scope-2">Scope 2</span>
+      <div class="scope-text"><strong>Indirect emissions from purchased energy.</strong> The electricity the company buys, and the emissions generated in producing it. Scope 2 is where renewable energy procurement becomes directly relevant. A company that switches to renewable electricity contracts can reduce its Scope 2 emissions substantially without changing anything about its own operations.</div>
+    </li>
+    <li>
+      <span class="scope-badge scope-3">Scope 3</span>
+      <div class="scope-text"><strong>All other indirect emissions across the value chain.</strong> Upstream: the emissions embedded in raw materials, components, and business travel. Downstream: the emissions generated when customers use and eventually dispose of the product. For most companies, Scope 3 is by far the largest category and the hardest to measure, often representing over 70% of total emissions. It is also where transition risk is most concentrated.</div>
+    </li>
+  </ul>
+
+  <p>Scope 3 is where most of the analytical difficulty lives, and where most of the greenwashing hides. A company that reports only Scope 1 and 2 reductions while its Scope 3 emissions grow is not decarbonising. It is relocating its carbon footprint up and down the supply chain. A rigorous ESG analysis always asks what the Scope 3 picture looks like.</p>
+
+  <h2>Scenario Analysis: Where Science Enters the Room</h2>
+
+  <p>This is the part of ESG analysis that most clearly demonstrates why the science-finance boundary has dissolved. Scenario analysis, particularly as required by TCFD and IFRS S2, asks companies and investors to model financial performance under plausible future states of the world defined by physical and policy outcomes.</p>
+
+  <p>The scenarios are typically structured around temperature pathways derived from climate science, most commonly referencing the Intergovernmental Panel on Climate Change's shared socioeconomic pathways.</p>
+
+  <div class="scenario-grid">
+    <div class="scenario-card scenario-hot">
+      <div class="scenario-label">Hot House World</div>
+      <div class="scenario-title">3&#176;C+ Warming Pathway</div>
+      <div class="scenario-desc">Limited policy action. Carbon prices remain low or absent. Physical climate risks materialise severely: extreme weather events, sea level rise, crop failure, water stress. Infrastructure and real asset valuations face significant impairment in vulnerable geographies.</div>
+      <div class="scenario-impact">High physical risk / Low transition risk</div>
+    </div>
+    <div class="scenario-card scenario-base">
+      <div class="scenario-label">Disorderly Transition</div>
+      <div class="scenario-title">1.5&#176;C to 2&#176;C, Late Action</div>
+      <div class="scenario-desc">Policy response arrives late and is abrupt. Carbon prices spike suddenly. Fossil fuel assets are stranded faster than markets anticipated. High transition costs across carbon-intensive industries. Financial instability risk from rapid repricing of carbon-exposed assets.</div>
+      <div class="scenario-impact">Moderate physical risk / High transition risk</div>
+    </div>
+    <div class="scenario-card scenario-ord">
+      <div class="scenario-label">Orderly Transition</div>
+      <div class="scenario-title">Below 2&#176;C, Early Action</div>
+      <div class="scenario-desc">Policy response is early, predictable, and coordinated. Carbon pricing rises gradually. Green technology investment accelerates. Transition costs are distributed over time. Businesses that anticipated the shift benefit from early positioning in clean energy and sustainable value chains.</div>
+      <div class="scenario-impact">Low physical risk / Managed transition risk</div>
+    </div>
+  </div>
+
+  <p>What does a finance professional actually do with these scenarios? The discipline is to run your asset or portfolio through each one and ask: what happens to revenues, costs, asset values, and credit quality under each pathway? Which positions are resilient across all three? Which are highly sensitive to the scenario that plays out?</p>
+
+  <p>This is not fundamentally different from the sensitivity analysis a good analyst already runs on a DCF model. It is the same intellectual process applied to a wider and longer-range set of variables, many of which come from physical science rather than financial history. That is the convergence. That is why understanding the IPCC's emissions scenarios is now part of being a competent financial analyst.</p>
+
+  <h2>ESG in the Accounting: Where It Shows Up on the Numbers</h2>
+
+  <p>One of the most underappreciated aspects of ESG integration is how directly it connects to conventional accounting. This is not a separate exercise that runs parallel to financial analysis. It feeds into the numbers that already sit on the financial statements.</p>
+
+  <div class="accounting-bridge">
+    <div class="accounting-bridge-label">How ESG Risk Flows Into Financial Statements</div>
+    <div class="bridge-row">
+      <div class="bridge-left">Carbon pricing / emissions liability</div>
+      <div class="bridge-arrow">&#8594;</div>
+      <div class="bridge-right">Provisions and contingent liabilities on the balance sheet</div>
+    </div>
+    <div class="bridge-row">
+      <div class="bridge-left">Stranded asset risk on fossil fuel reserves</div>
+      <div class="bridge-arrow">&#8594;</div>
+      <div class="bridge-right">Impairment charges on PP&amp;E and intangibles</div>
+    </div>
+    <div class="bridge-row">
+      <div class="bridge-left">Physical climate damage to facilities</div>
+      <div class="bridge-arrow">&#8594;</div>
+      <div class="bridge-right">Insurance costs, capex requirements, asset write-downs</div>
+    </div>
+    <div class="bridge-row">
+      <div class="bridge-left">Regulatory fines and compliance costs</div>
+      <div class="bridge-arrow">&#8594;</div>
+      <div class="bridge-right">Operating expenses and legal provisions</div>
+    </div>
+    <div class="bridge-row">
+      <div class="bridge-left">Green financing / sustainability-linked loans</div>
+      <div class="bridge-arrow">&#8594;</div>
+      <div class="bridge-right">Cost of debt adjusted by ESG performance targets</div>
+    </div>
+    <div class="bridge-row">
+      <div class="bridge-left">Transition investment in clean technology</div>
+      <div class="bridge-arrow">&#8594;</div>
+      <div class="bridge-right">Capex profile, depreciation schedule, future EBITDA margin</div>
+    </div>
+  </div>
+
+  <p>The connection to the WACC is particularly important. ESG risk, when it is understood and priced correctly, flows into the cost of capital. A company with high climate transition risk, heavy Scope 3 exposure, and opaque governance carries a higher risk premium than a comparable company with stronger ESG credentials. That higher premium raises WACC, which reduces the present value of future cash flows. The ESG analysis and the valuation model are not separate documents. They feed each other.</p>
+
+  <h2>Real World Projects: Where This Plays Out</h2>
+
+  <p>Abstract frameworks matter less when you can see them at work. Here are three projects where the science-finance convergence is visible in concrete financial terms.</p>
+
+  <div class="project-box">
+    <div class="project-box-header">
+      <span class="project-box-tag">Infrastructure</span>
+      <div class="project-box-title">Orsted: The Coal-to-Offshore Wind Transformation</div>
+    </div>
+    <div class="project-box-body">
+      <p>Formerly DONG Energy, one of the most coal-dependent utilities in Europe, Orsted made a strategic decision in 2012 to exit fossil fuels and pivot entirely to offshore wind. The transition required writing down billions in legacy assets, accepting short-term earnings pain, and committing capital to a technology that was still maturing.</p>
+      <p>By 2023, Orsted operated over 15 GW of renewable energy capacity. Its transition from coal dependency to clean energy leadership is one of the most studied examples of a company successfully pricing its own transition risk and acting on it before regulators forced the issue.</p>
+      <div class="project-stats">
+        <div class="project-stat">
+          <div class="project-stat-val">86%</div>
+          <div class="project-stat-label">Carbon intensity reduction since 2006</div>
+        </div>
+        <div class="project-stat">
+          <div class="project-stat-val">15+ GW</div>
+          <div class="project-stat-label">Renewable capacity operated</div>
+        </div>
+        <div class="project-stat">
+          <div class="project-stat-val">Proactive</div>
+          <div class="project-stat-label">Transition before regulatory mandate</div>
+        </div>
+      </div>
+      <p>The financial lesson: the write-downs Orsted took in the early transition years look very different in retrospect from how they looked at the time. What appeared to be capital destruction was in fact the repricing of stranded assets before the market forced a more abrupt reckoning.</p>
+    </div>
+  </div>
+
+  <div class="project-box">
+    <div class="project-box-header">
+      <span class="project-box-tag">Sovereign Finance</span>
+      <div class="project-box-title">Chile's Sustainability-Linked Sovereign Bonds</div>
+    </div>
+    <div class="project-box-body">
+      <p>In 2022, Chile became one of the first sovereigns globally to issue sustainability-linked bonds where the coupon rate is tied to the country's progress against specific ESG targets, specifically its nationally determined contribution under the Paris Agreement and gender parity commitments. If Chile misses its targets, the coupon steps up, directly increasing its cost of debt.</p>
+      <p>This is a precise and measurable example of ESG performance flowing into financing costs at the sovereign level. The bond structure creates a direct financial incentive for policy delivery. Missing the emissions reduction target is not just a reputational failure. It is a balance sheet event.</p>
+      <div class="project-stats">
+        <div class="project-stat">
+          <div class="project-stat-val">SLB</div>
+          <div class="project-stat-label">Sustainability-Linked Bond structure</div>
+        </div>
+        <div class="project-stat">
+          <div class="project-stat-val">Coupon</div>
+          <div class="project-stat-label">Steps up if ESG targets are missed</div>
+        </div>
+        <div class="project-stat">
+          <div class="project-stat-val">Sovereign</div>
+          <div class="project-stat-label">First mover among major economies</div>
+        </div>
+      </div>
+      <p>For analysts, this structure demonstrates something important. ESG performance is increasingly being embedded into the contractual terms of financing, not just the softer judgements of ratings agencies. The financial exposure is becoming explicit, quantified, and legally binding.</p>
+    </div>
+  </div>
+
+  <div class="project-box">
+    <div class="project-box-header">
+      <span class="project-box-tag">Banking</span>
+      <div class="project-box-title">ING's Terra Approach to Portfolio Alignment</div>
+    </div>
+    <div class="project-box-body">
+      <p>ING Bank developed an approach called Terra, a methodology for measuring and steering its lending portfolio toward alignment with the Paris Agreement temperature goals. Terra translates the physical science of emissions pathways directly into portfolio-level metrics, sector by sector, and produces a quantified view of how aligned or misaligned ING's loan book is with a below-2&#176;C trajectory.</p>
+      <p>The analytical challenge here is significant. ING had to build the capacity to map the emissions profiles of its borrowers, model how those profiles need to change over time under each climate scenario, and then use that analysis to influence credit decisions. This required the bank to hire climate scientists, environmental economists, and data engineers alongside its traditional credit analysts.</p>
+      <div class="project-stats">
+        <div class="project-stat">
+          <div class="project-stat-val">9 Sectors</div>
+          <div class="project-stat-label">Covered in initial Terra scope</div>
+        </div>
+        <div class="project-stat">
+          <div class="project-stat-val">Paris-aligned</div>
+          <div class="project-stat-label">Portfolio trajectory target</div>
+        </div>
+        <div class="project-stat">
+          <div class="project-stat-val">Credit-linked</div>
+          <div class="project-stat-label">ESG integrated into lending decisions</div>
+        </div>
+      </div>
+      <p>ING's Terra approach illustrates the institutional direction of travel. The banks that build this capability now will have a structural advantage in pricing climate risk accurately. The ones that do not will find themselves either mispricing credit or losing the most creditworthy borrowers to competitors who can offer tighter spreads on well-understood risk.</p>
+    </div>
+  </div>
+
+  <h2>The Honest Complications</h2>
+
+  <p>This article would not be complete without acknowledging what remains genuinely hard about ESG analysis. The field is not without its contradictions and its failures of rigour.</p>
+
+  <p>Data quality is still a serious problem. Scope 3 emissions in particular are heavily estimated, and estimation methodologies vary enough that two analysts covering the same company can arrive at very different numbers. ESG ratings from different providers show surprisingly low correlation with each other, which tells you something important about how much is still being left to judgement.</p>
+
+  <p>Greenwashing remains a meaningful risk. The distance between a company's stated ESG commitments and its actual operational reality can be substantial, and the audit infrastructure to close that gap is still developing. ISSB and mandatory disclosure regimes will help. They have not yet solved the problem.</p>
+
+  <p>And the politicisation of ESG, particularly in the United States where it became a culture war proxy, has created noise that makes it harder for professionals to have a clear-eyed conversation about it as a risk framework. The word has become loaded in ways that obscure its analytical content.</p>
+
+  <p>None of these complications change the underlying reality. Physical climate risk is not a political opinion. It is a measurable set of probabilities and exposures that will show up in asset valuations, whether or not the financial system has priced them correctly. The analyst who can navigate the data quality problems, see through the greenwashing, and strip away the political noise to identify what is actually financially material will have a meaningful edge.</p>
+
+  <div class="original-quote">
+    <p class="original-quote-text">The days of <em>Science-Fiction</em> are over.<br/>Science and Finance is the new <em>Sci-Fi.</em></p>
+    <div class="original-quote-attr">Rohan Tainwala &middot; Finingale</div>
+  </div>
+
+  <p>That is not a provocation. It is a description of where the discipline is heading. The finance professionals who will be most valuable over the next two decades are not necessarily the ones who know the most about traditional financial analysis, though that matters. They are the ones who can read a climate model, understand what it implies for a balance sheet, and translate that into a view on value. The curriculum is expanding. The tools are new. And the territory, genuinely, is still being mapped.</p>
+
+  <div class="callout">
+    <div class="callout-label">Coming Next</div>
+    <p>In the next article, we turn to investment strategy. <strong>How do you construct a portfolio that reflects your risk appetite, your time horizon, and your actual financial life</strong> without defaulting to a generic template? We build it from first principles, covering equities, fixed income, alternatives, and how ESG fits into the allocation decision.</p>
+  </div>
+
+</div>
+
+<div class="article-footer">
+  <div class="article-divider"></div>
+  <div class="next-up">
+    <div class="next-up-label">Also on Finingale</div>
+    <div class="next-up-title">The Investor Nobody Talks About</div>
+    <div class="next-up-desc">Before ESG, before strategy, before allocation, there is a more fundamental question. Are you investing consistently at all? The foundation article in this series.</div>
+    <a href="article-01-the-investor-nobody-talks-about.html" class="next-up-link">Read Article &rarr;</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">Fining<span>ale</span></div>
+    <div class="footer-bottom-text">&#169; 2026 Finingale &middot; Rohan Tainwala &middot; For educational purposes only, not financial advice.</div>
+  </div>
+</footer>
+
+<script>
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progress').style.width = progress + '%';
+});
+</script>
+</body>
+</html>
