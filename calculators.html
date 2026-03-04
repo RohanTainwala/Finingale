@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Calculators — Finingale</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--navy:#0A1628;--navy2:#0E1F3D;--navy3:#162847;--gold:#C9A84C;--gold2:#E8C96B;--white:#F8F5EE;--grey:#8A95A3;--light:#D6DAE0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,22,40,0.9);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.15);}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--white);letter-spacing:-0.5px;text-decoration:none;}
+.nav-logo span{color:var(--gold);}
+.nav-links{display:flex;gap:36px;list-style:none;}
+.nav-links a{font-size:0.85rem;font-weight:500;color:var(--light);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--gold2);}
+.nav-cta{padding:10px 22px;border:1px solid var(--gold);color:var(--gold);font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;border-radius:2px;transition:background 0.2s,color 0.2s;}
+.nav-cta:hover{background:var(--gold);color:var(--navy);}
+.page-header{padding:140px 48px 48px;position:relative;z-index:1;}
+.page-tag{font-size:0.72rem;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.page-tag::before{content:'';display:block;width:28px;height:1px;background:var(--gold);}
+.page-title{font-family:'Playfair Display',serif;font-size:clamp(2.4rem,5vw,4rem);font-weight:900;line-height:1.1;margin-bottom:16px;}
+.page-title span{color:var(--gold);}
+.page-desc{font-size:1rem;color:var(--grey);font-weight:300;max-width:580px;line-height:1.75;}
+.stats-bar{display:flex;border:1px solid rgba(201,168,76,0.15);border-radius:6px;overflow:hidden;margin:36px 48px 0;max-width:520px;}
+.stats-bar-item{flex:1;padding:18px 24px;background:var(--navy2);text-align:center;border-right:1px solid rgba(201,168,76,0.12);}
+.stats-bar-item:last-child{border-right:none;}
+.stats-bar-value{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--gold2);}
+.stats-bar-label{font-size:0.65rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--grey);margin-top:3px;}
+.filter-wrap{padding:32px 48px 0;position:relative;z-index:1;}
+.filter-tabs{display:flex;gap:6px;flex-wrap:wrap;}
+.filter-tab{padding:8px 18px;border:1px solid rgba(201,168,76,0.2);background:transparent;color:var(--grey);font-size:0.75rem;font-weight:600;font-family:'DM Sans',sans-serif;letter-spacing:0.08em;text-transform:uppercase;border-radius:2px;cursor:pointer;transition:all 0.18s;}
+.filter-tab:hover{border-color:var(--gold);color:var(--gold);}
+.filter-tab.active{background:var(--gold);color:var(--navy);border-color:var(--gold);}
+.grid-wrap{padding:28px 48px 80px;position:relative;z-index:1;}
+.calc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+.calc-card{background:var(--navy2);border:1px solid rgba(201,168,76,0.12);border-radius:8px;padding:28px;display:flex;flex-direction:column;transition:border-color 0.2s,transform 0.2s,background 0.2s;text-decoration:none;color:var(--white);position:relative;overflow:hidden;}
+.calc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold2));opacity:0;transition:opacity 0.2s;}
+.calc-card:hover{border-color:rgba(201,168,76,0.35);transform:translateY(-3px);background:var(--navy3);}
+.calc-card:hover::before{opacity:1;}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+.card-icon{font-size:1.8rem;}
+.card-number{font-size:0.62rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--grey);padding:4px 10px;background:rgba(255,255,255,0.05);border-radius:2px;}
+.card-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;margin-bottom:8px;line-height:1.2;}
+.card-desc{font-size:0.8rem;color:var(--grey);line-height:1.65;font-weight:300;flex:1;}
+.card-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);}
+.card-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.card-tag{font-size:0.6rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:3px 8px;border-radius:2px;}
+.tag-personal{background:rgba(96,165,250,0.12);color:#60a5fa;}
+.tag-investing{background:rgba(201,168,76,0.12);color:var(--gold2);}
+.tag-advanced{background:rgba(192,132,252,0.12);color:#c084fc;}
+.tag-risk{background:rgba(248,113,113,0.12);color:#f87171;}
+.tag-business{background:rgba(74,222,128,0.12);color:#4ade80;}
+.card-arrow{font-size:1rem;color:var(--gold);opacity:0;transition:opacity 0.2s,transform 0.2s;}
+.calc-card:hover .card-arrow{opacity:1;transform:translateX(4px);}
+.calc-card.featured{border-color:rgba(201,168,76,0.28);background:linear-gradient(135deg,var(--navy2),rgba(201,168,76,0.03));}
+.calc-card.featured::before{opacity:0.5;}
+.featured-badge{position:absolute;top:14px;right:14px;font-size:0.58rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;padding:3px 9px;background:rgba(201,168,76,0.13);border:1px solid rgba(201,168,76,0.3);color:var(--gold);border-radius:2px;}
+.calc-card.hidden{display:none;}
+.dcf-cta{margin:0 48px 80px;background:linear-gradient(135deg,var(--navy2),var(--navy3));border:1px solid rgba(201,168,76,0.25);border-radius:10px;padding:36px 40px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;position:relative;z-index:1;}
+.cta-tag{font-size:0.62rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.cta-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;margin-bottom:10px;line-height:1.2;}
+.cta-title span{color:var(--gold);}
+.cta-desc{font-size:0.8rem;color:var(--grey);line-height:1.7;margin-bottom:14px;}
+.cta-features{display:flex;flex-wrap:wrap;gap:8px;}
+.cta-feature{font-size:0.68rem;padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:3px;color:var(--gold2);}
+.cta-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--gold);color:var(--navy);font-size:0.82rem;font-weight:700;font-family:'DM Sans',sans-serif;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:5px;cursor:pointer;text-decoration:none;white-space:nowrap;transition:background 0.2s,transform 0.15s;}
+.cta-btn:hover{background:var(--gold2);transform:translateY(-1px);}
+footer{background:#060E1A;padding:40px 48px;border-top:1px solid rgba(201,168,76,0.15);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;position:relative;z-index:1;}
+.footer-brand{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;}
+.footer-brand span{color:var(--gold);}
+.footer-links-row{display:flex;gap:24px;flex-wrap:wrap;}
+.footer-links-row a{font-size:0.8rem;color:var(--grey);text-decoration:none;transition:color 0.2s;}
+.footer-links-row a:hover{color:var(--white);}
+.footer-disclaimer{font-size:0.7rem;color:var(--grey);}
+@media(max-width:860px){
+  nav{padding:18px 24px;}.nav-links{display:none;}
+  .page-header{padding:110px 24px 36px;}
+  .stats-bar,.filter-wrap,.grid-wrap{padding-left:24px;padding-right:24px;}
+  .stats-bar{margin-left:0;margin-right:0;}
+  .dcf-cta{margin:0 24px 60px;grid-template-columns:1fr;}
+  footer{padding:28px 24px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Fining<span>ale</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="articles.html">Articles</a></li>
+    <li><a href="calculators.html" class="active">Calculators</a></li>
+    <li><a href="dcf-model-builder.html">DCF Model</a></li>
+    <li><a href="finingale-letstalk.html">Let's Talk</a></li>
+  </ul>
+  <a href="finingale-letstalk.html" class="nav-cta">Let's Talk →</a>
+</nav>
+
+<div class="page-header">
+  <div class="page-tag">Finingale · Tools</div>
+  <h1 class="page-title">All <span>Calculators</span></h1>
+  <p class="page-desc">16 interactive financial calculators — from personal savings and loans to institutional-grade options pricing and bankruptcy prediction. All free, all in one place.</p>
+</div>
+
+<div class="stats-bar">
+  <div class="stats-bar-item"><div class="stats-bar-value">16</div><div class="stats-bar-label">Calculators</div></div>
+  <div class="stats-bar-item"><div class="stats-bar-value">Free</div><div class="stats-bar-label">Always</div></div>
+  <div class="stats-bar-item"><div class="stats-bar-value">Zero</div><div class="stats-bar-label">Sign-up</div></div>
+</div>
+
+<div class="filter-wrap">
+  <div class="filter-tabs">
+    <button class="filter-tab active" onclick="filterCards('all',this)">All</button>
+    <button class="filter-tab" onclick="filterCards('personal',this)">Personal Finance</button>
+    <button class="filter-tab" onclick="filterCards('investing',this)">Investing</button>
+    <button class="filter-tab" onclick="filterCards('advanced',this)">Advanced</button>
+    <button class="filter-tab" onclick="filterCards('risk',this)">Risk</button>
+    <button class="filter-tab" onclick="filterCards('business',this)">Business</button>
+  </div>
+</div>
+
+<div class="grid-wrap">
+<div class="calc-grid">
+
+<a href="calc-01-compound-interest.html" class="calc-card featured" data-tags="personal investing">
+  <div class="featured-badge">⭐ Start Here</div>
+  <div class="card-top"><div class="card-icon">📈</div><div class="card-number">Calc 01</div></div>
+  <div class="card-title">Compound Interest</div>
+  <div class="card-desc">Visualise the power of compounding over time. Adjustable principal, rate, frequency, and time horizon with an interactive growth chart.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-personal">Personal Finance</span><span class="card-tag tag-investing">Investing</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-02-emi-loan.html" class="calc-card" data-tags="personal">
+  <div class="card-top"><div class="card-icon">🏦</div><div class="card-number">Calc 02</div></div>
+  <div class="card-title">EMI Loan Calculator</div>
+  <div class="card-desc">Calculate monthly EMI, total interest, and full amortisation schedule for any loan. Home loans, car loans, personal loans.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-personal">Personal Finance</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-03-sip.html" class="calc-card" data-tags="personal investing">
+  <div class="card-top"><div class="card-icon">💰</div><div class="card-number">Calc 03</div></div>
+  <div class="card-title">SIP Calculator</div>
+  <div class="card-desc">Plan your Systematic Investment Plan. Calculate future corpus, returns, and wealth gain for monthly SIP investments over time.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-personal">Personal Finance</span><span class="card-tag tag-investing">Investing</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-04-retirement.html" class="calc-card" data-tags="personal">
+  <div class="card-top"><div class="card-icon">🎯</div><div class="card-number">Calc 04</div></div>
+  <div class="card-title">Retirement Planner</div>
+  <div class="card-desc">How much do you need to retire? Calculates corpus required, monthly savings needed, and projected income in retirement.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-personal">Personal Finance</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-05-npv-irr.html" class="calc-card" data-tags="investing business">
+  <div class="card-top"><div class="card-icon">📊</div><div class="card-number">Calc 05</div></div>
+  <div class="card-title">NPV &amp; IRR</div>
+  <div class="card-desc">Evaluate any investment or project. Enter cash flows to calculate Net Present Value, Internal Rate of Return, and Payback Period.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-investing">Investing</span><span class="card-tag tag-business">Business</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-06-annuity.html" class="calc-card" data-tags="personal investing">
+  <div class="card-top"><div class="card-icon">📅</div><div class="card-number">Calc 06</div></div>
+  <div class="card-title">Annuity Calculator</div>
+  <div class="card-desc">Price annuities, calculate present and future value of regular payment streams. Covers both ordinary annuities and annuities due.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-personal">Personal Finance</span><span class="card-tag tag-investing">Investing</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-07-breakeven.html" class="calc-card" data-tags="business">
+  <div class="card-top"><div class="card-icon">⚖️</div><div class="card-number">Calc 07</div></div>
+  <div class="card-title">Break-Even Analysis</div>
+  <div class="card-desc">Find the break-even point for any business or product. Plots the cost-revenue chart with margin of safety and contribution margin.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-business">Business</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-08-wacc.html" class="calc-card" data-tags="investing advanced business">
+  <div class="card-top"><div class="card-icon">🏛️</div><div class="card-number">Calc 08</div></div>
+  <div class="card-title">WACC Calculator</div>
+  <div class="card-desc">Calculate Weighted Average Cost of Capital step by step. Inputs for equity, debt, beta, tax rate, and risk-free rate with full formula breakdown.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-investing">Investing</span><span class="card-tag tag-advanced">Advanced</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-09-altman-zscore.html" class="calc-card" data-tags="advanced risk business">
+  <div class="card-top"><div class="card-icon">🚨</div><div class="card-number">Calc 09</div></div>
+  <div class="card-title">Altman Z-Score</div>
+  <div class="card-desc">Predict bankruptcy risk using Altman's 1968 model. Calculates five financial ratios and plots a score on a visual gauge — Safe, Grey, or Distress zone.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-advanced">Advanced</span><span class="card-tag tag-risk">Risk</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-10-bond-pricing.html" class="calc-card" data-tags="investing advanced">
+  <div class="card-top"><div class="card-icon">📋</div><div class="card-number">Calc 10</div></div>
+  <div class="card-title">Bond Pricing &amp; Yield</div>
+  <div class="card-desc">Solve for either bond price or YTM. Calculates Macaulay duration, modified duration, current yield, and plots the full price-yield curve.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-investing">Investing</span><span class="card-tag tag-advanced">Advanced</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-11-black-scholes.html" class="calc-card featured" data-tags="advanced risk">
+  <div class="featured-badge">⭐ Popular</div>
+  <div class="card-top"><div class="card-icon">⚙️</div><div class="card-number">Calc 11</div></div>
+  <div class="card-title">Black-Scholes Options</div>
+  <div class="card-desc">Price European call and put options using the Black-Scholes model. Calculates all five Greeks — Delta, Gamma, Theta, Vega, and Rho — with a full sensitivity chart.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-advanced">Advanced</span><span class="card-tag tag-risk">Derivatives</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-12-inflation.html" class="calc-card" data-tags="personal investing">
+  <div class="card-top"><div class="card-icon">💸</div><div class="card-number">Calc 12</div></div>
+  <div class="card-title">Inflation Adjuster</div>
+  <div class="card-desc">Understand the real value of money over time. Adjusts any amount for inflation, calculates real returns, Rule of 72, and purchasing power loss with a timeline chart.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-personal">Personal Finance</span><span class="card-tag tag-investing">Investing</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-13-amortisation.html" class="calc-card" data-tags="personal">
+  <div class="card-top"><div class="card-icon">📊</div><div class="card-number">Calc 13</div></div>
+  <div class="card-title">Amortisation Schedule</div>
+  <div class="card-desc">Generate a complete month-by-month or year-by-year amortisation table for any loan. Includes extra payment analysis and full CSV export.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-personal">Personal Finance</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-14-martingale.html" class="calc-card" data-tags="risk advanced">
+  <div class="card-top"><div class="card-icon">🎰</div><div class="card-number">Calc 14</div></div>
+  <div class="card-title">Martingale Simulator</div>
+  <div class="card-desc">Simulate the Martingale doubling strategy to see why it always leads to ruin. A powerful educational tool on the mathematics of risk and position sizing.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-risk">Risk</span><span class="card-tag tag-advanced">Advanced</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-15-kelly-criterion.html" class="calc-card featured" data-tags="advanced risk investing">
+  <div class="featured-badge">⭐ Popular</div>
+  <div class="card-top"><div class="card-icon">🎲</div><div class="card-number">Calc 15</div></div>
+  <div class="card-title">Kelly Criterion</div>
+  <div class="card-desc">Find the mathematically optimal position size for any strategy. Three tabs — Kelly Calculator, Strategy Simulator comparing four sizing approaches, and Multi-Asset Kelly.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-advanced">Advanced</span><span class="card-tag tag-risk">Risk</span><span class="card-tag tag-investing">Investing</span></div><span class="card-arrow">→</span></div>
+</a>
+
+<a href="calc-16-dcf.html" class="calc-card featured" data-tags="investing advanced">
+  <div class="featured-badge">⭐ Flagship</div>
+  <div class="card-top"><div class="card-icon">🔍</div><div class="card-number">Calc 16</div></div>
+  <div class="card-title">DCF Valuation</div>
+  <div class="card-desc">Full Discounted Cash Flow calculator with industry-specific assumptions, Bear/Base/Bull scenario analysis, and a WACC vs terminal growth sensitivity table.</div>
+  <div class="card-bottom"><div class="card-tags"><span class="card-tag tag-investing">Investing</span><span class="card-tag tag-advanced">Advanced</span></div><span class="card-arrow">→</span></div>
+</a>
+
+</div>
+</div>
+
+<!-- DCF Model Builder CTA -->
+<div class="dcf-cta">
+  <div>
+    <div class="cta-tag">Advanced Modelling · Finingale</div>
+    <div class="cta-title">Need a Full Excel <span>DCF Model?</span></div>
+    <div class="cta-desc">The DCF Model Builder goes beyond a calculator — enter your company's financials and download a complete 10-sheet, fully-linked Excel model with Bear/Base/Bull scenarios, sensitivity tables, and full income statement, balance sheet, and cash flow.</div>
+    <div class="cta-features">
+      <span class="cta-feature">📊 10-Sheet Excel Export</span>
+      <span class="cta-feature">🐻 Bear / Base / Bull Scenarios</span>
+      <span class="cta-feature">🔢 Sensitivity Tables</span>
+      <span class="cta-feature">📑 Full 3-Statement Model</span>
+      <span class="cta-feature">⚡ Built in Your Browser</span>
+      <span class="cta-feature">🔒 No Data Uploaded</span>
+    </div>
+  </div>
+  <a href="dcf-model-builder.html" class="cta-btn">Open DCF Model Builder →</a>
+</div>
+
+<footer>
+  <div class="footer-brand">Fining<span>ale</span></div>
+  <div class="footer-links-row">
+    <a href="index.html">Home</a>
+    <a href="articles.html">Articles</a>
+    <a href="calculators.html">Calculators</a>
+    <a href="dcf-model-builder.html">DCF Model</a>
+    <a href="finingale-letstalk.html">Let's Talk</a>
+  </div>
+  <div class="footer-disclaimer">For educational purposes only — not financial advice.</div>
+</footer>
+
+<script>
+function filterCards(tag,btn){
+  document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.calc-card').forEach(card=>{
+    if(tag==='all'){card.classList.remove('hidden');}
+    else{(card.dataset.tags||'').includes(tag)?card.classList.remove('hidden'):card.classList.add('hidden');}
+  });
+}
+</script>
+</body>
+</html>

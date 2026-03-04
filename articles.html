@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Articles — Finingale</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--navy:#0A1628;--navy2:#0E1F3D;--navy3:#162847;--gold:#C9A84C;--gold2:#E8C96B;--white:#F8F5EE;--grey:#8A95A3;--light:#D6DAE0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(201,168,76,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.03) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,22,40,0.9);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.15);}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--white);letter-spacing:-0.5px;text-decoration:none;}
+.nav-logo span{color:var(--gold);}
+.nav-links{display:flex;gap:36px;list-style:none;}
+.nav-links a{font-size:0.85rem;font-weight:500;color:var(--light);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--gold2);}
+.nav-cta{padding:10px 22px;border:1px solid var(--gold);color:var(--gold);font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;border-radius:2px;transition:background 0.2s,color 0.2s;}
+.nav-cta:hover{background:var(--gold);color:var(--navy);}
+.page-header{padding:140px 48px 48px;position:relative;z-index:1;}
+.page-tag{font-size:0.72rem;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.page-tag::before{content:'';display:block;width:28px;height:1px;background:var(--gold);}
+.page-title{font-family:'Playfair Display',serif;font-size:clamp(2.4rem,5vw,4rem);font-weight:900;line-height:1.1;margin-bottom:16px;}
+.page-title span{color:var(--gold);}
+.page-desc{font-size:1rem;color:var(--grey);font-weight:300;max-width:580px;line-height:1.75;}
+.articles-wrap{padding:40px 48px 80px;position:relative;z-index:1;}
+.articles-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;}
+.article-card{background:var(--navy2);border:1px solid rgba(201,168,76,0.13);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;text-decoration:none;color:var(--white);transition:border-color 0.2s,transform 0.2s;position:relative;}
+.article-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold2));opacity:0;transition:opacity 0.2s;}
+.article-card:hover{border-color:rgba(201,168,76,0.4);transform:translateY(-3px);}
+.article-card:hover::before{opacity:1;}
+.article-thumb{height:200px;background:linear-gradient(135deg,var(--navy3) 0%,#1a3355 100%);position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:24px;overflow:hidden;}
+.article-thumb::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(201,168,76,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.05) 1px,transparent 1px);background-size:28px 28px;}
+.article-thumb::after{content:'';position:absolute;bottom:0;left:0;right:0;height:100px;background:linear-gradient(transparent,rgba(10,22,40,0.9));}
+.thumb-cat{font-size:0.6rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);position:relative;z-index:1;margin-bottom:6px;}
+.thumb-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--white);line-height:1.3;position:relative;z-index:1;}
+.article-body{padding:24px;flex:1;display:flex;flex-direction:column;}
+.article-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.article-tag{font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--navy);background:var(--gold);padding:3px 8px;border-radius:2px;}
+.article-time{font-size:0.68rem;color:var(--grey);}
+.article-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;line-height:1.35;margin-bottom:12px;color:var(--white);}
+.article-desc{font-size:0.85rem;color:var(--grey);line-height:1.7;font-weight:300;flex:1;}
+.article-footer{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid rgba(201,168,76,0.1);}
+.article-author{font-size:0.72rem;color:var(--grey);}
+.article-cta{font-size:0.75rem;font-weight:700;color:var(--gold);letter-spacing:0.06em;text-transform:uppercase;transition:letter-spacing 0.2s;}
+.article-card:hover .article-cta{letter-spacing:0.14em;}
+.section-divider{border:none;border-top:1px solid rgba(201,168,76,0.1);margin:0 48px 48px;}
+footer{background:#060E1A;padding:40px 48px;border-top:1px solid rgba(201,168,76,0.15);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;position:relative;z-index:1;}
+.footer-brand{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;}
+.footer-brand span{color:var(--gold);}
+.footer-links-row{display:flex;gap:24px;flex-wrap:wrap;}
+.footer-links-row a{font-size:0.8rem;color:var(--grey);text-decoration:none;transition:color 0.2s;}
+.footer-links-row a:hover{color:var(--white);}
+.footer-disclaimer{font-size:0.7rem;color:var(--grey);}
+@media(max-width:860px){
+  nav{padding:18px 24px;}.nav-links{display:none;}
+  .page-header{padding:110px 24px 36px;}
+  .articles-wrap{padding:32px 24px 60px;}
+  .articles-grid{grid-template-columns:1fr;}
+  .section-divider{margin:0 24px 40px;}
+  footer{padding:28px 24px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Fining<span>ale</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="articles.html" class="active">Articles</a></li>
+    <li><a href="calculators.html">Calculators</a></li>
+    <li><a href="dcf-model-builder.html">DCF Model</a></li>
+    <li><a href="finingale-letstalk.html">Let's Talk</a></li>
+  </ul>
+  <a href="finingale-letstalk.html" class="nav-cta">Let's Talk →</a>
+</nav>
+
+<div class="page-header">
+  <div class="page-tag">Finingale · Research</div>
+  <h1 class="page-title">All <span>Articles</span></h1>
+  <p class="page-desc">Sharp, jargon-free thinking on investing, markets, and building wealth — written by a finance professional, not a content machine.</p>
+</div>
+
+<div class="articles-wrap">
+  <div class="articles-grid">
+
+    <a href="article-01-the-investor-nobody-talks-about.html" class="article-card">
+      <div class="article-thumb">
+        <div class="thumb-cat">Personal Finance</div>
+        <div class="thumb-title">The Investor Nobody Talks About</div>
+      </div>
+      <div class="article-body">
+        <div class="article-meta"><span class="article-tag">Personal Finance</span><span class="article-time">7 min read</span></div>
+        <div class="article-title">The Investor Nobody Talks About</div>
+        <div class="article-desc">The strategy, the stock, the timing — none of it matters if you cannot do this one thing. Why discipline beats intelligence every single time, and what the research actually shows about investor behaviour.</div>
+        <div class="article-footer"><span class="article-author">Rohan Tainwala</span><span class="article-cta">Read Article →</span></div>
+      </div>
+    </a>
+
+    <a href="article-02-kelly-criterion.html" class="article-card">
+      <div class="article-thumb">
+        <div class="thumb-cat">Risk &amp; Strategy</div>
+        <div class="thumb-title">The Kelly Criterion: How Much Should You Actually Bet?</div>
+      </div>
+      <div class="article-body">
+        <div class="article-meta"><span class="article-tag">Risk &amp; Strategy</span><span class="article-time">8 min read</span></div>
+        <div class="article-title">The Kelly Criterion: How Much Should You Actually Bet?</div>
+        <div class="article-desc">A Bell Labs mathematician solved position sizing in 1956. Most investors still ignore it. The formula that tells you exactly how much of your capital to risk on any trade — and the maths behind why it works.</div>
+        <div class="article-footer"><span class="article-author">Rohan Tainwala</span><span class="article-cta">Read Article →</span></div>
+      </div>
+    </a>
+
+    <a href="article-03-esg.html" class="article-card">
+      <div class="article-thumb">
+        <div class="thumb-cat">ESG &amp; Sustainability</div>
+        <div class="thumb-title">Science and Finance: The New Sci-Fi</div>
+      </div>
+      <div class="article-body">
+        <div class="article-meta"><span class="article-tag">ESG</span><span class="article-time">11 min read</span></div>
+        <div class="article-title">Science and Finance: The New Sci-Fi</div>
+        <div class="article-desc">ESG is not a values exercise. It is a risk framework. And the finance professionals who understand that distinction are already years ahead of those who do not. A clear-eyed look at what ESG actually means for portfolios.</div>
+        <div class="article-footer"><span class="article-author">Rohan Tainwala</span><span class="article-cta">Read Article →</span></div>
+      </div>
+    </a>
+
+    <a href="article-04-risk-free-rate.html" class="article-card">
+      <div class="article-thumb">
+        <div class="thumb-cat">Financial Theory</div>
+        <div class="thumb-title">Risk-Free, Is It Though?</div>
+      </div>
+      <div class="article-body">
+        <div class="article-meta"><span class="article-tag">Theory</span><span class="article-time">6 min read</span></div>
+        <div class="article-title">Risk-Free, Is It Though?</div>
+        <div class="article-desc">Textbooks treat the risk-free rate as a settled concept. It is not. And the casual use of that term has been quietly misleading finance students and practitioners for decades. What it really means and why it matters.</div>
+        <div class="article-footer"><span class="article-author">Rohan Tainwala</span><span class="article-cta">Read Article →</span></div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<footer>
+  <div class="footer-brand">Fining<span>ale</span></div>
+  <div class="footer-links-row">
+    <a href="index.html">Home</a>
+    <a href="articles.html">Articles</a>
+    <a href="calculators.html">Calculators</a>
+    <a href="dcf-model-builder.html">DCF Model</a>
+    <a href="finingale-letstalk.html">Let's Talk</a>
+  </div>
+  <div class="footer-disclaimer">For educational purposes only — not financial advice.</div>
+</footer>
+
+</body>
+</html>
