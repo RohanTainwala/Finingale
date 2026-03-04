@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DCF Model Builder — Finingale</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Libre+Franklin:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --navy:    #0A1628;
+    --navy2:   #0E1F3D;
+    --navy3:   #162847;
+    --gold:    #C9A84C;
+    --gold2:   #E8C96B;
+    --cream:   #F5F0E8;
+    --smoke:   #EDEAD9;
+    --mid:     #8A95A3;
+    --text:    #1A1A2E;
+    --input-bg:#FFFDF5;
+    --border:  #D6C89A;
+    --red:     #C0392B;
+    --green:   #1E7E4A;
+    --blue:    #1A4A8A;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--navy);
+    color: var(--cream);
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── NOISE TEXTURE overlay ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ── HEADER ── */
+  header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 36px 0 28px;
+    border-bottom: 1px solid rgba(201,168,76,0.25);
+    margin-bottom: 48px;
+  }
+  .brand { display: flex; flex-direction: column; gap: 4px; }
+  .brand-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); opacity: 0.85;
+  }
+  .page-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px; line-height: 1.1;
+    color: var(--cream);
+    letter-spacing: -0.01em;
+  }
+  .page-title em { color: var(--gold); font-style: italic; }
+  .header-meta {
+    text-align: right;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--mid);
+    line-height: 1.8;
+  }
+
+  /* ── DOWNLOAD BUTTON ── */
+  .dl-btn {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--gold); color: var(--navy);
+    font-family: 'Libre Franklin', sans-serif;
+    font-weight: 600; font-size: 13px; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 14px 28px;
+    border: none; cursor: pointer; border-radius: 2px;
+    transition: all 0.2s ease;
+    position: sticky; bottom: 24px;
+    box-shadow: 0 4px 24px rgba(201,168,76,0.35);
+    margin-top: 48px;
+    width: 100%;
+    justify-content: center;
+  }
+  .dl-btn:hover { background: var(--gold2); transform: translateY(-1px); box-shadow: 0 8px 32px rgba(201,168,76,0.45); }
+  .dl-btn:active { transform: translateY(0); }
+  .dl-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* ── SECTION ── */
+  .section {
+    margin-bottom: 44px;
+    opacity: 0; transform: translateY(16px);
+    animation: fadeUp 0.5s ease forwards;
+  }
+  @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+  .section:nth-child(1) { animation-delay: 0.05s; }
+  .section:nth-child(2) { animation-delay: 0.1s; }
+  .section:nth-child(3) { animation-delay: 0.15s; }
+  .section:nth-child(4) { animation-delay: 0.2s; }
+  .section:nth-child(5) { animation-delay: 0.25s; }
+  .section:nth-child(6) { animation-delay: 0.3s; }
+  .section:nth-child(7) { animation-delay: 0.35s; }
+  .section:nth-child(8) { animation-delay: 0.4s; }
+
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+  }
+  .section-letter {
+    font-family: 'DM Serif Display', serif; font-size: 11px;
+    color: var(--gold); letter-spacing: 0.12em;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 2px; padding: 2px 7px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px; color: var(--cream); letter-spacing: -0.01em;
+  }
+  .section-line {
+    flex: 1; height: 1px;
+    background: linear-gradient(to right, rgba(201,168,76,0.25), transparent);
+  }
+
+  /* ── GRID ── */
+  .grid { display: grid; gap: 12px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  /* ── FIELD ── */
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--mid);
+  }
+  .field input, .field select {
+    background: rgba(255,253,245,0.06);
+    border: 1px solid rgba(214,200,154,0.22);
+    color: var(--cream);
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    padding: 9px 12px; border-radius: 2px;
+    outline: none; transition: border-color 0.15s, background 0.15s;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.07);
+  }
+  .field input::placeholder { color: rgba(138,149,163,0.5); }
+  .field select option { background: var(--navy2); color: var(--cream); }
+  .field .unit {
+    font-size: 10px; color: var(--mid); letter-spacing: 0.05em;
+    margin-top: 2px;
+  }
+
+  /* ── SCENARIO TABS ── */
+  .scen-tabs {
+    display: flex; gap: 2px; margin-bottom: 20px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 3px; padding: 3px;
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+  .scen-tab {
+    flex: 1; padding: 9px 0; text-align: center;
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; cursor: pointer;
+    border-radius: 2px; transition: all 0.18s;
+    border: none; background: transparent; color: var(--mid);
+  }
+  .scen-tab.bear.active { background: rgba(192,57,43,0.2); color: #E57373; border: 1px solid rgba(192,57,43,0.4); }
+  .scen-tab.base.active { background: rgba(26,74,138,0.3); color: #90CAF9; border: 1px solid rgba(26,74,138,0.5); }
+  .scen-tab.bull.active { background: rgba(30,126,74,0.2); color: #81C784; border: 1px solid rgba(30,126,74,0.4); }
+  .scen-tab:not(.active):hover { background: rgba(255,255,255,0.06); color: var(--cream); }
+
+  .scen-panel { display: none; }
+  .scen-panel.active { display: block; }
+
+  /* Year headers for projection grids */
+  .year-row {
+    display: grid; gap: 12px; margin-bottom: 6px;
+  }
+  .year-lbl {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--gold); text-align: center; letter-spacing: 0.08em;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+  }
+
+  /* ── INFO CALLOUT ── */
+  .callout {
+    background: rgba(201,168,76,0.07);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 2px 2px 0;
+    padding: 12px 16px; margin-bottom: 24px;
+    font-size: 12px; color: rgba(245,240,232,0.75);
+    line-height: 1.6;
+  }
+  .callout strong { color: var(--gold); }
+
+  /* ── LIVE PREVIEW PANEL ── */
+  .preview-panel {
+    background: rgba(14,31,61,0.8);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 3px; padding: 20px 24px;
+    margin-bottom: 32px;
+    backdrop-filter: blur(4px);
+  }
+  .preview-title {
+    font-family: 'DM Serif Display', serif; font-size: 13px;
+    color: var(--gold); letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+  }
+  .preview-grid {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 16px;
+  }
+  .kpi { display: flex; flex-direction: column; gap: 4px; }
+  .kpi-label { font-size: 10px; color: var(--mid); text-transform: uppercase; letter-spacing: 0.07em; }
+  .kpi-value {
+    font-family: 'DM Serif Display', serif; font-size: 22px;
+    color: var(--cream); line-height: 1;
+  }
+  .kpi-value.gold { color: var(--gold); }
+  .kpi-sub { font-size: 10px; color: var(--mid); font-family: 'DM Mono', monospace; }
+
+  /* ── SUBHEAD ── */
+  .subhead {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.09em;
+    text-transform: uppercase; color: rgba(201,168,76,0.7);
+    margin: 18px 0 10px; padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: rgba(255,255,255,0.06); margin: 28px 0; }
+
+  /* ── FOOTER ── */
+  footer {
+    margin-top: 64px; padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    text-align: center;
+    font-size: 11px; color: var(--mid); font-style: italic;
+  }
+
+  @media (max-width: 700px) {
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .preview-grid { grid-template-columns: 1fr 1fr; }
+    .page-title { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<header>
+  <div class="brand">
+    <div class="brand-name">Finingale</div>
+    <h1 class="page-title">DCF Model <em>Builder</em></h1>
+  </div>
+  <div class="header-meta">
+    10-Sheet Excel · Bear / Base / Bull<br>
+    Sensitivity Tables · Full Linkage<br>
+    Browser-generated · No upload
+  </div>
+</header>
+
+<!-- LIVE PREVIEW -->
+<div class="preview-panel" id="previewPanel">
+  <div class="preview-title">▸ Live Estimates — Base Case</div>
+  <div class="preview-grid">
+    <div class="kpi">
+      <div class="kpi-label">Enterprise Value</div>
+      <div class="kpi-value gold" id="prev-ev">—</div>
+      <div class="kpi-sub">USD mm</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Equity Value</div>
+      <div class="kpi-value" id="prev-eq">—</div>
+      <div class="kpi-sub">USD mm</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Implied Share Price</div>
+      <div class="kpi-value" id="prev-sp">—</div>
+      <div class="kpi-sub">USD per share</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">EV / EBITDA (NTM)</div>
+      <div class="kpi-value" id="prev-mult">—</div>
+      <div class="kpi-sub">Base scenario</div>
+    </div>
+  </div>
+</div>
+
+<!-- CALLOUT -->
+<div class="callout">
+  <strong>How it works:</strong> Fill in all inputs below. Every field maps directly to a cell in the 10-sheet linked Excel model.
+  Click <strong>Generate &amp; Download Excel</strong> to build the file entirely in your browser — no data leaves your device.
+  The model includes Bear / Base / Bull scenarios, two sensitivity tables, and a full DCF valuation with Gordon Growth terminal value.
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION A — COVER -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-letter">A</span>
+    <span class="section-title">Model Details</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="grid grid-3">
+    <div class="field">
+      <label>Company Name</label>
+      <input type="text" id="companyName" value="BHP Group Limited" placeholder="e.g. Acme Corp">
+    </div>
+    <div class="field">
+      <label>Ticker / Exchange</label>
+      <input type="text" id="ticker" value="BHP:ASX" placeholder="e.g. BHP:ASX">
+    </div>
+    <div class="field">
+      <label>Analyst Name</label>
+      <input type="text" id="analystName" value="Finingale Research" placeholder="Your name">
+    </div>
+    <div class="field">
+      <label>Fiscal Year End</label>
+      <select id="fyEnd">
+        <option value="June" selected>June</option>
+        <option value="December">December</option>
+        <option value="March">March</option>
+        <option value="September">September</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Currency</label>
+      <select id="currency">
+        <option value="USD" selected>USD</option>
+        <option value="AUD">AUD</option>
+        <option value="GBP">GBP</option>
+        <option value="EUR">EUR</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Units</label>
+      <select id="units">
+        <option value="Millions" selected>Millions (mm)</option>
+        <option value="Billions">Billions (bn)</option>
+        <option value="Thousands">Thousands (k)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Base / Last Actual Year</label>
+      <input type="number" id="baseYear" value="2024" min="2000" max="2030">
+    </div>
+    <div class="field">
+      <label>Historical Year 1 Label</label>
+      <input type="text" id="hy1label" value="FY2023A">
+    </div>
+    <div class="field">
+      <label>Historical Year 2 Label</label>
+      <input type="text" id="hy2label" value="FY2024A">
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION B — HISTORICAL REVENUE -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-letter">B</span>
+    <span class="section-title">Historical Revenue (Actuals)</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="grid grid-2">
+    <div class="field">
+      <label id="rev_h1_label">FY2023A Revenue</label>
+      <input type="number" id="rev_h1" value="53800" step="0.1">
+      <span class="unit">USD mm — BHP FY2023 actual</span>
+    </div>
+    <div class="field">
+      <label id="rev_h2_label">FY2024A Revenue</label>
+      <input type="number" id="rev_h2" value="55700" step="0.1">
+      <span class="unit">USD mm — BHP FY2024 actual</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION C — SCENARIO ASSUMPTIONS -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-letter">C</span>
+    <span class="section-title">Scenario Assumptions</span>
+    <div class="section-line"></div>
+  </div>
+  <p style="font-size:12px;color:var(--mid);margin-bottom:16px;">Each scenario drives a separate column in the Excel. The model uses a single switch cell to toggle between them.</p>
+
+  <div class="scen-tabs">
+    <button class="scen-tab bear active" onclick="switchTab('bear')">⬇ Bear</button>
+    <button class="scen-tab base" onclick="switchTab('base')">→ Base</button>
+    <button class="scen-tab bull" onclick="switchTab('bull')">⬆ Bull</button>
+  </div>
+
+  <!-- BEAR -->
+  <div class="scen-panel bear active" id="panel-bear">
+    <div class="subhead">Revenue Growth — Projections</div>
+    <div class="year-row grid-4" style="grid-template-columns:repeat(5,1fr)">
+      <div class="year-lbl">FY+1</div><div class="year-lbl">FY+2</div>
+      <div class="year-lbl">FY+3</div><div class="year-lbl">FY+4</div><div class="year-lbl">FY+5</div>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px;">
+      <div class="field"><input type="number" id="bear_rg1" value="0.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><input type="number" id="bear_rg2" value="-2.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><input type="number" id="bear_rg3" value="1.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><input type="number" id="bear_rg4" value="2.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><input type="number" id="bear_rg5" value="2.0" step="0.1"><span class="unit">%</span></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Gross Margin %</label><input type="number" id="bear_gm" value="58.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>EBITDA Margin %</label><input type="number" id="bear_em" value="48.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>D&amp;A % of Revenue</label><input type="number" id="bear_da" value="11.5" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Capex % of Revenue</label><input type="number" id="bear_cx" value="18.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Interest Expense</label><input type="number" id="bear_int" value="800" step="1"><span class="unit">USD mm</span></div>
+      <div class="field"><label>Tax Rate %</label><input type="number" id="bear_tax" value="35.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Days Sales Outstanding</label><input type="number" id="bear_dso" value="25" step="1"><span class="unit">days</span></div>
+      <div class="field"><label>Days Inventory Outstanding</label><input type="number" id="bear_dio" value="20" step="1"><span class="unit">days</span></div>
+      <div class="field"><label>Days Payable Outstanding</label><input type="number" id="bear_dpo" value="32" step="1"><span class="unit">days</span></div>
+      <div class="field"><label>Annual Debt Repayment</label><input type="number" id="bear_rep" value="500" step="1"><span class="unit">USD mm</span></div>
+      <div class="field"><label>Interest Rate on Debt</label><input type="number" id="bear_ir" value="5.5" step="0.1"><span class="unit">%</span></div>
+    </div>
+    <div class="subhead" style="margin-top:20px;">DCF Parameters</div>
+    <div class="grid grid-3">
+      <div class="field"><label>Risk-Free Rate %</label><input type="number" id="bear_rfr" value="4.2" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Equity Risk Premium %</label><input type="number" id="bear_erp" value="6.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Beta (Levered)</label><input type="number" id="bear_beta" value="1.25" step="0.05"><span class="unit">×</span></div>
+      <div class="field"><label>Pre-tax Cost of Debt %</label><input type="number" id="bear_cod" value="5.5" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Debt Weight (D/EV) %</label><input type="number" id="bear_dw" value="25.0" step="0.5"><span class="unit">%</span></div>
+      <div class="field"><label>Terminal Growth Rate %</label><input type="number" id="bear_tgr" value="2.0" step="0.1"><span class="unit">%</span></div>
+    </div>
+  </div>
+
+  <!-- BASE -->
+  <div class="scen-panel base" id="panel-base">
+    <div class="subhead">Revenue Growth — Projections</div>
+    <div class="year-row grid-4" style="grid-template-columns:repeat(5,1fr)">
+      <div class="year-lbl">FY+1</div><div class="year-lbl">FY+2</div>
+      <div class="year-lbl">FY+3</div><div class="year-lbl">FY+4</div><div class="year-lbl">FY+5</div>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px;">
+      <div class="field"><input type="number" id="base_rg1" value="3.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><input type="number" id="base_rg2" value="4.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><input type="number" id="base_rg3" value="5.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><input type="number" id="base_rg4" value="4.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><input type="number" id="base_rg5" value="3.0" step="0.1"><span class="unit">%</span></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Gross Margin %</label><input type="number" id="base_gm" value="62.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>EBITDA Margin %</label><input type="number" id="base_em" value="52.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>D&amp;A % of Revenue</label><input type="number" id="base_da" value="11.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Capex % of Revenue</label><input type="number" id="base_cx" value="16.5" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Interest Expense</label><input type="number" id="base_int" value="700" step="1"><span class="unit">USD mm</span></div>
+      <div class="field"><label>Tax Rate %</label><input type="number" id="base_tax" value="32.5" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Days Sales Outstanding</label><input type="number" id="base_dso" value="23" step="1"><span class="unit">days</span></div>
+      <div class="field"><label>Days Inventory Outstanding</label><input type="number" id="base_dio" value="19" step="1"><span class="unit">days</span></div>
+      <div class="field"><label>Days Payable Outstanding</label><input type="number" id="base_dpo" value="33" step="1"><span class="unit">days</span></div>
+      <div class="field"><label>Annual Debt Repayment</label><input type="number" id="base_rep" value="400" step="1"><span class="unit">USD mm</span></div>
+      <div class="field"><label>Interest Rate on Debt</label><input type="number" id="base_ir" value="5.0" step="0.1"><span class="unit">%</span></div>
+    </div>
+    <div class="subhead" style="margin-top:20px;">DCF Parameters</div>
+    <div class="grid grid-3">
+      <div class="field"><label>Risk-Free Rate %</label><input type="number" id="base_rfr" value="4.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Equity Risk Premium %</label><input type="number" id="base_erp" value="5.5" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Beta (Levered)</label><input type="number" id="base_beta" value="1.10" step="0.05"><span class="unit">×</span></div>
+      <div class="field"><label>Pre-tax Cost of Debt %</label><input type="number" id="base_cod" value="5.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Debt Weight (D/EV) %</label><input type="number" id="base_dw" value="20.0" step="0.5"><span class="unit">%</span></div>
+      <div class="field"><label>Terminal Growth Rate %</label><input type="number" id="base_tgr" value="2.5" step="0.1"><span class="unit">%</span></div>
+    </div>
+  </div>
+
+  <!-- BULL -->
+  <div class="scen-panel bull" id="panel-bull">
+    <div class="subhead">Revenue Growth — Projections</div>
+    <div class="year-row grid-4" style="grid-template-columns:repeat(5,1fr)">
+      <div class="year-lbl">FY+1</div><div class="year-lbl">FY+2</div>
+      <div class="year-lbl">FY+3</div><div class="year-lbl">FY+4</div><div class="year-lbl">FY+5</div>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:16px;">
+      <div class="field"><input type="number" id="bull_rg1" value="6.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><input type="number" id="bull_rg2" value="8.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><input type="number" id="bull_rg3" value="8.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><input type="number" id="bull_rg4" value="7.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><input type="number" id="bull_rg5" value="5.0" step="0.1"><span class="unit">%</span></div>
+    </div>
+    <div class="grid grid-3">
+      <div class="field"><label>Gross Margin %</label><input type="number" id="bull_gm" value="66.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>EBITDA Margin %</label><input type="number" id="bull_em" value="56.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>D&amp;A % of Revenue</label><input type="number" id="bull_da" value="10.5" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Capex % of Revenue</label><input type="number" id="bull_cx" value="15.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Interest Expense</label><input type="number" id="bull_int" value="600" step="1"><span class="unit">USD mm</span></div>
+      <div class="field"><label>Tax Rate %</label><input type="number" id="bull_tax" value="30.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Days Sales Outstanding</label><input type="number" id="bull_dso" value="21" step="1"><span class="unit">days</span></div>
+      <div class="field"><label>Days Inventory Outstanding</label><input type="number" id="bull_dio" value="17" step="1"><span class="unit">days</span></div>
+      <div class="field"><label>Days Payable Outstanding</label><input type="number" id="bull_dpo" value="35" step="1"><span class="unit">days</span></div>
+      <div class="field"><label>Annual Debt Repayment</label><input type="number" id="bull_rep" value="500" step="1"><span class="unit">USD mm</span></div>
+      <div class="field"><label>Interest Rate on Debt</label><input type="number" id="bull_ir" value="4.5" step="0.1"><span class="unit">%</span></div>
+    </div>
+    <div class="subhead" style="margin-top:20px;">DCF Parameters</div>
+    <div class="grid grid-3">
+      <div class="field"><label>Risk-Free Rate %</label><input type="number" id="bull_rfr" value="3.8" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Equity Risk Premium %</label><input type="number" id="bull_erp" value="5.0" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Beta (Levered)</label><input type="number" id="bull_beta" value="1.00" step="0.05"><span class="unit">×</span></div>
+      <div class="field"><label>Pre-tax Cost of Debt %</label><input type="number" id="bull_cod" value="4.5" step="0.1"><span class="unit">%</span></div>
+      <div class="field"><label>Debt Weight (D/EV) %</label><input type="number" id="bull_dw" value="18.0" step="0.5"><span class="unit">%</span></div>
+      <div class="field"><label>Terminal Growth Rate %</label><input type="number" id="bull_tgr" value="3.0" step="0.1"><span class="unit">%</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION D — BALANCE SHEET HISTORICALS -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-letter">D</span>
+    <span class="section-title">Historical Balance Sheet (Actuals)</span>
+    <div class="section-line"></div>
+  </div>
+  <p style="font-size:12px;color:var(--mid);margin-bottom:16px;">Enter the last two years of actuals. Projections are calculated automatically from assumptions above.</p>
+
+  <div class="subhead">Assets — USD mm</div>
+  <div class="grid grid-4">
+    <div></div>
+    <div class="year-lbl" style="color:var(--gold);font-family:'DM Mono',monospace;font-size:11px;padding:4px 0;" id="bs_h1_lbl">FY2023A</div>
+    <div class="year-lbl" style="color:var(--gold);font-family:'DM Mono',monospace;font-size:11px;padding:4px 0;" id="bs_h2_lbl">FY2024A</div>
+    <div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div style="font-size:11px;color:var(--mid);display:flex;align-items:center;">Cash &amp; Equivalents</div>
+    <div class="field"><input type="number" id="bs_cash_h1" value="7800"></div>
+    <div class="field"><input type="number" id="bs_cash_h2" value="6600"></div>
+    <div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div style="font-size:11px;color:var(--mid);display:flex;align-items:center;">Accounts Receivable</div>
+    <div class="field"><input type="number" id="bs_ar_h1" value="3200"></div>
+    <div class="field"><input type="number" id="bs_ar_h2" value="3500"></div>
+    <div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div style="font-size:11px;color:var(--mid);display:flex;align-items:center;">Inventory</div>
+    <div class="field"><input type="number" id="bs_inv_h1" value="2800"></div>
+    <div class="field"><input type="number" id="bs_inv_h2" value="2900"></div>
+    <div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div style="font-size:11px;color:var(--mid);display:flex;align-items:center;">Other Current Assets</div>
+    <div class="field"><input type="number" id="bs_oca_h1" value="4100"></div>
+    <div class="field"><input type="number" id="bs_oca_h2" value="4300"></div>
+    <div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div style="font-size:11px;color:var(--mid);display:flex;align-items:center;">Net PP&amp;E</div>
+    <div class="field"><input type="number" id="bs_ppe_h1" value="48000"></div>
+    <div class="field"><input type="number" id="bs_ppe_h2" value="49500"></div>
+    <div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+    <div style="font-size:11px;color:var(--mid);display:flex;align-items:center;">Goodwill &amp; Intangibles</div>
+    <div class="field"><input type="number" id="bs_gw_h1" value="12500"></div>
+    <div class="field"><input type="number" id="bs_gw_h2" value="12800"></div>
+    <div></div>
+  </div>
+
+  <div class="subhead">Liabilities &amp; Equity — USD mm</div>
+  <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div style="font-size:11px;color:var(--mid);display:flex;align-items:center;">Accounts Payable</div>
+    <div class="field"><input type="number" id="bs_ap_h1" value="4800"></div>
+    <div class="field"><input type="number" id="bs_ap_h2" value="5000"></div>
+    <div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div style="font-size:11px;color:var(--mid);display:flex;align-items:center;">Other Current Liabilities</div>
+    <div class="field"><input type="number" id="bs_ocl_h1" value="3600"></div>
+    <div class="field"><input type="number" id="bs_ocl_h2" value="3900"></div>
+    <div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div style="font-size:11px;color:var(--mid);display:flex;align-items:center;">Long-Term Debt</div>
+    <div class="field"><input type="number" id="bs_ltd_h1" value="19000"></div>
+    <div class="field"><input type="number" id="bs_ltd_h2" value="15700"></div>
+    <div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div style="font-size:11px;color:var(--mid);display:flex;align-items:center;">Other LT Liabilities</div>
+    <div class="field"><input type="number" id="bs_oltl_h1" value="5200"></div>
+    <div class="field"><input type="number" id="bs_oltl_h2" value="5400"></div>
+    <div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+    <div style="font-size:11px;color:var(--mid);display:flex;align-items:center;">Share Capital</div>
+    <div class="field"><input type="number" id="bs_sc_h1" value="24000"></div>
+    <div class="field"><input type="number" id="bs_sc_h2" value="24000"></div>
+    <div></div>
+  </div>
+  <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+    <div style="font-size:11px;color:var(--mid);display:flex;align-items:center;">Retained Earnings</div>
+    <div class="field"><input type="number" id="bs_re_h1" value="13200"></div>
+    <div class="field"><input type="number" id="bs_re_h2" value="14000"></div>
+    <div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION E — CAPITAL STRUCTURE -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-letter">E</span>
+    <span class="section-title">Capital Structure &amp; Shares</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="grid grid-3">
+    <div class="field">
+      <label>Opening Debt Balance (H2)</label>
+      <input type="number" id="debt_open" value="15700" step="1">
+      <span class="unit">USD mm — FY2024A long-term debt</span>
+    </div>
+    <div class="field">
+      <label>Cash &amp; Equivalents (H2)</label>
+      <input type="number" id="cash_base" value="6600" step="1">
+      <span class="unit">USD mm — for net debt bridge</span>
+    </div>
+    <div class="field">
+      <label>Shares Outstanding</label>
+      <input type="number" id="shares" value="5059" step="1">
+      <span class="unit">millions of shares</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION F — CASH FLOW EXTRAS -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-letter">F</span>
+    <span class="section-title">Cash Flow — Historical &amp; Opening</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="grid grid-2">
+    <div class="field">
+      <label>Beginning Cash (FY2023A)</label>
+      <input type="number" id="beg_cash" value="8200" step="1">
+      <span class="unit">USD mm</span>
+    </div>
+    <div class="field">
+      <label>Other Investing Activities</label>
+      <input type="number" id="other_inv" value="0" step="1">
+      <span class="unit">USD mm per year (+ = inflow)</span>
+    </div>
+  </div>
+</div>
+
+<!-- DOWNLOAD -->
+<button class="dl-btn" onclick="buildAndDownload()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+  Generate &amp; Download DCF Excel Model
+</button>
+
+<footer>
+  Finingale DCF Model Builder · All computations run in your browser · No data is uploaded or stored
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+// ─── TAB SWITCHING ───────────────────────────────────────────────────────────
+function switchTab(s){
+  document.querySelectorAll('.scen-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.scen-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector('.scen-tab.'+s).classList.add('active');
+  document.getElementById('panel-'+s).classList.add('active');
+}
+
+// ─── LIVE PREVIEW ────────────────────────────────────────────────────────────
+function g(id){ return parseFloat(document.getElementById(id).value)||0; }
+function pct(id){ return g(id)/100; }
+
+function updatePreview(){
+  try {
+    const rev2 = g('rev_h2');
+    const rg   = [pct('base_rg1'),pct('base_rg2'),pct('base_rg3'),pct('base_rg4'),pct('base_rg5')];
+    let rev = rev2;
+    const revs = [];
+    for(let i=0;i<5;i++){ rev = rev*(1+rg[i]); revs.push(rev); }
+    const em   = pct('base_em');
+    const da   = pct('base_da');
+    const cx   = pct('base_cx');
+    const tax  = pct('base_tax');
+    const rfr  = pct('base_rfr');
+    const erp  = pct('base_erp');
+    const beta = g('base_beta');
+    const cod  = pct('base_cod');
+    const dw   = pct('base_dw');
+    const tgr  = pct('base_tgr');
+    const coe  = rfr + beta*erp;
+    const wacc = coe*(1-dw) + cod*(1-tax)*dw;
+
+    // Calc UFCF for 5 years
+    let sumPvUfcf = 0;
+    let prevRev = rev2;
+    for(let i=0;i<5;i++){
+      const r = revs[i];
+      const ebit  = r * (em - da);
+      const nopat = ebit*(1-tax);
+      const daAbs = r*da;
+      const capex = -r*cx;
+      const nwcChg = i===0 ? 0 : -(revs[i]-revs[i-1])*0.02;
+      const ufcf = nopat + daAbs + capex + nwcChg;
+      const t = 0.5 + i;
+      sumPvUfcf += ufcf / Math.pow(1+wacc, t);
+    }
+    const termUfcf = revs[4]*(em-da)*(1-tax) + revs[4]*da - revs[4]*cx;
+    const tv = termUfcf*(1+tgr)/(wacc-tgr);
+    const pvTv = tv/Math.pow(1+wacc,4.5);
+    const ev = sumPvUfcf + pvTv;
+    const netDebt = g('debt_open') - g('cash_base');
+    const eq = ev - netDebt;
+    const sp = eq / g('shares');
+    const ebitdaNtm = revs[0]*em;
+    const evEbitda = ebitdaNtm > 0 ? ev/ebitdaNtm : 0;
+
+    const fmt = n => n>=1000 ? (n/1000).toFixed(1)+'B' : n.toFixed(0);
+    document.getElementById('prev-ev').textContent  = '$'+fmt(ev);
+    document.getElementById('prev-eq').textContent  = '$'+fmt(eq);
+    document.getElementById('prev-sp').textContent  = '$'+sp.toFixed(2);
+    document.getElementById('prev-mult').textContent= evEbitda.toFixed(1)+'×';
+  } catch(e){}
+}
+
+document.querySelectorAll('input').forEach(el=>el.addEventListener('input', updatePreview));
+updatePreview();
+
+// Update year labels dynamically
+function updateYearLabels(){
+  const h1 = document.getElementById('hy1label').value || 'FY H1';
+  const h2 = document.getElementById('hy2label').value || 'FY H2';
+  const el1 = document.getElementById('rev_h1_label'); if(el1) el1.textContent = h1+' Revenue';
+  const el2 = document.getElementById('rev_h2_label'); if(el2) el2.textContent = h2+' Revenue';
+  const b1 = document.getElementById('bs_h1_lbl'); if(b1) b1.textContent = h1;
+  const b2 = document.getElementById('bs_h2_lbl'); if(b2) b2.textContent = h2;
+}
+document.getElementById('hy1label').addEventListener('input', updateYearLabels);
+document.getElementById('hy2label').addEventListener('input', updateYearLabels);
+
+// ─── EXCEL BUILDER ───────────────────────────────────────────────────────────
+function buildAndDownload(){
+  const btn = document.querySelector('.dl-btn');
+  btn.textContent = '⏳  Building Excel…';
+  btn.disabled = true;
+
+  setTimeout(()=>{
+    try {
+      const wb = buildWorkbook();
+      const fname = (document.getElementById('companyName').value || 'Company').replace(/\s+/g,'_')+'_DCF_Model.xlsx';
+      XLSX.writeFile(wb, fname);
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Downloaded!`;
+      setTimeout(()=>{
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Generate &amp; Download DCF Excel Model`;
+        btn.disabled = false;
+      }, 3000);
+    } catch(err){
+      alert('Error building Excel: ' + err.message);
+      btn.textContent = 'Generate & Download DCF Excel Model';
+      btn.disabled = false;
+    }
+  }, 50);
+}
+
+// ─── READ ALL INPUTS ─────────────────────────────────────────────────────────
+function readInputs(){
+  const v = id => document.getElementById(id)?.value || '';
+  const n = id => parseFloat(document.getElementById(id)?.value)||0;
+  const p = id => n(id)/100;
+  const hy1 = v('hy1label') || 'FY H1';
+  const hy2 = v('hy2label') || 'FY H2';
+  const by  = parseInt(v('baseYear'))||2024;
+  const projYears = [by+1,by+2,by+3,by+4,by+5].map(yr=>'FY'+yr+'E');
+  return {
+    company: v('companyName'), ticker: v('ticker'), analyst: v('analystName'),
+    fyEnd: v('fyEnd'), currency: v('currency'), units: v('units'), baseYear: by,
+    hy1, hy2, projYears,
+    allYears: [hy1, hy2, ...projYears],
+    rev_h1: n('rev_h1'), rev_h2: n('rev_h2'),
+    bear: {
+      rg:[p('bear_rg1'),p('bear_rg2'),p('bear_rg3'),p('bear_rg4'),p('bear_rg5')],
+      gm:p('bear_gm'), em:p('bear_em'), da:p('bear_da'), cx:p('bear_cx'),
+      int:n('bear_int'), tax:p('bear_tax'), dso:n('bear_dso'), dio:n('bear_dio'),
+      dpo:n('bear_dpo'), rep:n('bear_rep'), ir:p('bear_ir'),
+      rfr:p('bear_rfr'), erp:p('bear_erp'), beta:n('bear_beta'),
+      cod:p('bear_cod'), dw:p('bear_dw'), tgr:p('bear_tgr'),
+    },
+    base: {
+      rg:[p('base_rg1'),p('base_rg2'),p('base_rg3'),p('base_rg4'),p('base_rg5')],
+      gm:p('base_gm'), em:p('base_em'), da:p('base_da'), cx:p('base_cx'),
+      int:n('base_int'), tax:p('base_tax'), dso:n('base_dso'), dio:n('base_dio'),
+      dpo:n('base_dpo'), rep:n('base_rep'), ir:p('base_ir'),
+      rfr:p('base_rfr'), erp:p('base_erp'), beta:n('base_beta'),
+      cod:p('base_cod'), dw:p('base_dw'), tgr:p('base_tgr'),
+    },
+    bull: {
+      rg:[p('bull_rg1'),p('bull_rg2'),p('bull_rg3'),p('bull_rg4'),p('bull_rg5')],
+      gm:p('bull_gm'), em:p('bull_em'), da:p('bull_da'), cx:p('bull_cx'),
+      int:n('bull_int'), tax:p('bull_tax'), dso:n('bull_dso'), dio:n('bull_dio'),
+      dpo:n('bull_dpo'), rep:n('bull_rep'), ir:p('bull_ir'),
+      rfr:p('bull_rfr'), erp:p('bull_erp'), beta:n('bull_beta'),
+      cod:p('bull_cod'), dw:p('bull_dw'), tgr:p('bull_tgr'),
+    },
+    bs: {
+      cash:[n('bs_cash_h1'),n('bs_cash_h2')], ar:[n('bs_ar_h1'),n('bs_ar_h2')],
+      inv:[n('bs_inv_h1'),n('bs_inv_h2')], oca:[n('bs_oca_h1'),n('bs_oca_h2')],
+      ppe:[n('bs_ppe_h1'),n('bs_ppe_h2')], gw:[n('bs_gw_h1'),n('bs_gw_h2')],
+      ap:[n('bs_ap_h1'),n('bs_ap_h2')], ocl:[n('bs_ocl_h1'),n('bs_ocl_h2')],
+      ltd:[n('bs_ltd_h1'),n('bs_ltd_h2')], oltl:[n('bs_oltl_h1'),n('bs_oltl_h2')],
+      sc:[n('bs_sc_h1'),n('bs_sc_h2')], re:[n('bs_re_h1'),n('bs_re_h2')],
+    },
+    debt_open: n('debt_open'), cash_base: n('cash_base'),
+    shares: n('shares'), beg_cash: n('beg_cash'), other_inv: n('other_inv'),
+  };
+}
+
+// ─── STYLE HELPERS ───────────────────────────────────────────────────────────
+const NAVY   = 'FF0A1628', NAVY2 = 'FF0E1F3D', NAVY3 = 'FF162847';
+const GOLD   = 'FFC9A84C', WHITE = 'FFFFFFFF', GREY  = 'FF8A95A3';
+const LGREY  = 'FFF2F2F2', CREAM = 'FFF5F0E8';
+const BLUE_F = 'FF0000FF', GREEN_F='FF006400', BLACK_F='FF000000';
+const YELLOW_BG='FFFFF9E6', LBLUE_BG='FFE8F0F7', GREEN_BG='FFE8F8E8';
+const RED_BG  ='FFFDECEA', GOLD_BG ='FFFFF3CD';
+
+function hStyle(bgColor, fgColor, sz=10, bold=true, italic=false, hAlign='center'){
+  return {
+    font:{name:'Arial',sz,bold,italic,color:{rgb:fgColor}},
+    fill:{fgColor:{rgb:bgColor},patternType:'solid'},
+    alignment:{horizontal:hAlign,vertical:'center',wrapText:false},
+    border:{
+      top:{style:'thin',color:{rgb:'FFCCCCCC'}},
+      bottom:{style:'thin',color:{rgb:'FFCCCCCC'}},
+      left:{style:'thin',color:{rgb:'FFCCCCCC'}},
+      right:{style:'thin',color:{rgb:'FFCCCCCC'}}
+    }
+  };
+}
+function inputStyle(fmt='#,##0.0'){
+  return {
+    font:{name:'Arial',sz:10,color:{rgb:BLUE_F}},
+    fill:{fgColor:{rgb:YELLOW_BG},patternType:'solid'},
+    alignment:{horizontal:'right',vertical:'center'},
+    numFmt:fmt,
+    border:{bottom:{style:'thin',color:{rgb:'FFDDDDDD'}}}
+  };
+}
+function formulaStyle(fmt='#,##0.0', bold=false, green=false){
+  return {
+    font:{name:'Arial',sz:10,bold,color:{rgb:green?GREEN_F:BLACK_F}},
+    alignment:{horizontal:'right',vertical:'center'},
+    numFmt:fmt
+  };
+}
+function labelStyle(indent=0, bold=false, color=BLACK_F){
+  return {
+    font:{name:'Arial',sz:10,bold,color:{rgb:color}},
+    alignment:{horizontal:'left',vertical:'center',indent}
+  };
+}
+function sectionStyle(bgColor=NAVY2){
+  return {
+    font:{name:'Arial',sz:10,bold:true,color:{rgb:WHITE}},
+    fill:{fgColor:{rgb:bgColor},patternType:'solid'},
+    alignment:{horizontal:'left',vertical:'center',indent:1}
+  };
+}
+function pctFmt(v){ return {t:'n', v, z:'0.0%'}; }
+function numFmt(v, fmt='#,##0.0'){ return {t:'n', v, z:fmt}; }
+function strCell(v){ return {t:'s', v:''+v}; }
+
+// Build a worksheet from a 2D array of cells
+function makeWs(data, colWidths){
+  const ws = {};
+  let maxR=0, maxC=0;
+  data.forEach((row,r)=>{
+    if(!row) return;
+    row.forEach((cell,c)=>{
+      if(cell===null||cell===undefined) return;
+      const addr = XLSX.utils.encode_cell({r,c});
+      if(typeof cell === 'object' && cell.t!==undefined){
+        ws[addr] = cell;
+      } else if(typeof cell === 'number'){
+        ws[addr] = {t:'n', v:cell};
+      } else {
+        ws[addr] = {t:'s', v:String(cell)};
+      }
+      maxR=Math.max(maxR,r); maxC=Math.max(maxC,c);
+    });
+  });
+  ws['!ref'] = XLSX.utils.encode_range({s:{r:0,c:0},e:{r:maxR,c:maxC}});
+  if(colWidths) ws['!cols'] = colWidths.map(w=>({wch:w}));
+  return ws;
+}
+
+// helper: styled cell shorthand
+function h(v, style){ const c = typeof v==='number'?{t:'n',v}:{t:'s',v:String(v||'')}; c.s=style; return c; }
+function n_(v,fmt,bold,green){ const c={t:'n',v,z:fmt||'#,##0.0'}; c.s=formulaStyle(fmt,bold,green); return c; }
+function p_(v,bold,green){ return n_(v,'0.0%',bold,green); }
+function inp_(v,fmt){ const c={t:'n',v,z:fmt||'#,##0.0'}; c.s=inputStyle(fmt); return c; }
+function lbl_(v,indent,bold,color){ const c={t:'s',v:String(v||'')}; c.s=labelStyle(indent,bold,color||BLACK_F); return c; }
+function sec_(v,bg){ const c={t:'s',v:String(v||'')}; c.s=sectionStyle(bg||NAVY2); return c; }
+function emp_(){ return {t:'s',v:''}; }
+
+// ─── MAIN WORKBOOK BUILDER ────────────────────────────────────────────────────
+function buildWorkbook(){
+  const wb = XLSX.utils.book_new();
+  const I = readInputs();
+
+  // ── Compute all financials from inputs ──────────────────────────────────────
+  const scens = ['bear','base','bull'];
+
+  // For each scenario compute 5 years of financials
+  function calcScen(s){
+    const sc = I[s];
+    const revs=[], cogs=[], gp=[], opex=[], ebitda=[], da=[], ebit=[],
+          intExp=[], ebt=[], tax=[], ni=[], capex=[];
+    let prevRev = I.rev_h2;
+    for(let i=0;i<5;i++){
+      const r = prevRev*(1+sc.rg[i]);
+      revs.push(r);
+      cogs.push(r*(1-sc.gm));
+      gp.push(r*sc.gm);
+      const ebitdaV = r*sc.em;
+      ebitda.push(ebitdaV);
+      opex.push(gp[i]-ebitdaV);
+      const daV = -r*sc.da;
+      da.push(daV);
+      const ebitV = ebitdaV+daV;
+      ebit.push(ebitV);
+      intExp.push(-sc.int);
+      const ebtV = ebitV-sc.int;
+      ebt.push(ebtV);
+      const taxV = ebtV>0 ? -ebtV*sc.tax : 0;
+      tax.push(taxV);
+      ni.push(ebtV+taxV);
+      capex.push(-r*sc.cx);
+      prevRev = r;
+    }
+    // DCF
+    const coe  = sc.rfr + sc.beta*sc.erp;
+    const wacc = coe*(1-sc.dw) + sc.cod*(1-sc.tax)*sc.dw;
+    // UFCF
+    const ufcf=[];
+    for(let i=0;i<5;i++){
+      const nopat = ebit[i]*(1-sc.tax);
+      const daBack= Math.abs(da[i]);
+      const nwcChg= i===0?0:-(revs[i]-revs[i-1])*0.02;
+      ufcf.push(nopat+daBack+capex[i]+nwcChg);
+    }
+    let sumPv=0;
+    for(let i=0;i<5;i++) sumPv += ufcf[i]/Math.pow(1+wacc,0.5+i);
+    const tv   = ufcf[4]*(1+sc.tgr)/(wacc-sc.tgr);
+    const pvTv = tv/Math.pow(1+wacc,4.5);
+    const ev   = sumPv+pvTv;
+    const nd   = I.debt_open - I.cash_base;
+    const eq   = ev-nd;
+    const sp   = eq/I.shares;
+    return {revs,cogs,gp,opex,ebitda,da,ebit,intExp,ebt,tax,ni,capex,
+            ufcf,wacc,coe,tgr:sc.tgr,sumPv,tv,pvTv,ev,nd,eq,sp,sc};
+  }
+
+  const C = { bear:calcScen('bear'), base:calcScen('base'), bull:calcScen('bull') };
+  // Active = base (switch=2)
+  const A = C.base;
+
+  // Short helpers to get bear/base/bull value for a key
+  const bBaBu = (key,i) => [C.bear[key][i], C.base[key][i], C.bull[key][i]];
+
+  // ══════════════════════════════════════════════════════════════
+  // 1. COVER SHEET
+  // ══════════════════════════════════════════════════════════════
+  {
+    const rows=[];
+    const TH = (v,bg,fg,sz)=>h(v,hStyle(bg||NAVY,fg||WHITE,sz||12,true));
+    rows[0]=[TH('DCF VALUATION MODEL — '+I.company,NAVY,GOLD,14)];
+    rows[1]=[];
+    rows[2]=[h('MODEL DETAILS',labelStyle(0,true,NAVY))];
+    const meta=[['Company Name',I.company],['Ticker',I.ticker],['Analyst',I.analyst],
+                ['Fiscal Year End',I.fyEnd],['Currency',I.currency],['Units',I.units],
+                ['Base Year',I.baseYear],['Report Date',new Date().toISOString().slice(0,10)]];
+    meta.forEach(([k,v],i)=>{
+      rows[3+i]=[lbl_(k,0,true,NAVY2),h(v,inputStyle('General'))];
+    });
+    rows[12]=[];
+    rows[13]=[h('KEY OUTPUTS — BASE CASE',sectionStyle(NAVY))];
+    const outs=[
+      ['Enterprise Value (USD mm)', A.ev],['Equity Value (USD mm)',A.eq],
+      ['Implied Share Price (USD)', A.sp],['WACC', A.wacc],
+      ['Terminal Growth Rate', A.sc.tgr],['EV/EBITDA (NTM)', A.ev/A.ebitda[0]],
+      ['Active Scenario','Base (switch=2)'],
+    ];
+    outs.forEach(([k,v],i)=>{
+      const r=14+i;
+      rows[r]=[lbl_(k,0,false)];
+      if(typeof v==='number'){
+        rows[r][1]= k.includes('%')||k.includes('WACC')||k.includes('Growth')||k.includes('Rate')
+          ? n_(v,'0.0%',true) : k.includes('Share')
+          ? n_(v,'$#,##0.00',true) : n_(v,'#,##0.0',true);
+        rows[r][1].s.fill={fgColor:{rgb:GREEN_BG},patternType:'solid'};
+      } else {
+        rows[r][1]=h(v,inputStyle('General'));
+      }
+    });
+    rows[22]=[];
+    rows[23]=[h('Scenario Switch: 1=Bear  2=Base  3=Bull  →  change in Assumptions sheet',labelStyle(0,true,NAVY))];
+    rows[26]=[h('Built with Finingale · finingale.com · For informational purposes only. Not investment advice.',
+               {...labelStyle(0,false,GREY),alignment:{horizontal:'center'}})];
+
+    const ws = makeWs(rows,[20,25,15,15,15,15,15]);
+    XLSX.utils.book_append_sheet(wb, ws, 'Cover');
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // 2. ASSUMPTIONS SHEET
+  // ══════════════════════════════════════════════════════════════
+  {
+    const rows=[];
+    const COLS = ['',I.hy1,I.hy2,...I.projYears]; // labels only in Assumptions
+    // We store Bear=col3, Base=col4, Bull=col5 for projection inputs
+    // Historical in col1,col2
+
+    rows[0]=[h('ASSUMPTIONS & INPUTS',hStyle(NAVY,GOLD,13)),,...Array(7).fill(emp_())];
+    rows[1]=[h('Blue cells = hardcoded inputs   |   Black = formulas   |   Active scenario = Base (switch=2)',
+              hStyle('FFEEEEEE',GREY,9,false)),...Array(7).fill(emp_())];
+    rows[2]=[];
+    // Column headers
+    rows[3]=[emp_(),emp_(),h('Units',hStyle(NAVY2,WHITE,9)),
+             h(I.hy1,hStyle(NAVY2,GOLD,9)),h(I.hy2,hStyle(NAVY2,GOLD,9)),
+             h('BEAR',hStyle('FFC0392B',WHITE,9)),h('BASE',hStyle('FF1A4A8A',WHITE,9)),
+             h('BULL',hStyle('FF1E7E4A',WHITE,9))];
+
+    let r=4;
+    function secRow(txt,bg){ rows[r]=[emp_(),h(txt,{...sectionStyle(bg||NAVY2),alignment:{horizontal:'left',indent:0}}),
+      ...Array(6).fill(h('',sectionStyle(bg||NAVY2)))]; r++; }
+    function dataRow(label, h1, h2, bear, base, bull, unit, isPct){
+      const fmt = isPct?'0.0%':'#,##0.0';
+      rows[r]=[emp_(),lbl_(label,1),h(unit||'',labelStyle(0,false,GREY)),
+               isPct?inp_(h1,'0.0%'):inp_(h1),isPct?inp_(h2,'0.0%'):inp_(h2),
+               isPct?inp_(bear,'0.0%'):inp_(bear),isPct?inp_(base,'0.0%'):inp_(base),
+               isPct?inp_(bull,'0.0%'):inp_(bull)];
+      r++;
+    }
+
+    // A. Revenue
+    secRow('A.  REVENUE ASSUMPTIONS');
+    rows[r]=[emp_(),lbl_('Historical Revenue',1,true),...Array(6).fill(emp_())]; r++;
+    rows[r]=[emp_(),lbl_('  Revenue (H1)',2),h('USD mm',labelStyle(0,false,GREY)),
+             inp_(I.rev_h1),inp_(I.rev_h2),emp_(),emp_(),emp_()]; r++;
+    rows[r]=[emp_(),lbl_('Revenue Growth — Projections',1,true),...Array(6).fill(emp_())]; r++;
+
+    const rgLabels=['FY+1 Growth','FY+2 Growth','FY+3 Growth','FY+4 Growth','FY+5 Growth'];
+    for(let i=0;i<5;i++){
+      rows[r]=[emp_(),lbl_('  '+rgLabels[i],2),h('%',labelStyle(0,false,GREY)),
+               emp_(),emp_(),
+               inp_(I.bear.rg[i],'0.0%'),inp_(I.base.rg[i],'0.0%'),inp_(I.bull.rg[i],'0.0%')];
+      r++;
+    }
+
+    // B. Margins
+    rows[r]=[emp_(),...Array(7).fill(emp_())]; r++;
+    secRow('B.  MARGIN ASSUMPTIONS');
+    const margins=[
+      ['Gross Margin %',       0.62, 0.62, I.bear.gm, I.base.gm, I.bull.gm, '%', true],
+      ['EBITDA Margin %',      0.52, 0.52, I.bear.em, I.base.em, I.bull.em, '%', true],
+      ['D&A % of Revenue',     0.11, 0.11, I.bear.da, I.base.da, I.bull.da, '%', true],
+      ['Interest Expense',     700,  700,  I.bear.int,I.base.int,I.bull.int,'USD mm',false],
+      ['Tax Rate %',           0.325,0.325,I.bear.tax,I.base.tax,I.bull.tax,'%',  true],
+    ];
+    margins.forEach(([l,h1,h2,b,ba,bu,u,ip])=>dataRow(l,h1,h2,b,ba,bu,u,ip));
+
+    // C. Capex & WC
+    rows[r]=[emp_(),...Array(7).fill(emp_())]; r++;
+    secRow('C.  CAPEX & WORKING CAPITAL');
+    const capexWc=[
+      ['Capex % of Revenue', 0.165, 0.165,I.bear.cx, I.base.cx, I.bull.cx, '%', true],
+      ['Days Sales Outstanding',23,23,    I.bear.dso,I.base.dso,I.bull.dso,'days',false],
+      ['Days Inventory Outstanding',19,19,I.bear.dio,I.base.dio,I.bull.dio,'days',false],
+      ['Days Payable Outstanding',33,33,  I.bear.dpo,I.base.dpo,I.bull.dpo,'days',false],
+    ];
+    capexWc.forEach(([l,h1,h2,b,ba,bu,u,ip])=>dataRow(l,h1,h2,b,ba,bu,u,ip));
+
+    // D. Debt
+    rows[r]=[emp_(),...Array(7).fill(emp_())]; r++;
+    secRow('D.  DEBT & CAPITAL STRUCTURE');
+    rows[r]=[emp_(),lbl_('  Opening Debt Balance',2),h('USD mm',labelStyle(0,false,GREY)),
+             inp_(I.bs.ltd[0]),inp_(I.bs.ltd[1]),inp_(I.debt_open),inp_(I.debt_open),inp_(I.debt_open)]; r++;
+    const debt=[
+      ['Annual Debt Repayment', I.bear.rep,I.bear.rep,I.bear.rep,I.base.rep,I.bull.rep,'USD mm',false],
+      ['Interest Rate on Debt', I.bear.ir, I.bear.ir, I.bear.ir, I.base.ir, I.bull.ir, '%', true],
+      ['Shares Outstanding',    I.shares,I.shares,I.shares,I.shares,I.shares,'mm',false],
+      ['Cash (Base Year)',       I.cash_base,I.cash_base,I.cash_base,I.cash_base,I.cash_base,'USD mm',false],
+    ];
+    debt.forEach(([l,h1,h2,b,ba,bu,u,ip])=>dataRow(l,h1,h2,b,ba,bu,u,ip));
+
+    // E. DCF
+    rows[r]=[emp_(),...Array(7).fill(emp_())]; r++;
+    secRow('E.  DCF VALUATION INPUTS');
+    rows[r]=[emp_(),lbl_('  *** SCENARIO SWITCH  (1=Bear  2=Base  3=Bull) ***',0,true,NAVY2),
+             emp_(),inp_(2,'0'),emp_(),emp_(),emp_(),emp_()]; r++;
+
+    const dcfInputs=[
+      ['Risk-Free Rate %',       I.bear.rfr, I.base.rfr, I.bull.rfr, '%',true],
+      ['Equity Risk Premium %',  I.bear.erp, I.base.erp, I.bull.erp, '%',true],
+      ['Beta (Levered)',         I.bear.beta,I.base.beta,I.bull.beta, 'x',false],
+      ['Pre-tax Cost of Debt %', I.bear.cod, I.base.cod, I.bull.cod, '%',true],
+      ['Debt Weight (D/EV) %',   I.bear.dw,  I.base.dw,  I.bull.dw,  '%',true],
+      ['Terminal Growth Rate %', I.bear.tgr, I.base.tgr, I.bull.tgr, '%',true],
+    ];
+    dcfInputs.forEach(([l,b,ba,bu,u,ip])=>{
+      rows[r]=[emp_(),lbl_('  '+l,2),h(u,labelStyle(0,false,GREY)),
+               emp_(),emp_(),
+               ip?inp_(b,'0.0%'):inp_(b,'#,##0.00'),
+               ip?inp_(ba,'0.0%'):inp_(ba,'#,##0.00'),
+               ip?inp_(bu,'0.0%'):inp_(bu,'#,##0.00')];
+      r++;
+    });
+
+    // Calculated WACC
+    for(const [label, vals] of [
+      ['Cost of Equity [RFR+Beta×ERP]',scens.map(s=>C[s].coe)],
+      ['WACC [Ke×(1-d)+Kd×(1-t)×d]',scens.map(s=>C[s].wacc)],
+    ]){
+      rows[r]=[emp_(),lbl_('  '+label,2,true),h('%',labelStyle(0,false,GREY)),
+               emp_(),emp_(),
+               p_(vals[0]),p_(vals[1],true),p_(vals[2])];
+      r++;
+    }
+    rows[r]=[emp_(),lbl_('  Active WACC (Base)',1,true,NAVY2),h('%',labelStyle()),
+             emp_(),n_(A.wacc,'0.0%',true,true),emp_(),emp_(),emp_()]; r++;
+    rows[r]=[emp_(),lbl_('  Active TGR (Base)',1,true,NAVY2),h('%',labelStyle()),
+             emp_(),n_(A.sc.tgr,'0.0%',true,true),emp_(),emp_(),emp_()]; r++;
+
+    const ws=makeWs(rows,[3,38,10,13,13,13,13,13]);
+    XLSX.utils.book_append_sheet(wb, ws, 'Assumptions');
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // 3. SCENARIOS COMPARISON
+  // ══════════════════════════════════════════════════════════════
+  {
+    const rows=[];
+    rows[0]=[h('SCENARIO COMPARISON',hStyle(NAVY,GOLD,13)),...Array(9).fill(emp_())];
+    rows[1]=[];
+    rows[2]=[emp_(),emp_(),
+             h('BEAR CASE',hStyle('FFC0392B',WHITE)),h('',hStyle('FFC0392B',WHITE)),h('',hStyle('FFC0392B',WHITE)),
+             h('BASE CASE',hStyle('FF1A4A8A',WHITE)),h('',hStyle('FF1A4A8A',WHITE)),h('',hStyle('FF1A4A8A',WHITE)),
+             h('BULL CASE',hStyle('FF1E7E4A',WHITE)),h('',hStyle('FF1E7E4A',WHITE)),h('',hStyle('FF1E7E4A',WHITE))];
+    rows[3]=[emp_(),h('Metric / Year',hStyle(NAVY2,WHITE)),
+             ...['FY+1','FY+3','FY+5','FY+1','FY+3','FY+5','FY+1','FY+3','FY+5'].map(y=>h(y,hStyle(NAVY2,GOLD,9)))];
+
+    function scRow(label, vals, isPct){
+      const fmt = isPct?'0.0%':'#,##0.0';
+      rows.push([emp_(),lbl_(label,1),...vals.map(v=>n_(v,fmt))]);
+    }
+
+    for(const sc of scens){
+      C[sc].revPct = C[sc].revs.map((r,i)=>i===0?(r/I.rev_h2-1):(r/C[sc].revs[i-1]-1));
+    }
+
+    scRow('Revenue (USD mm)',     [C.bear.revs[0],C.bear.revs[2],C.bear.revs[4],C.base.revs[0],C.base.revs[2],C.base.revs[4],C.bull.revs[0],C.bull.revs[2],C.bull.revs[4]]);
+    scRow('Revenue Growth',       [C.bear.revPct[0],C.bear.revPct[2],C.bear.revPct[4],C.base.revPct[0],C.base.revPct[2],C.base.revPct[4],C.bull.revPct[0],C.bull.revPct[2],C.bull.revPct[4]],true);
+    scRow('EBITDA (USD mm)',      [C.bear.ebitda[0],C.bear.ebitda[2],C.bear.ebitda[4],C.base.ebitda[0],C.base.ebitda[2],C.base.ebitda[4],C.bull.ebitda[0],C.bull.ebitda[2],C.bull.ebitda[4]]);
+    scRow('EBITDA Margin %',      [C.bear.sc.em,C.bear.sc.em,C.bear.sc.em,C.base.sc.em,C.base.sc.em,C.base.sc.em,C.bull.sc.em,C.bull.sc.em,C.bull.sc.em],true);
+    scRow('Net Income (USD mm)',  [C.bear.ni[0],C.bear.ni[2],C.bear.ni[4],C.base.ni[0],C.base.ni[2],C.base.ni[4],C.bull.ni[0],C.bull.ni[2],C.bull.ni[4]]);
+    scRow('UFCF (USD mm)',        [C.bear.ufcf[0],C.bear.ufcf[2],C.bear.ufcf[4],C.base.ufcf[0],C.base.ufcf[2],C.base.ufcf[4],C.bull.ufcf[0],C.bull.ufcf[2],C.bull.ufcf[4]]);
+
+    rows.push([]);
+    rows.push([h('VALUATION SUMMARY',sectionStyle(NAVY)),...Array(10).fill(emp_())]);
+    function valRow(label, vals, fmt){
+      rows.push([emp_(),lbl_(label,1),...vals.map(v=>n_(v,fmt||'#,##0.0'))]);
+    }
+    valRow('Enterprise Value (USD mm)',[C.bear.ev,emp_(),emp_(),C.base.ev,emp_(),emp_(),C.bull.ev,emp_(),emp_()]);
+    valRow('Equity Value (USD mm)',    [C.bear.eq,emp_(),emp_(),C.base.eq,emp_(),emp_(),C.bull.eq,emp_(),emp_()]);
+    valRow('Implied Share Price (USD)',[C.bear.sp,emp_(),emp_(),C.base.sp,emp_(),emp_(),C.bull.sp,emp_(),emp_()],'$#,##0.00');
+    valRow('WACC',                     [C.bear.wacc,emp_(),emp_(),C.base.wacc,emp_(),emp_(),C.bull.wacc,emp_(),emp_()],'0.0%');
+    valRow('Terminal Growth Rate',     [C.bear.tgr,emp_(),emp_(),C.base.tgr,emp_(),emp_(),C.bull.tgr,emp_(),emp_()],'0.0%');
+
+    const ws=makeWs(rows,[3,30,14,14,14,14,14,14,14,14,14]);
+    XLSX.utils.book_append_sheet(wb, ws, 'Scenarios');
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // 4. INCOME STATEMENT
+  // ══════════════════════════════════════════════════════════════
+  function buildIS(){
+    const rows=[];
+    const A=C.base;
+    rows[0]=[h('INCOME STATEMENT',hStyle(NAVY,GOLD,13)),...Array(8).fill(emp_())];
+    rows[1]=[h('✓ BASE CASE — switch to Bear/Bull in Assumptions sheet',hStyle(NAVY2,WHITE,9)),...Array(8).fill(emp_())];
+    rows[2]=[];
+    rows[3]=[emp_(),h('(USD mm)',labelStyle(0,false,GREY)),
+             ...I.allYears.map(y=>h(y,hStyle(NAVY2,GOLD,9)))];
+
+    let r=4;
+    function isRow(label, h1v, h2v, projVals, fmt, bold, highlight){
+      const cols=[emp_(),lbl_(label,bold?1:2,bold)];
+      cols.push(bold?n_(h1v,fmt,true):n_(h1v,fmt));
+      cols.push(bold?n_(h2v,fmt,true):n_(h2v,fmt));
+      projVals.forEach(v=>{
+        const c=n_(v,fmt||'#,##0.0',bold);
+        if(highlight){ c.s.fill={fgColor:{rgb:highlight},patternType:'solid'}; }
+        cols.push(c);
+      });
+      rows[r]=cols; r++;
+    }
+    function pctRow(label, h1v, h2v, projVals){
+      const cols=[emp_(),lbl_(label,2,false,GREY)];
+      cols.push(p_(h1v)); cols.push(p_(h2v));
+      projVals.forEach(v=>cols.push(p_(v)));
+      rows[r]=cols; r++;
+    }
+    function divRow(){ rows[r]=[]; r++; }
+    function secLabel(txt,bg){ rows[r]=[emp_(),h(txt,sectionStyle(bg||NAVY3)),...Array(7).fill(h('',sectionStyle(bg||NAVY3)))]; r++; }
+
+    // Historical gross margin approximation
+    const hGM=0.62, hEM=0.52, hDA=0.11;
+    const h1rev=I.rev_h1, h2rev=I.rev_h2;
+
+    secLabel('REVENUE');
+    isRow('Revenue', h1rev, h2rev, A.revs, '#,##0.0', true);
+    pctRow('  Revenue Growth %', '', (h2rev-h1rev)/h1rev, A.revs.map((rv,i)=>i===0?(rv/h2rev-1):(rv/A.revs[i-1]-1)));
+    divRow();
+    secLabel('COSTS', NAVY3);
+    isRow('Cost of Goods Sold', -h1rev*(1-hGM), -h2rev*(1-hGM), A.cogs.map(v=>v));
+    isRow('Gross Profit',       h1rev*hGM, h2rev*hGM, A.gp, '#,##0.0', true);
+    pctRow('  Gross Margin %',  hGM, hGM, A.revs.map(()=>A.sc.gm));
+    divRow();
+    isRow('Operating Expenses (ex. D&A)', -h1rev*(hGM-hEM), -h2rev*(hGM-hEM), A.opex);
+    isRow('EBITDA',             h1rev*hEM, h2rev*hEM, A.ebitda, '#,##0.0', true);
+    pctRow('  EBITDA Margin %', hEM, hEM, A.revs.map(()=>A.sc.em));
+    isRow('Depreciation & Amortisation', -h1rev*hDA, -h2rev*hDA, A.da);
+    isRow('EBIT',               h1rev*(hEM-hDA), h2rev*(hEM-hDA), A.ebit, '#,##0.0', true);
+    pctRow('  EBIT Margin %',   hEM-hDA, hEM-hDA, A.ebit.map((e,i)=>e/A.revs[i]));
+    divRow();
+    isRow('Interest Expense',   -700, -700, A.intExp);
+    isRow('EBT',                h1rev*hEM-h1rev*hDA-700, h2rev*hEM-h2rev*hDA-700, A.ebt, '#,##0.0', true);
+    isRow('Income Tax Expense', -(h1rev*hEM-h1rev*hDA-700)*hEM, -(h2rev*hEM-h2rev*hDA-700)*hEM, A.tax);
+    isRow('Net Income',         (h1rev*hEM-h1rev*hDA-700)*(1-hEM), (h2rev*hEM-h2rev*hDA-700)*(1-hEM), A.ni, '#,##0.0', true, GREEN_BG);
+
+    const ws=makeWs(rows,[3,32,12,12,12,12,12,12,12]);
+    XLSX.utils.book_append_sheet(wb, ws, 'Income Statement');
+  }
+  buildIS();
+
+  // ══════════════════════════════════════════════════════════════
+  // 5. BALANCE SHEET
+  // ══════════════════════════════════════════════════════════════
+  function buildBS(){
+    const rows=[];
+    const A=C.base; const sc=A.sc;
+    rows[0]=[h('BALANCE SHEET',hStyle(NAVY,GOLD,13)),...Array(8).fill(emp_())];
+    rows[1]=[h('✓ BASE CASE',hStyle(NAVY2,WHITE,9)),...Array(8).fill(emp_())];
+    rows[2]=[];
+    rows[3]=[emp_(),h('(USD mm)',labelStyle(0,false,GREY)),
+             ...I.allYears.map(y=>h(y,hStyle(NAVY2,GOLD,9)))];
+    let r=4;
+
+    function bsRow(label,h1v,h2v,projFn,fmt,bold,highlight){
+      const projs=A.revs.map((rv,i)=>projFn(rv,i,A));
+      const cols=[emp_(),lbl_(label,bold?1:2,bold)];
+      cols.push(inp_(h1v)); cols.push(inp_(h2v));
+      projs.forEach(v=>{ const c=n_(v,fmt||'#,##0.0',bold); if(highlight)c.s.fill={fgColor:{rgb:highlight},patternType:'solid'}; cols.push(c); });
+      rows[r]=cols; r++;
+    }
+    function sumRow(label,h1v,h2v,projFn,highlight,fmt){
+      const projs=A.revs.map((rv,i)=>projFn(rv,i));
+      const cols=[emp_(),lbl_(label,1,true)];
+      [h1v,h2v,...projs].forEach(v=>{ const c=n_(v,fmt||'#,##0.0',true); if(highlight)c.s.fill={fgColor:{rgb:highlight},patternType:'solid'}; cols.push(c); });
+      rows[r]=cols; r++;
+    }
+    function secLabel(txt){ rows[r]=[emp_(),h(txt,sectionStyle(NAVY3)),...Array(7).fill(h('',sectionStyle(NAVY3)))]; r++; }
+    function div(){ rows[r]=[]; r++; }
+
+    // Pre-calc projected values
+    const projCash=[], projAR=[], projInv=[], projOCA=[], projPPE=[];
+    const projAP=[], projOCL=[], projLTD=[], projRE=[];
+    let prevCash=I.bs.cash[1], prevLTD=I.debt_open, prevRE=I.bs.re[1];
+    for(let i=0;i<5;i++){
+      const rv=A.revs[i], cogs=A.cogs[i];
+      projAR.push(rv*sc.dso/365);
+      projInv.push(Math.abs(cogs)*sc.dio/365);
+      projOCA.push(I.bs.oca[1]*Math.pow(1.02,i+1));
+      projPPE.push(I.bs.ppe[1]+A.capex.slice(0,i+1).reduce((s,v)=>s+v,0)+A.da.slice(0,i+1).reduce((s,v)=>s+Math.abs(v),0));
+      projAP.push(Math.abs(cogs)*sc.dpo/365);
+      projOCL.push(I.bs.ocl[1]*Math.pow(1.02,i+1));
+      const ltd=Math.max(prevLTD-sc.rep,0); projLTD.push(ltd); prevLTD=ltd;
+      const re=prevRE+A.ni[i]; projRE.push(re); prevRE=re;
+    }
+    // Cash = previous + net change
+    prevCash=I.bs.cash[1];
+    for(let i=0;i<5;i++){
+      const ocf=A.ni[i]+Math.abs(A.da[i])+(i>0?-(projAR[i]-projAR[i-1]):0)+(i>0?-(projInv[i]-projInv[i-1]):0)+(i>0?(projAP[i]-projAP[i-1]):0);
+      const icf=A.capex[i]+I.other_inv;
+      const fcf=-sc.rep;
+      const nc=ocf+icf+fcf;
+      projCash.push(prevCash+nc); prevCash+=nc;
+    }
+
+    secLabel('ASSETS');
+    rows[r]=[emp_(),lbl_('Cash & Equivalents',2),...[I.bs.cash[0],I.bs.cash[1],...projCash].map(v=>n_(v,'#,##0.0'))]; r++;
+    rows[r]=[emp_(),lbl_('Accounts Receivable',2),...[I.bs.ar[0],I.bs.ar[1],...projAR].map(v=>n_(v,'#,##0.0'))]; r++;
+    rows[r]=[emp_(),lbl_('Inventory',2),...[I.bs.inv[0],I.bs.inv[1],...projInv].map(v=>n_(v,'#,##0.0'))]; r++;
+    rows[r]=[emp_(),lbl_('Other Current Assets',2),...[I.bs.oca[0],I.bs.oca[1],...projOCA].map(v=>n_(v,'#,##0.0'))]; r++;
+
+    const tca=i=>projCash[i]+projAR[i]+projInv[i]+projOCA[i];
+    const tcaH1=I.bs.cash[0]+I.bs.ar[0]+I.bs.inv[0]+I.bs.oca[0];
+    const tcaH2=I.bs.cash[1]+I.bs.ar[1]+I.bs.inv[1]+I.bs.oca[1];
+    const totalCA=[tcaH1,tcaH2,...A.revs.map((_,i)=>tca(i))];
+    rows[r]=[emp_(),lbl_('Total Current Assets',1,true),...totalCA.map(v=>{ const c=n_(v,'#,##0.0',true); c.s.fill={fgColor:{rgb:LBLUE_BG},patternType:'solid'}; return c; })]; r++;
+    div();
+    rows[r]=[emp_(),lbl_('Net PP&E',2),...[I.bs.ppe[0],I.bs.ppe[1],...projPPE].map(v=>n_(v,'#,##0.0'))]; r++;
+    rows[r]=[emp_(),lbl_('Goodwill & Intangibles',2),...[I.bs.gw[0],I.bs.gw[1],...I.bs.gw.map(v=>v).concat(A.revs.map(()=>I.bs.gw[1]))].slice(0,7).map(v=>n_(v,'#,##0.0'))]; r++;
+    const ltaVals=[I.bs.ppe[0]+I.bs.gw[0],I.bs.ppe[1]+I.bs.gw[1],...A.revs.map((_,i)=>projPPE[i]+I.bs.gw[1])];
+    rows[r]=[emp_(),lbl_('Total Long-Term Assets',1,true),...ltaVals.map(v=>n_(v,'#,##0.0',true))]; r++;
+    const taVals=totalCA.map((v,i)=>v+ltaVals[i]);
+    rows[r]=[emp_(),lbl_('TOTAL ASSETS',0,true),...taVals.map(v=>{ const c=n_(v,'#,##0.0',true); c.s.fill={fgColor:{rgb:LBLUE_BG},patternType:'solid'}; return c; })]; r++;
+    div();
+
+    secLabel('LIABILITIES');
+    rows[r]=[emp_(),lbl_('Accounts Payable',2),...[I.bs.ap[0],I.bs.ap[1],...projAP].map(v=>n_(v,'#,##0.0'))]; r++;
+    rows[r]=[emp_(),lbl_('Other Current Liabilities',2),...[I.bs.ocl[0],I.bs.ocl[1],...projOCL].map(v=>n_(v,'#,##0.0'))]; r++;
+    const tclVals=[I.bs.ap[0]+I.bs.ocl[0],I.bs.ap[1]+I.bs.ocl[1],...A.revs.map((_,i)=>projAP[i]+projOCL[i])];
+    rows[r]=[emp_(),lbl_('Total Current Liabilities',1,true),...tclVals.map(v=>n_(v,'#,##0.0',true))]; r++;
+    div();
+    rows[r]=[emp_(),lbl_('Long-Term Debt',2),...[I.bs.ltd[0],I.bs.ltd[1],...projLTD].map(v=>n_(v,'#,##0.0'))]; r++;
+    rows[r]=[emp_(),lbl_('Other LT Liabilities',2),...[I.bs.oltl[0],I.bs.oltl[1],...A.revs.map(()=>I.bs.oltl[1])].map(v=>n_(v,'#,##0.0'))]; r++;
+    const ltlVals=[I.bs.ltd[0]+I.bs.oltl[0],I.bs.ltd[1]+I.bs.oltl[1],...A.revs.map((_,i)=>projLTD[i]+I.bs.oltl[1])];
+    const tlVals=tclVals.map((v,i)=>v+ltlVals[i]);
+    rows[r]=[emp_(),lbl_('TOTAL LIABILITIES',0,true),...tlVals.map(v=>{ const c=n_(v,'#,##0.0',true); c.s.fill={fgColor:{rgb:'FFFDECEA'},patternType:'solid'}; return c; })]; r++;
+    div();
+
+    secLabel('SHAREHOLDERS\' EQUITY');
+    rows[r]=[emp_(),lbl_('Share Capital',2),...[I.bs.sc[0],I.bs.sc[1],...A.revs.map(()=>I.bs.sc[1])].map(v=>n_(v,'#,##0.0'))]; r++;
+    rows[r]=[emp_(),lbl_('Retained Earnings',2),...[I.bs.re[0],I.bs.re[1],...projRE].map(v=>n_(v,'#,##0.0'))]; r++;
+    const teVals=[I.bs.sc[0]+I.bs.re[0],I.bs.sc[1]+I.bs.re[1],...A.revs.map((_,i)=>I.bs.sc[1]+projRE[i])];
+    rows[r]=[emp_(),lbl_('TOTAL EQUITY',0,true),...teVals.map(v=>{ const c=n_(v,'#,##0.0',true); c.s.fill={fgColor:{rgb:GREEN_BG},patternType:'solid'}; return c; })]; r++;
+    const tleVals=tlVals.map((v,i)=>v+teVals[i]);
+    rows[r]=[emp_(),lbl_('TOTAL LIAB + EQUITY',0,true),...tleVals.map(v=>n_(v,'#,##0.0',true))]; r++;
+
+    // Balance check
+    const chkVals=taVals.map((v,i)=>v-tleVals[i]);
+    rows[r]=[emp_(),lbl_('BALANCE CHECK (must=0)',0,true,'FFFF0000'),...chkVals.map(v=>{ const c=n_(v,'#,##0.000',true); c.s.font.color={rgb:'FFFF0000'}; return c; })]; r++;
+
+    const ws=makeWs(rows,[3,32,12,12,12,12,12,12,12]);
+    XLSX.utils.book_append_sheet(wb, ws, 'Balance Sheet');
+    return {projCash,projAR,projInv,projOCA,projPPE,projAP,projOCL,projLTD,projRE,tclVals,ltlVals,tlVals,teVals,tleVals,taVals,totalCA};
+  }
+  const BSData = buildBS();
+
+  // ══════════════════════════════════════════════════════════════
+  // 6. CASH FLOW STATEMENT
+  // ══════════════════════════════════════════════════════════════
+  function buildCF(){
+    const rows=[];
+    const A=C.base; const sc=A.sc;
+    rows[0]=[h('CASH FLOW STATEMENT (Indirect Method)',hStyle(NAVY,GOLD,13)),...Array(8).fill(emp_())];
+    rows[1]=[h('✓ BASE CASE',hStyle(NAVY2,WHITE,9)),...Array(8).fill(emp_())];
+    rows[2]=[];
+    rows[3]=[emp_(),h('(USD mm)',labelStyle(0,false,GREY)),...I.allYears.map(y=>h(y,hStyle(NAVY2,GOLD,9)))];
+    let r=4;
+
+    function cfRow(label,vals,bold,highlight){
+      const cols=[emp_(),lbl_(label,bold?1:2,bold)];
+      vals.forEach(v=>{ const c=n_(v,'#,##0.0',bold); if(highlight)c.s.fill={fgColor:{rgb:highlight},patternType:'solid'}; cols.push(c); });
+      rows[r]=cols; r++;
+    }
+    function secLabel(txt,bg){ rows[r]=[emp_(),h(txt,sectionStyle(bg||NAVY3)),...Array(7).fill(h('',sectionStyle(bg||NAVY3)))]; r++; }
+    function div(){ rows[r]=[]; r++; }
+
+    // Compute cash flows
+    const hNI1=(I.rev_h1*0.52-I.rev_h1*0.11-700)*(1-0.325);
+    const hNI2=(I.rev_h2*0.52-I.rev_h2*0.11-700)*(1-0.325);
+    const hDA1=I.rev_h1*0.11, hDA2=I.rev_h2*0.11;
+    const hCapex1=-I.rev_h1*0.165, hCapex2=-I.rev_h2*0.165;
+
+    const ocfVals=[hNI1+hDA1, hNI2+hDA2];
+    const fcffVals=[hNI1+hDA1+hCapex1, hNI2+hDA2+hCapex2];
+    const endCash=[I.bs.cash[0],I.bs.cash[1]];
+
+    for(let i=0;i<5;i++){
+      const ni=A.ni[i]; const da=Math.abs(A.da[i]); const capex=A.capex[i];
+      const dAR=i===0?-(BSData.projAR[0]-I.bs.ar[1]):-(BSData.projAR[i]-BSData.projAR[i-1]);
+      const dInv=i===0?-(BSData.projInv[0]-I.bs.inv[1]):-(BSData.projInv[i]-BSData.projInv[i-1]);
+      const dAP=i===0?(BSData.projAP[0]-I.bs.ap[1]):(BSData.projAP[i]-BSData.projAP[i-1]);
+      const ocf=ni+da+dAR+dInv+dAP;
+      ocfVals.push(ocf);
+      fcffVals.push(ocf+capex);
+      endCash.push(BSData.projCash[i]);
+    }
+
+    const capexVals=[hCapex1,hCapex2,...A.capex];
+    const repVals=Array(7).fill(-sc.rep);
+    const icfVals=[hCapex1+I.other_inv,hCapex2+I.other_inv,...A.capex.map(v=>v+I.other_inv)];
+    const finVals=Array(7).fill(-sc.rep);
+    const netChg=ocfVals.map((v,i)=>v+icfVals[i]+finVals[i]);
+    const begCash=[I.beg_cash,...endCash.slice(0,6)];
+    const endCash2=begCash.map((v,i)=>v+netChg[i]);
+
+    secLabel('OPERATING ACTIVITIES');
+    cfRow('Net Income', [hNI1,hNI2,...A.ni]);
+    cfRow('(+) Depreciation & Amortisation', [hDA1,hDA2,...A.da.map(v=>Math.abs(v))]);
+    cfRow('(+/-) Δ Accounts Receivable', [0,0,...A.revs.map((_,i)=>i===0?-(BSData.projAR[0]-I.bs.ar[1]):-(BSData.projAR[i]-BSData.projAR[i-1]))]);
+    cfRow('(+/-) Δ Inventory',           [0,0,...A.revs.map((_,i)=>i===0?-(BSData.projInv[0]-I.bs.inv[1]):-(BSData.projInv[i]-BSData.projInv[i-1]))]);
+    cfRow('(+/-) Δ Accounts Payable',    [0,0,...A.revs.map((_,i)=>i===0?(BSData.projAP[0]-I.bs.ap[1]):(BSData.projAP[i]-BSData.projAP[i-1]))]);
+    cfRow('OPERATING CASH FLOW', ocfVals, true, GREEN_BG);
+    div();
+    secLabel('INVESTING ACTIVITIES');
+    cfRow('(-) Capital Expenditures', capexVals);
+    cfRow('Other Investing Activities', Array(7).fill(I.other_inv));
+    cfRow('INVESTING CASH FLOW', icfVals, true, 'FFFDECEA');
+    div();
+    secLabel('FINANCING ACTIVITIES');
+    cfRow('(-) Debt Repayment', repVals);
+    cfRow('FINANCING CASH FLOW', finVals, true, GOLD_BG);
+    div();
+    cfRow('NET CHANGE IN CASH', netChg, true);
+    cfRow('Beginning Cash', begCash);
+    cfRow('Ending Cash', endCash2, true);
+    div();
+    cfRow('FREE CASH FLOW TO FIRM (FCFF)', fcffVals, true, LBLUE_BG);
+
+    const ws=makeWs(rows,[3,36,12,12,12,12,12,12,12]);
+    XLSX.utils.book_append_sheet(wb, ws, 'Cash Flow');
+  }
+  buildCF();
+
+  // ══════════════════════════════════════════════════════════════
+  // 7. SUPPORTING SCHEDULES
+  // ══════════════════════════════════════════════════════════════
+  {
+    const rows=[];
+    const A=C.base; const sc=A.sc;
+    rows[0]=[h('SUPPORTING SCHEDULES',hStyle(NAVY,GOLD,13)),...Array(8).fill(emp_())];
+    rows[1]=[];
+    rows[2]=[emp_(),h('(USD mm)',labelStyle(0,false,GREY)),...I.allYears.map(y=>h(y,hStyle(NAVY2,GOLD,9)))];
+    let r=3;
+
+    function suppRow(label,vals,bold,highlight){
+      const cols=[emp_(),lbl_(label,bold?1:2,bold),...vals.map(v=>{ const c=n_(v,'#,##0.0',bold); if(highlight)c.s.fill={fgColor:{rgb:highlight},patternType:'solid'}; return c; })];
+      rows[r]=cols; r++;
+    }
+    function secLabel(txt){ rows[r]=[emp_(),h(txt,sectionStyle(NAVY3)),...Array(7).fill(h('',sectionStyle(NAVY3)))]; r++; }
+    function div(){ rows[r]=[]; r++; }
+
+    // Debt schedule
+    secLabel('DEBT SCHEDULE');
+    const debtOpen=[I.bs.ltd[0],I.bs.ltd[1],...BSData.projLTD.map((v,i)=>i===0?I.debt_open:BSData.projLTD[i-1])];
+    const debtRepay=Array(7).fill(-sc.rep);
+    const debtClose=[I.bs.ltd[0],I.bs.ltd[1],...BSData.projLTD];
+    suppRow('Opening Debt Balance', debtOpen);
+    suppRow('(-) Annual Repayment', debtRepay);
+    suppRow('Closing Debt Balance', debtClose, true);
+    suppRow('Interest Rate', Array(7).fill(sc.ir), false, null);
+    suppRow('Interest Expense', debtOpen.map(v=>-v*sc.ir), true, GOLD_BG);
+    div(); div();
+
+    // Working capital schedule
+    secLabel('WORKING CAPITAL SCHEDULE');
+    const arVals=[I.bs.ar[0],I.bs.ar[1],...BSData.projAR];
+    const invVals=[I.bs.inv[0],I.bs.inv[1],...BSData.projInv];
+    const ocaVals=[I.bs.oca[0],I.bs.oca[1],...BSData.projOCA];
+    const apVals=[I.bs.ap[0],I.bs.ap[1],...BSData.projAP];
+    const oclVals=[I.bs.ocl[0],I.bs.ocl[1],...BSData.projOCL];
+    suppRow('Accounts Receivable', arVals);
+    suppRow('Inventory', invVals);
+    suppRow('Other Current Assets', ocaVals);
+    suppRow('(-) Accounts Payable', apVals);
+    suppRow('(-) Other Current Liabilities', oclVals);
+    const nwcVals=arVals.map((v,i)=>v+invVals[i]+ocaVals[i]-apVals[i]-oclVals[i]);
+    suppRow('NET WORKING CAPITAL', nwcVals, true, LBLUE_BG);
+    const nwcChg=[0,...nwcVals.slice(1).map((v,i)=>v-nwcVals[i])];
+    suppRow('Change in NWC', nwcChg);
+
+    const ws=makeWs(rows,[3,36,12,12,12,12,12,12,12]);
+    XLSX.utils.book_append_sheet(wb, ws, 'Supporting Schedules');
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // 8. DCF VALUATION
+  // ══════════════════════════════════════════════════════════════
+  function buildDCF(){
+    const rows=[];
+    const A=C.base; const sc=A.sc;
+    rows[0]=[h('DCF VALUATION',hStyle(NAVY,GOLD,13)),...Array(7).fill(emp_())];
+    rows[1]=[h('✓ BASE CASE — Active scenario driven by switch in Assumptions',hStyle(NAVY2,WHITE,9)),...Array(7).fill(emp_())];
+    rows[2]=[];
+    rows[3]=[emp_(),h('(USD mm)',labelStyle(0,false,GREY)),
+             ...I.projYears.map(y=>h(y,hStyle(NAVY2,GOLD,9)))];
+    let r=4;
+
+    function dcfRow(label, vals, fmt, bold, highlight){
+      const cols=[emp_(),lbl_(label,bold?1:2,bold),...vals.map(v=>{
+        if(v===null||v===emp_()) return emp_();
+        const c=n_(v,fmt||'#,##0.0',bold||false);
+        if(highlight)c.s.fill={fgColor:{rgb:highlight},patternType:'solid'};
+        return c;
+      })];
+      rows[r]=cols; r++;
+    }
+    function secLabel(txt,bg){ rows[r]=[emp_(),h(txt,sectionStyle(bg||NAVY3)),...Array(6).fill(h('',sectionStyle(bg||NAVY3)))]; r++; }
+    function div(){ rows[r]=[]; r++; }
+    function single(label,val,fmt,bold,highlight){
+      const c=n_(val,fmt||'#,##0.0',bold||false);
+      if(highlight)c.s.fill={fgColor:{rgb:highlight},patternType:'solid'};
+      rows[r]=[emp_(),lbl_(label,bold?1:2,bold),c,...Array(5).fill(emp_())]; r++;
+    }
+
+    // UFCF build
+    secLabel('UNLEVERED FREE CASH FLOW BUILD');
+    dcfRow('EBITDA',       A.ebitda,'#,##0.0',false,null);
+    dcfRow('(-) D&A',      A.da);
+    dcfRow('EBIT',         A.ebit,'#,##0.0',true);
+    const nopat=A.ebit.map(e=>-e*sc.tax);
+    dcfRow('(-) Taxes on EBIT (NOPAT)', nopat);
+    dcfRow('(+) D&A add-back', A.da.map(v=>Math.abs(v)));
+    dcfRow('(-) Capex',    A.capex);
+    const nwcChgProj=[0,...A.revs.slice(1).map((_,i)=>-(A.revs[i+1]-A.revs[i])*0.02)];
+    dcfRow('(+/-) Δ NWC',  nwcChgProj);
+    dcfRow('UNLEVERED FCF', A.ufcf, '#,##0.0', true, LBLUE_BG);
+    div();
+
+    // Discount
+    secLabel('DISCOUNT FACTORS');
+    dcfRow('WACC', Array(5).fill(A.wacc), '0.0%');
+    const periods=[0.5,1.5,2.5,3.5,4.5];
+    dcfRow('Period (mid-year)', periods,'0.0');
+    const dfs=periods.map(t=>1/Math.pow(1+A.wacc,t));
+    dcfRow('Discount Factor', dfs,'0.0000');
+    const pvUfcf=A.ufcf.map((v,i)=>v*dfs[i]);
+    dcfRow('PV of UFCF', pvUfcf,'#,##0.0',true,GREEN_BG);
+    div();
+
+    // Terminal value
+    secLabel('TERMINAL VALUE');
+    single('Terminal Year UFCF (FY+5)', A.ufcf[4]);
+    single('Terminal Growth Rate (Active)', A.sc.tgr,'0.0%');
+    single('WACC (Active)', A.wacc,'0.0%');
+    single('Gordon Growth TV  [UFCF×(1+g)/(WACC−g)]', A.tv,'#,##0.0',true);
+    single('PV of Terminal Value', A.pvTv,'#,##0.0',true,LBLUE_BG);
+    div();
+
+    // EV bridge
+    secLabel('ENTERPRISE VALUE & EQUITY BRIDGE', NAVY);
+    single('Sum of PV(UFCF)', A.sumPv);
+    single('(+) PV of Terminal Value', A.pvTv);
+    const evCell=n_(A.ev,'#,##0.0',true); evCell.s.fill={fgColor:{rgb:GOLD_BG},patternType:'solid'};
+    rows[r]=[emp_(),lbl_('ENTERPRISE VALUE',0,true),evCell,...Array(5).fill(emp_())]; r++;
+    single('(-) Net Debt  [Debt − Cash]', A.nd);
+    const eqCell=n_(A.eq,'#,##0.0',true); eqCell.s.fill={fgColor:{rgb:GREEN_BG},patternType:'solid'};
+    rows[r]=[emp_(),lbl_('EQUITY VALUE',0,true),eqCell,...Array(5).fill(emp_())]; r++;
+    single('Shares Outstanding (mm)', I.shares,'#,##0');
+    const spCell=n_(A.sp,'$#,##0.00',true);
+    spCell.s.fill={fgColor:{rgb:GOLD},patternType:'solid'};
+    spCell.s.font={name:'Arial',sz:13,bold:true,color:{rgb:NAVY}};
+    rows[r]=[emp_(),lbl_('IMPLIED SHARE PRICE',0,true,NAVY2),spCell,...Array(5).fill(emp_())]; r++;
+    single('EV / EBITDA (NTM)', A.ev/A.ebitda[0],'0.0x');
+    div();
+
+    // Attribution
+    secLabel('VALUE ATTRIBUTION');
+    single('% of EV from PV(FCF)',          A.sumPv/A.ev,'0.0%');
+    single('% of EV from Terminal Value',   A.pvTv/A.ev,'0.0%');
+
+    const ws=makeWs(rows,[3,38,13,13,13,13,13,13]);
+    XLSX.utils.book_append_sheet(wb, ws, 'DCF Valuation');
+  }
+  buildDCF();
+
+  // ══════════════════════════════════════════════════════════════
+  // 9. SENSITIVITY ANALYSIS
+  // ══════════════════════════════════════════════════════════════
+  {
+    const rows=[];
+    const A=C.base;
+    rows[0]=[h('SENSITIVITY ANALYSIS',hStyle(NAVY,GOLD,13)),...Array(9).fill(emp_())];
+    rows[1]=[];
+
+    // TABLE 1: WACC vs TGR → Share Price
+    rows[2]=[h('TABLE 1:  WACC vs Terminal Growth Rate  →  Implied Share Price (USD)',hStyle(NAVY2,WHITE,11)),...Array(9).fill(emp_())];
+    const tgrVals=[0.010,0.015,0.020,0.025,0.030,0.035,0.040];
+    const waccVals=[0.070,0.075,0.080,0.085,0.090,0.095,0.100,0.110];
+    rows[3]=[h('WACC \\ TGR',hStyle(NAVY,WHITE,9)),...tgrVals.map(t=>h((t*100).toFixed(1)+'%',hStyle(NAVY,GOLD,9))),...Array(2).fill(emp_())];
+
+    waccVals.forEach((wacc,ri)=>{
+      const row=[h((wacc*100).toFixed(1)+'%',hStyle(NAVY,WHITE,9))];
+      tgrVals.forEach(tgr=>{
+        if(wacc<=tgr){ row.push(n_(0,'$#,##0.00')); return; }
+        let sumPv=0;
+        A.ufcf.forEach((v,i)=>{ sumPv+=v/Math.pow(1+wacc,0.5+i); });
+        const tv=A.ufcf[4]*(1+tgr)/(wacc-tgr);
+        const pvTv=tv/Math.pow(1+wacc,4.5);
+        const sp=(sumPv+pvTv-A.nd)/I.shares;
+        const c=n_(sp,'$#,##0.00');
+        // Color: low=red, mid=white, high=green (relative to base sp)
+        const ratio=sp/A.sp;
+        if(ratio<0.85) c.s.fill={fgColor:{rgb:'FFFF9999'},patternType:'solid'};
+        else if(ratio>1.15) c.s.fill={fgColor:{rgb:'FF99CC99'},patternType:'solid'};
+        else if(Math.abs(ratio-1)<0.05){ c.s.fill={fgColor:{rgb:GOLD_BG},patternType:'solid'}; c.s.font.bold=true; }
+        row.push(c);
+      });
+      rows[4+ri]=row;
+    });
+
+    rows[13]=[];
+    // TABLE 2: Revenue Growth vs EBITDA Margin → EV
+    rows[14]=[h('TABLE 2:  Revenue Growth (FY+1) vs EBITDA Margin  →  Enterprise Value (USD mm)',hStyle(NAVY2,WHITE,11)),...Array(9).fill(emp_())];
+    const rgVals=[0.00,0.02,0.04,0.06,0.08,0.10,0.12];
+    const emVals=[0.42,0.45,0.48,0.51,0.54,0.57,0.60];
+    rows[15]=[h('Rev Gr \\ EBITDA',hStyle(NAVY,WHITE,9)),...emVals.map(e=>h((e*100).toFixed(0)+'%',hStyle(NAVY,GOLD,9))),...Array(2).fill(emp_())];
+
+    const baseTax=A.sc.tax; const baseWacc=A.wacc; const baseTgr=A.sc.tgr;
+    rgVals.forEach((rg,ri)=>{
+      const row=[h((rg*100).toFixed(0)+'%',hStyle(NAVY,WHITE,9))];
+      emVals.forEach(em=>{
+        let revs=[], prevRev=I.rev_h2;
+        const rgArr=[rg,...I.base.rg.slice(1)];
+        for(let i=0;i<5;i++){ prevRev=prevRev*(1+rgArr[i]); revs.push(prevRev); }
+        let sumPv2=0;
+        revs.forEach((rv,i)=>{
+          const daFrac=A.sc.da, cxFrac=A.sc.cx;
+          const ebit=rv*(em-daFrac);
+          const nopat=ebit*(1-baseTax);
+          const ufcfi=nopat+rv*daFrac+(-rv*cxFrac)+(i===0?0:-(revs[i]-revs[i-1])*0.02);
+          sumPv2+=ufcfi/Math.pow(1+baseWacc,0.5+i);
+        });
+        const termRev=revs[4]; const tUfcf=termRev*(em-A.sc.da)*(1-baseTax)+termRev*A.sc.da-termRev*A.sc.cx;
+        const tv2=tUfcf*(1+baseTgr)/(baseWacc-baseTgr);
+        const pvTv2=tv2/Math.pow(1+baseWacc,4.5);
+        const ev2=sumPv2+pvTv2;
+        const c=n_(ev2,'#,##0.0');
+        const ratio=ev2/A.ev;
+        if(ratio<0.85) c.s.fill={fgColor:{rgb:'FFFF9999'},patternType:'solid'};
+        else if(ratio>1.15) c.s.fill={fgColor:{rgb:'FF99CC99'},patternType:'solid'};
+        else if(Math.abs(ratio-1)<0.05){ c.s.fill={fgColor:{rgb:GOLD_BG},patternType:'solid'}; c.s.font.bold=true; }
+        row.push(c);
+      });
+      rows[16+ri]=row;
+    });
+
+    rows[24]=[];
+    rows[25]=[h('Notes:',labelStyle(0,true))];
+    rows[26]=[h('Table 1: Red = lower share price (>15% below base), Gold = near base, Green = higher (>15% above base). UFCF held constant.',labelStyle(0,false,GREY))];
+    rows[27]=[h('Table 2: Red = lower EV, Gold = near base, Green = higher EV. Only FY+1 rev growth is varied; years 2-5 follow base case trajectory.',labelStyle(0,false,GREY))];
+
+    const ws=makeWs(rows,[3,18,13,13,13,13,13,13,13,13]);
+    XLSX.utils.book_append_sheet(wb, ws, 'Sensitivity');
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // 10. INSTRUCTIONS
+  // ══════════════════════════════════════════════════════════════
+  {
+    const rows=[];
+    rows[0]=[h('USER GUIDE — '+I.company+' DCF MODEL',hStyle(NAVY,GOLD,14))];
+    rows[1]=[];
+    const guide=[
+      [true, 'HOW TO USE THIS MODEL', NAVY2],
+      [false,''],
+      [true, 'STEP 1 — Cover Sheet', GOLD],
+      [false,'  Review the model details auto-populated from the website. Key outputs are shown including Enterprise Value, Equity Value, and Implied Share Price.'],
+      [false,''],
+      [true, 'STEP 2 — Assumptions Sheet', GOLD],
+      [false,'  ALL blue cells are inputs. The Scenario Switch (row labelled "*** SCENARIO SWITCH ***") controls the entire model:'],
+      [false,'  Enter 1 for Bear Case · 2 for Base Case · 3 for Bull Case'],
+      [false,'  Bear/Base/Bull parameter columns (F/G/H) are all independently editable.'],
+      [false,''],
+      [true, 'STEP 3 — Financial Statements', GOLD],
+      [false,'  Income Statement, Balance Sheet, and Cash Flow are fully calculated.'],
+      [false,'  Historical columns (H1, H2) show actuals. Projection columns flow from Assumptions.'],
+      [false,'  The Balance Sheet includes a CHECK row — it should equal zero.'],
+      [false,''],
+      [true, 'STEP 4 — DCF Valuation', GOLD],
+      [false,'  Enterprise Value = Sum of PV(UFCF) + PV(Terminal Value)'],
+      [false,'  Terminal Value uses Gordon Growth Model: TV = UFCF × (1+g) / (WACC − g)'],
+      [false,'  Mid-year convention applied. Net Debt bridge to Equity Value.'],
+      [false,''],
+      [true, 'STEP 5 — Sensitivity Analysis', GOLD],
+      [false,'  Table 1: WACC × Terminal Growth Rate → Implied Share Price (red/gold/green heatmap)'],
+      [false,'  Table 2: Revenue Growth × EBITDA Margin → Enterprise Value'],
+      [false,''],
+      [true, 'COLOUR CODING', NAVY2],
+      [false,'  Blue text = hardcoded input (you can change)'],
+      [false,'  Black text = calculated formula'],
+      [false,'  Green text = cross-sheet link'],
+      [false,'  Yellow background = key input cell'],
+      [false,''],
+      [true, 'DISCLAIMER', 'FFC0392B'],
+      [false,'  For informational and educational purposes only. Not investment advice.'],
+      [false,'  Always conduct independent due diligence before making investment decisions.'],
+      [false,'  Built with Finingale — finingale.com'],
+    ];
+    guide.forEach(([isH,txt,bg],i)=>{
+      if(isH){
+        rows[2+i]=[h(txt,{...sectionStyle(bg||NAVY2),font:{name:'Arial',sz:11,bold:true,color:{rgb:bg===GOLD?NAVY:WHITE}}})];
+      } else {
+        rows[2+i]=[h(txt,labelStyle(0,false,txt.includes('Blue')?BLUE_F:txt.includes('Black')?BLACK_F:txt.includes('Green')?GREEN_F:BLACK_F))];
+      }
+    });
+    const ws=makeWs(rows,[3,90]);
+    XLSX.utils.book_append_sheet(wb, ws, 'Instructions');
+  }
+
+  // Reorder sheets to match the original model
+  const order=['Instructions','Cover','Assumptions','Scenarios','Income Statement','Balance Sheet','Cash Flow','Supporting Schedules','DCF Valuation','Sensitivity'];
+  // SheetJS doesn't support reordering natively, but we can set SheetNames
+  wb.SheetNames = order.filter(n=>wb.SheetNames.includes(n));
+
+  return wb;
+}
+</script>
+</body>
+</html>
