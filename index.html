@@ -3,421 +3,825 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Finingale — Home</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<title>Finingale | Financial tools, models and writing by Rohan Tainwala</title>
+<meta name="description" content="Free finance calculators, a full DCF model builder, digital asset tools and plain-English articles by Rohan Tainwala."/>
+<!-- Site theme: edit the colours in :root below -->
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{--navy:#0A1628;--navy2:#0E1F3D;--navy3:#162847;--gold:#C9A84C;--gold2:#E8C96B;--gold3:#F0D98A;--white:#F8F5EE;--grey:#8A95A3;--light:#D6DAE0;}
-html{scroll-behavior:smooth;}
-body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.4;}
+/* ==========================================================================
+   Finingale shared theme
+   Link this file from any page:
+     
+   Change the colours or the page background here and every page that
+   links this file updates at once.
+   ========================================================================== */
 
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,22,40,0.85);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.15);}
-.nav-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--white);letter-spacing:-0.5px;text-decoration:none;}
-.nav-logo span{color:var(--gold);}
-.nav-links{display:flex;gap:36px;list-style:none;}
-.nav-links a{font-size:0.85rem;font-weight:500;color:var(--light);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
-.nav-links a:hover,.nav-links a.active{color:var(--gold2);}
-.nav-cta{padding:10px 22px;border:1px solid var(--gold);color:var(--gold);font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;border-radius:2px;transition:background 0.2s,color 0.2s;}
-.nav-cta:hover{background:var(--gold);color:var(--navy);}
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap');
 
-/* HERO */
-.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:120px 48px 80px;position:relative;overflow:hidden;}
-.hero::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(201,168,76,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.04) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;}
-.hero-label{font-size:0.72rem;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:24px;display:flex;align-items:center;gap:12px;}
-.hero-label::before{content:'';display:block;width:32px;height:1px;background:var(--gold);}
-.hero-headline{font-family:'Playfair Display',serif;font-size:clamp(3rem,6vw,5.5rem);font-weight:900;line-height:1.05;letter-spacing:-1px;max-width:800px;margin-bottom:28px;}
-.hero-headline em{font-style:normal;color:var(--gold);position:relative;}
-.hero-headline em::after{content:'';position:absolute;bottom:6px;left:0;right:0;height:2px;background:var(--gold);opacity:0.4;}
-.hero-sub{font-size:1.1rem;font-weight:300;color:var(--grey);max-width:500px;line-height:1.7;margin-bottom:48px;}
-.hero-actions{display:flex;gap:16px;flex-wrap:wrap;}
-.btn-primary{padding:16px 36px;background:var(--gold);color:var(--navy);font-size:0.88rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;border-radius:2px;transition:background 0.2s,transform 0.15s;display:inline-block;}
-.btn-primary:hover{background:var(--gold2);transform:translateY(-2px);}
-.btn-outline{padding:16px 36px;border:1px solid rgba(255,255,255,0.25);color:var(--white);font-size:0.88rem;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;border-radius:2px;transition:border-color 0.2s,color 0.2s;display:inline-block;}
-.btn-outline:hover{border-color:var(--gold);color:var(--gold);}
-.hero-stats{position:absolute;right:80px;bottom:120px;display:flex;flex-direction:column;gap:12px;}
-.stat-card{background:rgba(14,31,61,0.8);border:1px solid rgba(201,168,76,0.2);backdrop-filter:blur(12px);padding:18px 24px;border-radius:4px;min-width:180px;animation:floatUp 3s ease-in-out infinite alternate;}
-.stat-card:nth-child(2){animation-delay:1s;}
-.stat-card:nth-child(3){animation-delay:2s;}
-@keyframes floatUp{from{transform:translateY(0);}to{transform:translateY(-8px);}}
-.stat-value{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--gold2);}
-.stat-label{font-size:0.72rem;font-weight:500;color:var(--grey);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;}
+:root {
+  /* Palette */
+  --paper:     #FAFDFB;   /* page background (white with a hint of green) */
+  --white:     #FFFFFF;
+  --mint:      #E3F4E8;   /* light green bands and panels */
+  --mint-2:    #D2ECDA;   /* extrusion edge on light surfaces */
+  --sage:      #A8DDB9;   /* light green highlight */
+  --leaf:      #3FA36B;   /* mid green */
+  --fern:      #1E7A4C;   /* primary actions and links */
+  --fern-deep: #145C38;   /* extrusion edge on green buttons */
+  --evergreen: #0F3D2E;   /* headings and main text */
+  --ink-2:     #4A6358;   /* secondary text */
+  --line:      #CFE5D6;   /* hairlines and borders */
+  --marigold:  #F3B61F;   /* small warm accent, used sparingly */
 
-/* TICKER */
-.ticker{background:var(--navy2);border-top:1px solid rgba(201,168,76,0.2);border-bottom:1px solid rgba(201,168,76,0.2);padding:12px 0;overflow:hidden;position:relative;}
-.ticker-inner{display:flex;white-space:nowrap;animation:scroll 30s linear infinite;}
-.ticker-item{padding:0 40px;font-size:0.8rem;color:var(--grey);letter-spacing:0.05em;border-right:1px solid rgba(201,168,76,0.15);}
-.ticker-item span{color:var(--gold2);margin-left:8px;font-weight:600;}
-.ticker-item .up{color:#4CAF50;}
-.ticker-item .dn{color:#F44336;}
-@keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+  /* Page background: edit this one value to change it site-wide */
+  --page-bg:
+    radial-gradient(1200px 600px at 85% -10%, #E3F4E8 0%, transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, #EEF8F1 0%, transparent 55%),
+    var(--paper);
 
-/* SECTIONS */
-section{padding:100px 48px;position:relative;}
-.section-label{font-size:0.72rem;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:12px;}
-.section-label::before{content:'';display:block;width:24px;height:1px;background:var(--gold);}
-.section-title{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);font-weight:700;line-height:1.15;margin-bottom:16px;}
-.section-sub{color:var(--grey);font-size:1rem;font-weight:300;line-height:1.7;max-width:520px;margin-bottom:60px;}
-.features-bg{background:var(--navy2);}
+  /* Type */
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
 
-/* FEATURE CARDS */
-.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.12);}
-.feature-card{background:var(--navy2);padding:40px 36px;transition:background 0.25s;}
-.feature-card:hover{background:var(--navy3);}
-.feature-icon{width:48px;height:48px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);border-radius:4px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;font-size:1.4rem;}
-.feature-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:12px;}
-.feature-desc{font-size:0.88rem;color:var(--grey);line-height:1.7;font-weight:300;}
-.feature-link{display:inline-flex;align-items:center;gap:8px;margin-top:20px;font-size:0.8rem;font-weight:600;color:var(--gold);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;transition:gap 0.2s;}
-.feature-link:hover{gap:14px;}
-
-/* ABOUT */
-.about-strip{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
-.about-quote{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:400;line-height:1.5;color:var(--white);border-left:3px solid var(--gold);padding-left:28px;}
-.about-text{font-size:0.95rem;color:var(--grey);line-height:1.8;font-weight:300;}
-.about-text p{margin-bottom:16px;}
-
-/* TOOLS PILLS */
-.tools-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:48px;}
-.tool-pill{padding:20px 24px;border:1px solid rgba(201,168,76,0.2);border-radius:3px;display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--white);transition:border-color 0.2s,background 0.2s;}
-.tool-pill:hover{border-color:var(--gold);background:rgba(201,168,76,0.05);}
-.tool-pill-icon{font-size:1.3rem;flex-shrink:0;}
-.tool-pill-name{font-size:0.88rem;font-weight:500;}
-.tool-pill-tag{font-size:0.68rem;color:var(--grey);text-transform:uppercase;letter-spacing:0.08em;}
-.btn-gold-outline{display:inline-block;padding:12px 28px;border:1px solid var(--gold);color:var(--gold);font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;border-radius:2px;transition:background 0.2s,color 0.2s;}
-.btn-gold-outline:hover{background:var(--gold);color:var(--navy);}
-
-/* ARTICLES */
-.articles-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
-.article-card{background:var(--navy2);border:1px solid rgba(201,168,76,0.13);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;text-decoration:none;color:var(--white);transition:border-color 0.2s,transform 0.2s;}
-.article-card:hover{border-color:rgba(201,168,76,0.4);transform:translateY(-3px);}
-.article-card-thumb{height:160px;background:linear-gradient(135deg,var(--navy3) 0%,#1a3355 100%);position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:20px;overflow:hidden;}
-.article-card-thumb::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(201,168,76,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.05) 1px,transparent 1px);background-size:28px 28px;}
-.article-card-thumb::after{content:'';position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(transparent,rgba(10,22,40,0.85));}
-.thumb-category{font-size:0.6rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);position:relative;z-index:1;margin-bottom:5px;}
-.thumb-title{font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:700;color:var(--white);line-height:1.3;position:relative;z-index:1;}
-.article-card-body{padding:20px;flex:1;display:flex;flex-direction:column;}
-.article-card-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.article-tag{font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--navy);background:var(--gold);padding:3px 8px;border-radius:2px;}
-.article-read-time{font-size:0.68rem;color:var(--grey);}
-.article-card-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;line-height:1.35;margin-bottom:10px;color:var(--white);}
-.article-card-desc{font-size:0.8rem;color:var(--grey);line-height:1.65;font-weight:300;flex:1;}
-.article-card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid rgba(201,168,76,0.1);}
-.article-card-author{font-size:0.72rem;color:var(--grey);}
-.article-card-link{font-size:0.72rem;font-weight:700;color:var(--gold);letter-spacing:0.06em;text-transform:uppercase;transition:letter-spacing 0.2s;}
-.article-card:hover .article-card-link{letter-spacing:0.12em;}
-
-/* MARQUEE */
-.marquee-section{padding:48px 0;overflow:hidden;border-top:1px solid rgba(201,168,76,0.1);border-bottom:1px solid rgba(201,168,76,0.1);}
-.marquee-inner{display:flex;animation:scroll 20s linear infinite;}
-.marquee-word{padding:0 32px;font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:rgba(201,168,76,0.12);white-space:nowrap;border-right:1px solid rgba(201,168,76,0.1);text-transform:uppercase;letter-spacing:0.05em;}
-
-/* CTA BAND */
-.cta-band{background:var(--gold);padding:72px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:32px;}
-.cta-band-title{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:900;color:var(--navy);max-width:500px;}
-.btn-dark{padding:16px 36px;background:var(--navy);color:var(--gold);font-size:0.88rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;border-radius:2px;transition:background 0.2s;white-space:nowrap;display:inline-block;}
-.btn-dark:hover{background:var(--navy2);}
-
-/* FOOTER */
-footer{background:#060E1A;padding:60px 48px 32px;border-top:1px solid rgba(201,168,76,0.15);}
-.footer-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:40px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:32px;}
-.footer-brand{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:var(--white);}
-.footer-brand span{color:var(--gold);}
-.footer-tagline{font-size:0.82rem;color:var(--grey);margin-top:8px;font-weight:300;}
-.footer-links{display:flex;gap:60px;flex-wrap:wrap;}
-.footer-col h4{font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.15em;color:var(--gold);margin-bottom:16px;}
-.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:10px;}
-.footer-col a{font-size:0.85rem;color:var(--grey);text-decoration:none;font-weight:300;transition:color 0.2s;}
-.footer-col a:hover{color:var(--white);}
-.footer-bottom{display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;color:var(--grey);flex-wrap:wrap;gap:12px;}
-
-/* REVEAL */
-.reveal{opacity:0;transform:translateY(28px);transition:opacity 0.65s ease,transform 0.65s ease;}
-.reveal.visible{opacity:1;transform:none;}
-
-/* RESPONSIVE */
-@media(max-width:900px){
-  nav{padding:18px 24px;}.nav-links{display:none;}
-  .hero{padding:100px 24px 60px;}.hero-stats{display:none;}
-  section{padding:72px 24px;}
-  .about-strip{grid-template-columns:1fr;gap:40px;}
-  .articles-grid{grid-template-columns:1fr 1fr;}
-  .cta-band{padding:48px 24px;}
-  footer{padding:48px 24px 24px;}.footer-links{gap:32px;}
+  /* Depth */
+  --lift: 0 1px 2px rgba(15,61,46,.06), 0 12px 28px -12px rgba(15,61,46,.18);
+  --radius-lg: 22px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --max: 1200px;
 }
-@media(max-width:600px){.articles-grid{grid-template-columns:1fr;}}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--evergreen);
+  background: var(--page-bg);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; }
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; line-height: 1.08; }
+:focus-visible { outline: 3px solid var(--marigold); outline-offset: 3px; border-radius: 4px; }
+
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+
+/* ---------- Nav ---------- */
+.site-nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(250,253,251,.82);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.site-nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 72px; gap: 24px; }
+.brand {
+  font-family: var(--font-display); font-weight: 800; font-size: 1.6rem;
+  letter-spacing: -0.03em; text-decoration: none; color: var(--evergreen);
+  display: flex; align-items: center; gap: 10px;
+}
+.brand-mark {
+  width: 30px; height: 30px; border-radius: 9px; background: var(--fern);
+  box-shadow: 0 4px 0 var(--fern-deep); position: relative; top: -2px;
+  display: grid; place-items: center;
+}
+.brand-mark::after { content: ''; width: 11px; height: 11px; border-radius: 50%; background: var(--marigold); }
+.nav-links { display: flex; align-items: center; gap: 6px; list-style: none; }
+.nav-links a {
+  text-decoration: none; font-size: .95rem; font-weight: 500; color: var(--ink-2);
+  padding: 8px 14px; border-radius: 999px; transition: background .2s, color .2s;
+}
+.nav-links a:hover { background: var(--mint); color: var(--evergreen); }
+.nav-links a[aria-current="page"] { color: var(--evergreen); background: var(--mint); }
+.nav-toggle {
+  display: none; background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+  width: 44px; height: 44px; cursor: pointer; box-shadow: 0 3px 0 var(--mint-2);
+}
+.nav-toggle span { display: block; width: 18px; height: 2px; background: var(--evergreen); margin: 4px auto; border-radius: 2px; transition: transform .25s, opacity .25s; }
+.nav-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.nav-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+/* ---------- Buttons (extruded, press down on click) ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-body); font-weight: 600; font-size: 1rem;
+  text-decoration: none; border-radius: 14px; padding: 14px 24px;
+  border: 0; cursor: pointer; position: relative;
+  transition: transform .12s ease, box-shadow .12s ease, background .2s;
+}
+.btn-primary { background: var(--fern); color: var(--white); box-shadow: 0 5px 0 var(--fern-deep), 0 14px 24px -10px rgba(20,92,56,.55); }
+.btn-primary:hover { background: #22875A; }
+.btn-primary:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--fern-deep), 0 6px 12px -8px rgba(20,92,56,.5); }
+.btn-soft { background: var(--white); color: var(--evergreen); box-shadow: inset 0 0 0 1px var(--line), 0 5px 0 var(--mint-2); }
+.btn-soft:hover { background: var(--mint); }
+.btn-soft:active { transform: translateY(4px); box-shadow: inset 0 0 0 1px var(--line), 0 1px 0 var(--mint-2); }
+.btn-sm { padding: 10px 18px; font-size: .92rem; border-radius: 12px; }
+
+/* ---------- Extruded surface (the 3D card language) ---------- */
+.slab {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 0 var(--mint-2), var(--lift);
+}
+
+/* ---------- Footer ---------- */
+.site-footer { background: var(--evergreen); color: #CFE5D6; margin-top: 120px; }
+.site-footer .wrap { padding-top: 72px; padding-bottom: 40px; }
+.footer-top { display: grid; grid-template-columns: 1.3fr repeat(3, 1fr); gap: 40px; padding-bottom: 48px; border-bottom: 1px solid rgba(207,229,214,.18); }
+.footer-brand { font-family: var(--font-display); font-weight: 800; font-size: 1.9rem; color: var(--white); letter-spacing: -0.03em; }
+.footer-tag { margin-top: 10px; font-size: .95rem; color: #A9C9B6; max-width: 280px; }
+.footer-col h4 { font-family: var(--font-body); font-size: .95rem; font-weight: 600; color: var(--sage); margin-bottom: 14px; letter-spacing: 0; }
+.footer-col ul { list-style: none; display: grid; gap: 9px; }
+.footer-col a { text-decoration: none; font-size: .95rem; color: #CFE5D6; }
+.footer-col a:hover { color: var(--white); text-decoration: underline; text-underline-offset: 3px; }
+.footer-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 28px; font-size: .88rem; color: #A9C9B6; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .wrap { padding: 0 20px; }
+  .nav-toggle { display: block; }
+  .nav-links {
+    position: absolute; top: 72px; left: 0; right: 0;
+    flex-direction: column; align-items: stretch; gap: 2px;
+    background: var(--paper); border-bottom: 1px solid var(--line);
+    padding: 10px 16px 18px; display: none;
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a { padding: 12px 14px; font-size: 1.05rem; }
+  .nav-cta-desktop { display: none; }
+  .footer-top { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) { .footer-top { grid-template-columns: 1fr; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
+</style>
+
+<style>
+/* ---------- Hero ---------- */
+.hero { padding: 64px 0 40px; overflow: hidden; }
+.hero .wrap { display: grid; grid-template-columns: 1fr 1.1fr; gap: 32px; align-items: center; }
+.hero h1 { font-size: clamp(2.8rem, 5.6vw, 5rem); font-weight: 800; letter-spacing: -0.035em; line-height: .98; max-width: 11ch; }
+.hero-sub { margin-top: 26px; font-size: 1.18rem; color: var(--ink-2); max-width: 46ch; }
+.hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 34px; }
+.hero-cred { margin-top: 30px; font-size: .95rem; color: var(--ink-2); display: flex; align-items: center; gap: 12px; }
+.hero-cred .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--mint); border: 1px solid var(--line); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; color: var(--fern); flex-shrink: 0; }
+
+/* 3D financial engine (WebGL) */
+.engine {
+  position: relative; height: 540px; border-radius: 28px; overflow: hidden; isolation: isolate;
+  background:
+    radial-gradient(120% 90% at 70% 10%, #155C3E 0%, #0B3325 45%, #06211A 100%);
+  box-shadow: 0 10px 0 #0A2B20, 0 40px 70px -30px rgba(6,33,26,.65), inset 0 0 0 1px rgba(168,221,185,.14);
+}
+.engine canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.engine-fallback {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    linear-gradient(rgba(168,221,185,.08) 1px, transparent 1px) 0 0 / 34px 34px,
+    linear-gradient(90deg, rgba(168,221,185,.08) 1px, transparent 1px) 0 0 / 34px 34px;
+  mask-image: radial-gradient(80% 70% at 50% 60%, #000 30%, transparent 75%);
+  transition: opacity .8s;
+}
+.engine.live .engine-fallback { opacity: 0; }
+.engine::after { /* screen glare */
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background: linear-gradient(115deg, rgba(255,255,255,.07) 0%, transparent 32%);
+}
+.hud {
+  position: absolute; z-index: 3; left: 20px; right: 20px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; font-size: 12px; color: #A8DDB9;
+}
+.hud-top { top: 18px; }
+.hud-top .dots { display: flex; gap: 6px; margin-right: 6px; }
+.hud-top .dots i { width: 9px; height: 9px; border-radius: 50%; background: rgba(168,221,185,.25); }
+.hud-top .dots i:first-child { background: var(--marigold); }
+.hud-top .path { color: #E6F6EC; }
+.hud-top .status { margin-left: auto; display: flex; align-items: center; gap: 7px; color: #7FBF98; }
+.hud-top .status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #5EE59A; box-shadow: 0 0 10px #5EE59A; animation: blink 2.4s infinite; }
+@keyframes blink { 50% { opacity: .35; } }
+.hud-bottom { bottom: 16px; gap: 8px 18px; color: #7FBF98; }
+.hud-bottom b { color: #E6F6EC; font-weight: 600; font-variant-numeric: tabular-nums; }
+.chip {
+  position: absolute; z-index: 3; text-decoration: none;
+  padding: 10px 14px 11px; border-radius: 14px;
+  background: rgba(8,40,30,.62); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(168,221,185,.22);
+  box-shadow: 0 4px 0 rgba(0,0,0,.28), 0 18px 30px -18px rgba(0,0,0,.6);
+  transition: transform .15s ease, border-color .2s, background .2s;
+}
+.chip:hover { border-color: var(--sage); background: rgba(14,60,44,.8); transform: translateY(-2px); }
+.chip:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.28); }
+.chip .k { display: block; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; color: #7FBF98; }
+.chip .v { display: block; font-weight: 600; font-size: .95rem; color: #F4FBF6; margin-top: 2px; }
+.chip .v::after { content: ''; display: inline-block; width: 6px; height: 6px; margin-left: 8px; border-top: 2px solid var(--sage); border-right: 2px solid var(--sage); transform: translateY(-2px) rotate(45deg); }
+.chip-a { top: 60px; right: 20px; }
+.chip-b { top: 60px; left: 20px; }
+.chip-c { bottom: 58px; left: 20px; }
+.chip-d { bottom: 58px; right: 20px; }
+.chip i.sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: 1px; }
+
+/* ---------- Facts ---------- */
+.facts { margin-top: 10px; }
+.facts .slab { display: grid; grid-template-columns: repeat(3, 1fr); }
+.fact { padding: 24px 28px; font-size: 1rem; color: var(--ink-2); }
+.fact + .fact { border-left: 1px solid var(--line); }
+.fact b { color: var(--evergreen); font-weight: 600; }
+
+/* ---------- Sections ---------- */
+.block { padding-top: 120px; }
+.block-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 40px; flex-wrap: wrap; }
+.block-head h2 { font-size: clamp(2rem, 3.6vw, 3rem); max-width: 16ch; }
+.block-head p { color: var(--ink-2); max-width: 44ch; font-size: 1.05rem; }
+
+/* Toolkit */
+.toolkit { display: grid; grid-template-columns: 1.25fr 1fr 1fr; grid-template-rows: auto auto; gap: 24px; }
+.tile { padding: 30px; text-decoration: none; display: flex; flex-direction: column; gap: 12px; transform-style: preserve-3d; transition: transform .25s ease, box-shadow .25s ease; will-change: transform; }
+.tile h3 { font-size: 1.5rem; }
+.tile p { color: var(--ink-2); font-size: .98rem; }
+.tile .go { margin-top: auto; padding-top: 10px; font-weight: 600; color: var(--fern); font-size: .95rem; }
+.tile:hover { box-shadow: 0 12px 0 var(--mint-2), 0 26px 40px -18px rgba(15,61,46,.28); }
+.tile-icon { width: 52px; height: 52px; border-radius: 15px; background: var(--mint); display: grid; place-items: center; box-shadow: 0 4px 0 var(--mint-2); color: var(--fern); }
+.tile-icon svg { width: 26px; height: 26px; }
+.tile.big { grid-row: span 2; background: linear-gradient(160deg, #FFFFFF 40%, var(--mint)); }
+.tile.big h3 { font-size: 2rem; }
+.sheets { position: relative; height: 190px; margin: 14px 0 6px; perspective: 900px; }
+.sheet {
+  position: absolute; left: 50%; top: 50%; width: 210px; height: 128px; margin: -64px 0 0 -105px;
+  background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 4px 0 var(--mint-2);
+  transform: rotateX(55deg) rotateZ(-28deg);
+  padding: 14px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; align-content: start;
+}
+.sheet i { height: 8px; border-radius: 4px; background: #CDE9D6; }
+.sheet i.g { background: var(--leaf); }
+.sheet i.w { grid-column: span 2; }
+.sheet:nth-child(1) { transform: rotateX(55deg) rotateZ(-28deg) translateZ(0); }
+.sheet:nth-child(2) { transform: rotateX(55deg) rotateZ(-28deg) translateZ(34px); }
+.sheet:nth-child(3) { transform: rotateX(55deg) rotateZ(-28deg) translateZ(68px); border-color: var(--sage); }
+.tile.new { grid-column: span 2; background: var(--evergreen); border-color: var(--evergreen); box-shadow: 0 8px 0 #0A2B20, var(--lift); color: var(--white); }
+.tile.new p { color: #BFDCCB; }
+.tile.new .go { color: var(--sage); }
+.tile.new .tile-icon { background: rgba(168,221,185,.16); box-shadow: 0 4px 0 rgba(0,0,0,.25); color: var(--sage); }
+.tile.new:hover { box-shadow: 0 12px 0 #0A2B20, 0 26px 40px -18px rgba(15,61,46,.5); }
+.pill-new { align-self: flex-start; font-size: .8rem; font-weight: 600; color: var(--evergreen); background: var(--marigold); padding: 3px 10px; border-radius: 999px; }
+
+/* Digital assets band */
+.da-band { margin-top: 120px; background: var(--mint); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 96px 0; position: relative; overflow: hidden; }
+.da-band .wrap { display: grid; grid-template-columns: .9fr 1.1fr; gap: 56px; align-items: start; position: relative; }
+.da-intro h2 { font-size: clamp(2.2rem, 4vw, 3.4rem); max-width: 12ch; }
+.da-intro p { margin-top: 20px; color: var(--ink-2); font-size: 1.05rem; max-width: 44ch; }
+.da-intro .btn { margin-top: 28px; }
+.da-tools { display: grid; gap: 22px; }
+.da-card { padding: 28px 30px 28px 118px; position: relative; text-decoration: none; display: block; transition: transform .2s ease, box-shadow .2s ease; }
+.da-card:hover { transform: translateY(-3px); box-shadow: 0 11px 0 var(--mint-2), 0 24px 36px -18px rgba(15,61,46,.28); }
+.da-card:active { transform: translateY(4px); box-shadow: 0 3px 0 var(--mint-2), var(--lift); }
+.da-card h3 { font-size: 1.45rem; }
+.da-card p { margin-top: 8px; color: var(--ink-2); font-size: .98rem; }
+.da-card .meta { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+.da-card .meta span { font-size: .82rem; font-weight: 500; color: var(--fern); background: var(--mint); border-radius: 999px; padding: 3px 10px; }
+.da-card .meta span.warn { color: #7A5A00; background: #FDF1CC; }
+/* token stack graphic */
+.tokens { position: absolute; left: 30px; top: 30px; width: 64px; height: 64px; }
+.tokens i { position: absolute; left: 4px; width: 56px; height: 20px; border-radius: 50%; background: var(--sage); box-shadow: 0 5px 0 var(--leaf); }
+.tokens i:nth-child(1) { top: 40px; }
+.tokens i:nth-child(2) { top: 26px; }
+.tokens i:nth-child(3) { top: 12px; background: #FFE08A; box-shadow: 0 5px 0 #D99A0B; }
+.tokens.alt i { border-radius: 8px; background: #CFE9F7; box-shadow: 0 5px 0 #5B9AC0; }
+.tokens.alt i:nth-child(3) { background: var(--sage); box-shadow: 0 5px 0 var(--leaf); }
+
+/* Featured calculators */
+.calc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.calc {
+  display: flex; align-items: center; gap: 16px; padding: 20px 22px; text-decoration: none;
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-md);
+  box-shadow: 0 5px 0 var(--mint-2); transition: transform .12s, box-shadow .12s, background .2s;
+}
+.calc:hover { background: #F4FBF6; }
+.calc:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--mint-2); }
+.calc .tile-icon { width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0; }
+.calc .tile-icon svg { width: 22px; height: 22px; }
+.calc strong { display: block; font-weight: 600; font-size: 1.02rem; }
+.calc small { color: var(--ink-2); font-size: .9rem; }
+.center { text-align: center; margin-top: 40px; }
+
+/* Articles */
+.articles { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: stretch; }
+.lead { text-decoration: none; display: flex; flex-direction: column; overflow: hidden; }
+.lead-art { background: var(--evergreen); color: var(--white); padding: 40px 36px; min-height: 250px; display: flex; flex-direction: column; justify-content: flex-end; position: relative; overflow: hidden; }
+.lead-art::before { content: ''; position: absolute; right: -60px; top: -60px; width: 260px; height: 260px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #2A8F5C, var(--fern) 55%, transparent 56%); opacity: .7; }
+.lead-art::after { content: ''; position: absolute; right: 70px; top: 50px; width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #FFE08A, var(--marigold) 60%, #D99A0B); box-shadow: 0 0 0 4px #E0A516; }
+.lead-art h3 { font-size: clamp(1.8rem, 3vw, 2.4rem); max-width: 14ch; position: relative; }
+.lead-body { padding: 26px 36px 32px; }
+.lead-body p { color: var(--ink-2); }
+.meta-line { font-size: .9rem; color: var(--ink-2); margin-bottom: 10px; }
+.meta-line b { color: var(--fern); font-weight: 600; }
+.alist { display: grid; gap: 14px; }
+.arow { display: block; text-decoration: none; padding: 20px 24px; background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: 0 4px 0 var(--mint-2); transition: transform .12s, box-shadow .12s, background .2s; }
+.arow:hover { background: #F4FBF6; }
+.arow:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--mint-2); }
+.arow h3 { font-size: 1.2rem; letter-spacing: -0.015em; }
+.arow .meta-line { margin: 0 0 6px; font-size: .85rem; }
+
+/* Philosophy */
+.philo { display: grid; grid-template-columns: 1.1fr 1fr; gap: 64px; align-items: center; }
+.philo blockquote { font-family: var(--font-display); font-size: clamp(1.9rem, 3.4vw, 2.8rem); font-weight: 600; line-height: 1.15; letter-spacing: -0.025em; }
+.philo blockquote::before { content: '\201C'; display: block; font-size: 5rem; line-height: .6; color: var(--sage); margin-bottom: 10px; }
+.philo .txt p { color: var(--ink-2); margin-bottom: 16px; }
+
+/* CTA */
+.cta { margin-top: 120px; }
+.cta .slab { padding: 56px 48px; display: flex; justify-content: space-between; align-items: center; gap: 28px; flex-wrap: wrap; background: linear-gradient(120deg, var(--white), var(--mint)); }
+.cta h2 { font-size: clamp(1.8rem, 3.2vw, 2.6rem); max-width: 20ch; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1000px) {
+  .hero .wrap { grid-template-columns: 1fr; }
+  .engine { height: 500px; margin-top: 12px; }
+  .toolkit { grid-template-columns: 1fr 1fr; }
+  .tile.big { grid-row: auto; grid-column: span 2; }
+  .da-band .wrap, .articles, .philo { grid-template-columns: 1fr; gap: 36px; }
+  .calc-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .hero { padding-top: 36px; }
+  .engine { height: 460px; border-radius: 22px; }
+  .chip { padding: 8px 11px 9px; border-radius: 12px; max-width: calc(50% - 22px); }
+  .chip .v { font-size: .84rem; }
+  .chip-a, .chip-b { top: 50px; }
+  .chip-c, .chip-d { bottom: 64px; }
+  .hud { left: 14px; right: 14px; font-size: 11px; }
+  .hud-top .path { display: none; }
+  .hud-bottom span:nth-child(3) { display: none; }
+  .facts .slab { grid-template-columns: 1fr; }
+  .fact + .fact { border-left: 0; border-top: 1px solid var(--line); }
+  .toolkit, .calc-grid { grid-template-columns: 1fr; }
+  .tile.big, .tile.new { grid-column: auto; }
+  .da-card { padding: 104px 22px 24px; }
+  .block, .cta { padding-top: 88px; margin-top: 0; }
+  .da-band { margin-top: 88px; padding: 72px 0; }
+  .cta .slab { padding: 36px 24px; }
+  .lead-art, .lead-body { padding-left: 24px; padding-right: 24px; }
+}
 </style>
 </head>
 <body>
 
-<nav>
-  <a href="index.html" class="nav-logo">Fining<span>ale</span></a>
-  <ul class="nav-links">
-    <li><a href="index.html" class="active">Home</a></li>
-    <li><a href="articles.html">Articles</a></li>
-    <li><a href="calculators.html">Calculators</a></li>
-    <li><a href="dcf-model-builder.html">DCF Model</a></li>
-    <li><a href="finingale-letstalk.html">Let's Talk</a></li>
-  </ul>
-  <a href="finingale-letstalk.html" class="nav-cta">Let's Talk →</a>
-</nav>
+<header class="site-nav">
+  <div class="wrap">
+    <a href="index.html" class="brand" aria-label="Finingale home"><span class="brand-mark" aria-hidden="true"></span>Finingale</a>
+    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><span></span><span></span><span></span></button>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="articles.html">Articles</a></li>
+      <li><a href="calculators.html">Calculators</a></li>
+      <li><a href="dcf-model-builder.html">DCF model</a></li>
+      <li><a href="#digital-assets">Digital assets</a></li>
+      <li><a href="finingale-letstalk.html">Let's talk</a></li>
+    </ul>
+  </div>
+</header>
+
+<main>
 
 <section class="hero">
-  <div class="hero-label">Rohan Tainwala · CFA L1 · MFin · MoM · BBA · NISM XIX-C</div>
-  <h1 class="hero-headline">Financial Engineering<br/>Meets <em>Data</em><br/>Mastery.</h1>
-  <p class="hero-sub">A sophisticated hub for advanced financial modelling, quantitative analysis, and interactive learning resources — bridging the gap between theory and actionable market intelligence.</p>
-  <div class="hero-actions">
-    <a href="calculators.html" class="btn-primary">Explore Tools</a>
-    <a href="articles.html" class="btn-outline">Read Articles</a>
-  </div>
-  <div class="hero-stats">
-    <div class="stat-card"><div class="stat-value">16</div><div class="stat-label">Free Calculators</div></div>
-    <div class="stat-card"><div class="stat-value">Zero</div><div class="stat-label">Sign-up Required</div></div>
-    <div class="stat-card"><div class="stat-value">Free</div><div class="stat-label">Always</div></div>
-  </div>
-</section>
-
-<div class="ticker">
-  <div class="ticker-inner">
-    <div class="ticker-item">Compound Interest <span class="up">▲ Power of Time</span></div>
-    <div class="ticker-item">DCF Valuation <span>— Intrinsic Value</span></div>
-    <div class="ticker-item">Portfolio Optimization <span class="up">▲ Risk-Return</span></div>
-    <div class="ticker-item">Monte Carlo <span>— Simulation</span></div>
-    <div class="ticker-item">SIP Calculator <span class="up">▲ Wealth Building</span></div>
-    <div class="ticker-item">Retirement Planning <span>— Start Now</span></div>
-    <div class="ticker-item">Financial Ratios <span class="up">▲ Deep Analysis</span></div>
-    <div class="ticker-item">Loan Repayment <span>— Smart Debt</span></div>
-    <div class="ticker-item">Compound Interest <span class="up">▲ Power of Time</span></div>
-    <div class="ticker-item">DCF Valuation <span>— Intrinsic Value</span></div>
-    <div class="ticker-item">Portfolio Optimization <span class="up">▲ Risk-Return</span></div>
-    <div class="ticker-item">Monte Carlo <span>— Simulation</span></div>
-    <div class="ticker-item">SIP Calculator <span class="up">▲ Wealth Building</span></div>
-    <div class="ticker-item">Retirement Planning <span>— Start Now</span></div>
-    <div class="ticker-item">Financial Ratios <span class="up">▲ Deep Analysis</span></div>
-    <div class="ticker-item">Loan Repayment <span>— Smart Debt</span></div>
-  </div>
-</div>
-
-<section class="features-bg reveal">
-  <div class="section-label">What's Inside</div>
-  <h2 class="section-title">Your Finance Toolkit</h2>
-  <p class="section-sub">Professional-grade tools built to make complex finance concepts accessible — and actually useful.</p>
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-icon">📊</div>
-      <div class="feature-title">Free Calculators</div>
-      <div class="feature-desc">16 interactive tools — from compound interest and EMI to Black-Scholes options pricing and Altman Z-Score. All free, no sign-up required.</div>
-      <a href="calculators.html" class="feature-link">Explore All 16 ↗</a>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">🏗️</div>
-      <div class="feature-title">DCF Model Builder</div>
-      <div class="feature-desc">Institutional-grade DCF with Bear/Base/Bull scenarios, sensitivity tables, and full 10-sheet Excel export — built entirely in your browser.</div>
-      <a href="dcf-model-builder.html" class="feature-link">Open Model ↗</a>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">✍️</div>
-      <div class="feature-title">Articles</div>
-      <div class="feature-desc">Sharp, jargon-free breakdowns of financial concepts, markets, and real-world investing. Written by a finance professional.</div>
-      <a href="articles.html" class="feature-link">Read ↗</a>
-    </div>
-    <div class="feature-card">
-      <div class="feature-icon">💬</div>
-      <div class="feature-title">Let's Talk</div>
-      <div class="feature-desc">Questions, collaboration, or just want to connect? Reach out directly — always happy to discuss finance, markets, and investing.</div>
-      <a href="finingale-letstalk.html" class="feature-link">Get in Touch ↗</a>
-    </div>
-  </div>
-</section>
-
-<div class="marquee-section">
-  <div class="marquee-inner">
-    <div class="marquee-word">Valuation</div><div class="marquee-word">Analysis</div>
-    <div class="marquee-word">Investing</div><div class="marquee-word">Returns</div>
-    <div class="marquee-word">Risk</div><div class="marquee-word">Clarity</div>
-    <div class="marquee-word">Growth</div><div class="marquee-word">Finingale</div>
-    <div class="marquee-word">Valuation</div><div class="marquee-word">Analysis</div>
-    <div class="marquee-word">Investing</div><div class="marquee-word">Returns</div>
-    <div class="marquee-word">Risk</div><div class="marquee-word">Clarity</div>
-    <div class="marquee-word">Growth</div><div class="marquee-word">Finingale</div>
-  </div>
-</div>
-
-<section class="reveal">
-  <div class="section-label">Featured Tools</div>
-  <h2 class="section-title">Start Calculating</h2>
-  <p class="section-sub">From simple calculators to institutional-quality models — built to grow with you.</p>
-  <div class="tools-row">
-    <a href="calc-01-compound-interest.html" class="tool-pill">
-      <span class="tool-pill-icon">📈</span>
-      <div><div class="tool-pill-name">Compound Interest</div><div class="tool-pill-tag">Calculator · Free</div></div>
-    </a>
-    <a href="calc-02-emi-loan.html" class="tool-pill">
-      <span class="tool-pill-icon">🏦</span>
-      <div><div class="tool-pill-name">EMI Calculator</div><div class="tool-pill-tag">Calculator · Free</div></div>
-    </a>
-    <a href="calc-03-sip.html" class="tool-pill">
-      <span class="tool-pill-icon">💰</span>
-      <div><div class="tool-pill-name">SIP Calculator</div><div class="tool-pill-tag">Calculator · Free</div></div>
-    </a>
-    <a href="calc-04-retirement.html" class="tool-pill">
-      <span class="tool-pill-icon">🎯</span>
-      <div><div class="tool-pill-name">Retirement Planner</div><div class="tool-pill-tag">Calculator · Free</div></div>
-    </a>
-    <a href="calc-16-dcf.html" class="tool-pill">
-      <span class="tool-pill-icon">🔍</span>
-      <div><div class="tool-pill-name">DCF Valuation</div><div class="tool-pill-tag">Calculator · Free</div></div>
-    </a>
-    <a href="calc-11-black-scholes.html" class="tool-pill">
-      <span class="tool-pill-icon">⚙️</span>
-      <div><div class="tool-pill-name">Black-Scholes</div><div class="tool-pill-tag">Calculator · Free</div></div>
-    </a>
-  </div>
-  <div style="text-align:center;margin-top:36px;">
-    <a href="calculators.html" class="btn-gold-outline">View All 16 Calculators →</a>
-  </div>
-</section>
-
-<section class="reveal">
-  <div class="section-label">From the Blog</div>
-  <h2 class="section-title">Latest Articles</h2>
-  <p class="section-sub">Sharp, jargon-free thinking on investing, markets, and building wealth — written by a finance professional, not a content machine.</p>
-  <div class="articles-grid">
-    <a href="article-01-the-investor-nobody-talks-about.html" class="article-card">
-      <div class="article-card-thumb">
-        <div class="thumb-category">Personal Finance</div>
-        <div class="thumb-title">The Investor Nobody Talks About</div>
-      </div>
-      <div class="article-card-body">
-        <div class="article-card-meta"><span class="article-tag">Personal Finance</span><span class="article-read-time">7 min read</span></div>
-        <div class="article-card-title">The Investor Nobody Talks About</div>
-        <div class="article-card-desc">The strategy, the stock, the timing — none of it matters if you cannot do this one thing. Why discipline beats intelligence every single time.</div>
-        <div class="article-card-footer"><span class="article-card-author">Rohan Tainwala</span><span class="article-card-link">Read Article →</span></div>
-      </div>
-    </a>
-    <a href="article-02-kelly-criterion.html" class="article-card">
-      <div class="article-card-thumb">
-        <div class="thumb-category">Risk &amp; Strategy</div>
-        <div class="thumb-title">The Kelly Criterion</div>
-      </div>
-      <div class="article-card-body">
-        <div class="article-card-meta"><span class="article-tag">Risk &amp; Strategy</span><span class="article-read-time">8 min read</span></div>
-        <div class="article-card-title">The Kelly Criterion: How Much Should You Actually Bet?</div>
-        <div class="article-card-desc">A Bell Labs mathematician solved position sizing in 1956. Most investors still ignore it. The formula that tells you exactly how much to risk on any trade.</div>
-        <div class="article-card-footer"><span class="article-card-author">Rohan Tainwala</span><span class="article-card-link">Read Article →</span></div>
-      </div>
-    </a>
-    <a href="article-03-esg.html" class="article-card">
-      <div class="article-card-thumb">
-        <div class="thumb-category">ESG &amp; Sustainability</div>
-        <div class="thumb-title">Science and Finance: The New Sci-Fi</div>
-      </div>
-      <div class="article-card-body">
-        <div class="article-card-meta"><span class="article-tag">ESG</span><span class="article-read-time">11 min read</span></div>
-        <div class="article-card-title">Science and Finance: The New Sci-Fi</div>
-        <div class="article-card-desc">ESG is not a values exercise. It is a risk framework. And those who understand that distinction are already years ahead of those who do not.</div>
-        <div class="article-card-footer"><span class="article-card-author">Rohan Tainwala</span><span class="article-card-link">Read Article →</span></div>
-      </div>
-    </a>
-    <a href="article-04-risk-free-rate.html" class="article-card">
-      <div class="article-card-thumb">
-        <div class="thumb-category">Financial Theory</div>
-        <div class="thumb-title">Risk-Free, Is It Though?</div>
-      </div>
-      <div class="article-card-body">
-        <div class="article-card-meta"><span class="article-tag">Theory</span><span class="article-read-time">6 min read</span></div>
-        <div class="article-card-title">Risk-Free, Is It Though?</div>
-        <div class="article-card-desc">Textbooks treat the risk-free rate as a settled concept. It is not. And its casual use has been quietly misleading practitioners for decades.</div>
-        <div class="article-card-footer"><span class="article-card-author">Rohan Tainwala</span><span class="article-card-link">Read Article →</span></div>
-      </div>
-    </a>
-    <a href="article-05-us-markets.html" class="article-card">
-      <div class="article-card-thumb">
-        <div class="thumb-category">Markets</div>
-        <div class="thumb-title">The Architecture of the World's Greatest Market</div>
-      </div>
-      <div class="article-card-body">
-        <div class="article-card-meta"><span class="article-tag">Markets</span><span class="article-read-time">11 min read</span></div>
-        <div class="article-card-title">The Architecture of the World's Greatest Market</div>
-        <div class="article-card-desc">Why the US equity market is not just the largest in the world. It is the most complete. And what that completeness actually means for how you trade.</div>
-        <div class="article-card-footer"><span class="article-card-author">Rohan Tainwala</span><span class="article-card-link">Read Article →</span></div>
-      </div>
-    </a>
-  </div>
-  <div style="text-align:center;margin-top:36px;">
-    <a href="articles.html" class="btn-gold-outline">View All Articles →</a>
-  </div>
-</section>
-
-<section class="features-bg reveal">
-  <div class="about-strip">
+  <div class="wrap">
     <div>
-      <div class="section-label">The Philosophy</div>
-      <blockquote class="about-quote">"Finance shouldn't be locked behind expensive courses or confusing jargon."</blockquote>
+      <h1>Financial engineering meets data mastery.</h1>
+      <p class="hero-sub">Free calculators, a full DCF model builder and plain-English writing on markets, built to help you understand the numbers rather than just produce them.</p>
+      <div class="hero-actions">
+        <a href="calculators.html" class="btn btn-primary">Explore the calculators</a>
+        <a href="articles.html" class="btn btn-soft">Read the articles</a>
+      </div>
+      <p class="hero-cred"><span class="avatar" aria-hidden="true">RT</span><span>Built by Rohan Tainwala, CFA Level 1, MFin, MoM, BBA and NISM XIX-C.</span></p>
     </div>
-    <div class="about-text">
-      <p>Finingale is built by Rohan Tainwala — CFA Level 1 cleared, MFin, MoM, BBA, NISM XIX-C certified. A finance professional who believes institutional-quality tools should be accessible to everyone.</p>
-      <p>Every calculator, model, and article here is designed to teach, not just output numbers. Empowering investors and analysts with statistical precision across global equities, alternative assets, and emerging digital economies.</p>
-      <a href="finingale-letstalk.html" class="btn-outline" style="margin-top:8px;">About Me →</a>
+
+    <div class="engine" id="engine" role="img" aria-label="Animated 3D model of an options volatility surface with tokenised assets orbiting it">
+      <div class="engine-fallback" aria-hidden="true"></div>
+      <canvas id="engine-canvas" aria-hidden="true"></canvas>
+      <div class="hud hud-top" aria-hidden="true">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="path">finingale / models</span>
+        <span class="status">rendering</span>
+      </div>
+      <a class="chip chip-b" href="calc-11-black-scholes.html"><span class="k">derivatives</span><span class="v">Volatility and options</span></a>
+      <a class="chip chip-a" href="settlement_calc.html"><span class="k">tokenisation</span><span class="v">Atomic settlement</span></a>
+      <a class="chip chip-c" href="dcf-model-builder.html"><span class="k">valuation</span><span class="v">DCF model builder</span></a>
+      <a class="chip chip-d" href="calc-15-kelly-criterion.html"><span class="k">risk</span><span class="v">Position sizing</span></a>
+      <div class="hud hud-bottom" aria-hidden="true">
+        <span>ATM vol <b id="hud-atm">18.0%</b></span>
+        <span>25d skew <b id="hud-skew">-3.0</b></span>
+        <span>tokens in orbit <b>8</b></span>
+        <span style="margin-left:auto">illustrative model</span>
+      </div>
     </div>
   </div>
 </section>
 
-<div class="cta-band reveal">
-  <div class="cta-band-title">Have a question or just want to connect?</div>
-  <a href="finingale-letstalk.html" class="btn-dark">Let's Talk →</a>
+<div class="facts wrap">
+  <div class="slab">
+    <div class="fact"><b>16 calculators</b>, from compound interest to Black-Scholes and the Kelly criterion.</div>
+    <div class="fact"><b>A full DCF builder</b> with scenarios, sensitivity tables and Excel export.</div>
+    <div class="fact"><b>No sign-up, no paywall.</b> Everything runs in your browser.</div>
+  </div>
 </div>
 
-<footer>
-  <div class="footer-top">
-    <div>
-      <div class="footer-brand">Fining<span>ale</span></div>
-      <div class="footer-tagline">Financial Engineering Meets Data Mastery · Rohan Tainwala</div>
+<section class="block wrap" aria-labelledby="toolkit-h">
+  <div class="block-head">
+    <h2 id="toolkit-h">Everything in the toolkit</h2>
+    <p>Professional-grade tools that make complex finance concepts approachable, and genuinely useful.</p>
+  </div>
+  <div class="toolkit">
+    <a href="dcf-model-builder.html" class="tile slab big tilt">
+      <h3>DCF model builder</h3>
+      <p>An institutional-style DCF with bear, base and bull scenarios, sensitivity tables and a full 10-sheet Excel export, built entirely in your browser.</p>
+      <div class="sheets" aria-hidden="true">
+        <div class="sheet"><i class="w"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="sheet"><i class="w"></i><i></i><i></i><i class="g"></i><i></i><i></i><i></i></div>
+        <div class="sheet"><i class="w g"></i><i></i><i></i><i class="g"></i><i class="g"></i><i></i><i class="g"></i><i></i></div>
+      </div>
+      <span class="go">Open the model</span>
+    </a>
+    <a href="calculators.html" class="tile slab tilt">
+      <span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8 7h8M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01"/></svg></span>
+      <h3>Calculators</h3>
+      <p>16 interactive tools covering personal finance, valuation and risk.</p>
+      <span class="go">See all 16</span>
+    </a>
+    <a href="articles.html" class="tile slab tilt">
+      <span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H18a2 2 0 0 1 2 2v12.5a1.5 1.5 0 0 1-1.5 1.5H6a2 2 0 0 1-2-2z"/><path d="M8 8.5h8M8 12h8M8 15.5h5"/></svg></span>
+      <h3>Articles</h3>
+      <p>Clear, jargon-free thinking on investing, markets and financial theory.</p>
+      <span class="go">Start reading</span>
+    </a>
+    <a href="#digital-assets" class="tile slab new tilt">
+      <span class="pill-new">New section</span>
+      <h3>Digital assets and tokenisation</h3>
+      <p>Tools exploring tokenised settlement and real-world assets in Australia, inspired by the RBA's Project Acacia.</p>
+      <span class="go">Explore the section</span>
+    </a>
+  </div>
+</section>
+
+<section class="da-band" id="digital-assets" aria-labelledby="da-h">
+  <div class="wrap">
+    <div class="da-intro">
+      <h2 id="da-h">Digital assets and tokenisation</h2>
+      <p>In May 2026 the RBA and the Digital Finance Cooperative Research Centre released the findings of Project Acacia, which tested tokenised settlement across 20 wholesale market use cases. These tools explore what that shift could mean for settlement cost, risk and market structure.</p>
+      <a href="https://www.rba.gov.au/media-releases/2026/mr-26-13.html" class="btn btn-soft" target="_blank" rel="noopener">Read the RBA findings</a>
     </div>
-    <div class="footer-links">
+    <div class="da-tools">
+      <a href="settlement_calc.html" class="da-card slab">
+        <span class="tokens" aria-hidden="true"><i></i><i></i><i></i></span>
+        <h3>Settlement cost analyser</h3>
+        <p>Compare the per-trade cost of T+2 settlement with atomic delivery-versus-payment using a wholesale CBDC, deposit tokens or stablecoins.</p>
+        <div class="meta"><span>Interactive calculator</span><span>Stress scenarios</span></div>
+      </a>
+      <a href="rwa_monitor.html" class="da-card slab">
+        <span class="tokens alt" aria-hidden="true"><i></i><i></i><i></i></span>
+        <h3>Tokenised asset monitor</h3>
+        <p>A dashboard view of tokenised real-world assets in Australia by asset class, settlement asset and issuer.</p>
+        <div class="meta"><span>Dashboard</span><span class="warn">Illustrative data</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="block wrap" aria-labelledby="calc-h">
+  <div class="block-head">
+    <h2 id="calc-h">Start with a calculator</h2>
+    <p>From everyday money questions to the models analysts use.</p>
+  </div>
+  <div class="calc-grid">
+    <a href="calc-01-compound-interest.html" class="calc"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M5 16c5 0 9-3 14-11"/><path d="M15 5h4v4"/></svg></span><span><strong>Compound interest</strong><small>See time do the work</small></span></a>
+    <a href="calc-02-emi-loan.html" class="calc"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4l9 6"/><path d="M5 10v9h14v-9"/><path d="M10 19v-5h4v5"/></svg></span><span><strong>EMI and loans</strong><small>Monthly repayments, made clear</small></span></a>
+    <a href="calc-03-sip.html" class="calc"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="7" rx="7" ry="3"/><path d="M5 7v5c0 1.7 3.1 3 7 3s7-1.3 7-3V7"/><path d="M5 12v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/></svg></span><span><strong>SIP planner</strong><small>Regular investing over time</small></span></a>
+    <a href="calc-04-retirement.html" class="calc"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6" fill="currentColor"/></svg></span><span><strong>Retirement planner</strong><small>How much is enough</small></span></a>
+    <a href="calc-16-dcf.html" class="calc"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V6M16 20v-8M22 20H2"/></svg></span><span><strong>DCF valuation</strong><small>Intrinsic value, quickly</small></span></a>
+    <a href="calc-11-black-scholes.html" class="calc"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18c3 0 4-12 9-12s6 12 9 12"/><path d="M3 21h18"/></svg></span><span><strong>Black-Scholes</strong><small>Option prices and the Greeks</small></span></a>
+  </div>
+  <div class="center"><a href="calculators.html" class="btn btn-soft">View all 16 calculators</a></div>
+</section>
+
+<section class="block wrap" aria-labelledby="art-h">
+  <div class="block-head">
+    <h2 id="art-h">Latest writing</h2>
+    <p>Thinking on investing, markets and building wealth, written by a finance professional.</p>
+  </div>
+  <div class="articles">
+    <a href="article-05-us-markets.html" class="lead slab">
+      <div class="lead-art"><h3>The architecture of the world's greatest market</h3></div>
+      <div class="lead-body">
+        <p class="meta-line"><b>Markets</b>, 11 minute read</p>
+        <p>Why the US equity market is not just the largest in the world but the most complete, and what that completeness means for how you trade.</p>
+      </div>
+    </a>
+    <div class="alist">
+      <a href="article-01-the-investor-nobody-talks-about.html" class="arow"><p class="meta-line"><b>Personal finance</b>, 7 minute read</p><h3>The investor nobody talks about</h3></a>
+      <a href="article-02-kelly-criterion.html" class="arow"><p class="meta-line"><b>Risk and strategy</b>, 8 minute read</p><h3>The Kelly criterion: how much should you actually bet?</h3></a>
+      <a href="article-03-esg.html" class="arow"><p class="meta-line"><b>ESG</b>, 11 minute read</p><h3>Science and finance: the new sci-fi</h3></a>
+      <a href="article-04-risk-free-rate.html" class="arow"><p class="meta-line"><b>Financial theory</b>, 6 minute read</p><h3>Risk-free, is it though?</h3></a>
+    </div>
+  </div>
+  <div class="center"><a href="articles.html" class="btn btn-soft">View all articles</a></div>
+</section>
+
+<section class="block wrap" aria-label="Philosophy">
+  <div class="philo">
+    <blockquote>Finance shouldn't be locked behind expensive courses or confusing jargon.</blockquote>
+    <div class="txt">
+      <p>Finingale is built by Rohan Tainwala, who has cleared CFA Level 1 and holds an MFin, MoM, BBA and NISM XIX-C certification. The aim is simple: institutional-quality tools should be available to everyone.</p>
+      <p>Every calculator, model and article here is designed to teach, not just output numbers, across global equities, alternative assets and emerging digital markets.</p>
+      <a href="finingale-letstalk.html" class="btn btn-soft">About me</a>
+    </div>
+  </div>
+</section>
+
+<section class="cta wrap">
+  <div class="slab">
+    <h2>Have a question, or want to connect?</h2>
+    <a href="finingale-letstalk.html" class="btn btn-primary">Get in touch</a>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand">Finingale</div>
+        <p class="footer-tag">Financial engineering meets data mastery. Built by Rohan Tainwala.</p>
+      </div>
       <div class="footer-col">
         <h4>Pages</h4>
         <ul>
           <li><a href="index.html">Home</a></li>
           <li><a href="articles.html">Articles</a></li>
           <li><a href="calculators.html">Calculators</a></li>
-          <li><a href="dcf-model-builder.html">DCF Model</a></li>
-          <li><a href="finingale-letstalk.html">Let's Talk</a></li>
+          <li><a href="dcf-model-builder.html">DCF model</a></li>
+          <li><a href="#digital-assets">Digital assets</a></li>
+          <li><a href="finingale-letstalk.html">Let's talk</a></li>
         </ul>
       </div>
       <div class="footer-col">
-        <h4>Top Tools</h4>
+        <h4>Popular tools</h4>
         <ul>
-          <li><a href="calc-01-compound-interest.html">Compound Interest</a></li>
-          <li><a href="calc-02-emi-loan.html">EMI Calculator</a></li>
+          <li><a href="calc-01-compound-interest.html">Compound interest</a></li>
           <li><a href="calc-11-black-scholes.html">Black-Scholes</a></li>
-          <li><a href="calc-15-kelly-criterion.html">Kelly Criterion</a></li>
-          <li><a href="calc-16-dcf.html">DCF Valuation</a></li>
+          <li><a href="calc-15-kelly-criterion.html">Kelly criterion</a></li>
+          <li><a href="calc-16-dcf.html">DCF valuation</a></li>
+          <li><a href="settlement_calc.html">Settlement cost analyser</a></li>
+          <li><a href="rwa_monitor.html">Tokenised asset monitor</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Articles</h4>
         <ul>
-          <li><a href="article-01-the-investor-nobody-talks-about.html">The Investor Nobody Talks About</a></li>
-          <li><a href="article-02-kelly-criterion.html">The Kelly Criterion</a></li>
-          <li><a href="article-03-esg.html">Science &amp; Finance</a></li>
-          <li><a href="article-04-risk-free-rate.html">Risk-Free, Is It Though?</a></li>
-          <li><a href="article-05-us-markets.html">The Architecture of US Markets</a></li>
+          <li><a href="article-01-the-investor-nobody-talks-about.html">The investor nobody talks about</a></li>
+          <li><a href="article-02-kelly-criterion.html">The Kelly criterion</a></li>
+          <li><a href="article-03-esg.html">Science and finance</a></li>
+          <li><a href="article-04-risk-free-rate.html">Risk-free, is it though?</a></li>
+          <li><a href="article-05-us-markets.html">The architecture of US markets</a></li>
         </ul>
       </div>
     </div>
-  </div>
-  <div class="footer-bottom">
-    <span>© 2026 Finingale · Rohan Tainwala. Built with purpose.</span>
-    <span>For educational purposes only — not financial advice.</span>
+    <div class="footer-bottom">
+      <span>© 2026 Finingale, Rohan Tainwala</span>
+      <span>For educational purposes only. Not financial advice.</span>
+    </div>
   </div>
 </footer>
 
 <script>
-  const reveals=document.querySelectorAll('.reveal');
-  const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);}});},{threshold:0.1});
-  reveals.forEach(el=>observer.observe(el));
-  setTimeout(()=>{reveals.forEach(el=>{const r=el.getBoundingClientRect();if(r.top<window.innerHeight)el.classList.add('visible');});},100);
+/* Mobile menu */
+(function () {
+  const btn = document.querySelector('.nav-toggle');
+  const links = document.getElementById('nav-links');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const open = links.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open);
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+})();
+
+/* Tilt on the toolkit tiles */
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine = window.matchMedia('(pointer: fine)').matches;
+  if (!reduce && fine) {
+    document.querySelectorAll('.tilt').forEach(el => {
+      el.addEventListener('pointermove', e => {
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - .5;
+        const py = (e.clientY - r.top) / r.height - .5;
+        el.style.transform = `perspective(900px) rotateY(${px * 6}deg) rotateX(${-py * 6}deg) translateY(-3px)`;
+      });
+      el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+    });
+  }
+})();
+</script>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js" } }
+</script>
+<script type="module">
+/* Finingale hero: a live-rendered implied volatility surface with tokenised
+   assets orbiting it and data streams rising through the scene. */
+import * as THREE from 'three';
+
+const host = document.getElementById('engine');
+const canvas = document.getElementById('engine-canvas');
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+} catch (e) { /* no WebGL: the CSS grid fallback stays visible */ }
+
+if (renderer) {
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x06211a, 26, 48);
+  const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+  const world = new THREE.Group();
+  scene.add(world);
+
+  /* Lights */
+  scene.add(new THREE.AmbientLight(0xcfe5d6, 0.55));
+  const key = new THREE.DirectionalLight(0xffffff, 1.4); key.position.set(8, 14, 6); scene.add(key);
+  const warm = new THREE.PointLight(0xf3b61f, 30, 30); warm.position.set(-6, 6, -4); scene.add(warm);
+  const cool = new THREE.PointLight(0x5ee59a, 26, 30); cool.position.set(7, 3, 7); scene.add(cool);
+
+  /* Floor grid */
+  const grid = new THREE.GridHelper(40, 40, 0x2a8f5c, 0x1b5a3f);
+  grid.material.transparent = true; grid.material.opacity = 0.35; grid.position.y = -0.02;
+  world.add(grid);
+
+  /* Implied volatility surface: sigma(moneyness, maturity) */
+  const SIZE = 11, SEG = 44;
+  const geo = new THREE.PlaneGeometry(SIZE, SIZE, SEG, SEG);
+  geo.rotateX(-Math.PI / 2);
+  const pos = geo.attributes.position;
+  const colors = new Float32Array(pos.count * 3);
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  const cLow = new THREE.Color(0x1e7a4c), cMid = new THREE.Color(0x8fdcae), cHigh = new THREE.Color(0xf3b61f), tmp = new THREE.Color();
+
+  const iv = (m, T, t) =>            // m: moneyness -1..1, T: maturity 0..1
+    0.155 + 0.11 * m * m * (1 - 0.55 * T) - 0.035 * m + 0.035 * Math.sqrt(T)
+    + 0.008 * Math.sin(t * 0.9 + m * 2.2 + T * 3.1);
+  const H = v => (v - 0.12) * 24;     // vol to height
+
+  function updateSurface(t) {
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i), z = pos.getZ(i);
+      const m = x / (SIZE / 2), T = (z + SIZE / 2) / SIZE;
+      const y = H(iv(m, T, t));
+      pos.setY(i, y);
+      const k = Math.min(1, Math.max(0, y / 5.2));
+      if (k < 0.55) tmp.copy(cLow).lerp(cMid, k / 0.55); else tmp.copy(cMid).lerp(cHigh, (k - 0.55) / 0.45);
+      colors[i * 3] = tmp.r; colors[i * 3 + 1] = tmp.g; colors[i * 3 + 2] = tmp.b;
+    }
+    pos.needsUpdate = true; geo.attributes.color.needsUpdate = true; geo.computeVertexNormals();
+  }
+  updateSurface(0);
+
+  const surface = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+    vertexColors: true, roughness: 0.35, metalness: 0.15, side: THREE.DoubleSide,
+    transparent: true, opacity: 0.92, emissive: 0x0b3325, emissiveIntensity: 0.4
+  }));
+  surface.position.y = 0.4;
+  world.add(surface);
+
+  const wire = new THREE.LineSegments(new THREE.WireframeGeometry(geo),
+    new THREE.LineBasicMaterial({ color: 0xd9f5e3, transparent: true, opacity: 0.16 }));
+  surface.add(wire);
+
+  /* Surface frame (axes box) */
+  const axesBox = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(SIZE, 6, SIZE)),
+    new THREE.LineBasicMaterial({ color: 0x3fa36b, transparent: true, opacity: 0.35 }));
+  axesBox.position.y = 3.02; world.add(axesBox);
+
+  /* Orbiting tokenised assets: hexagonal tokens */
+  const ORBIT_R = 9.2;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(ORBIT_R, 0.025, 8, 160),
+    new THREE.MeshBasicMaterial({ color: 0x5ee59a, transparent: true, opacity: 0.45 }));
+  ring.rotation.x = Math.PI / 2; ring.position.y = 2.2; world.add(ring);
+
+  const tokenGeo = new THREE.CylinderGeometry(0.62, 0.62, 0.22, 6);
+  const tokenEdges = new THREE.EdgesGeometry(tokenGeo);
+  const palette = [0xf3b61f, 0xa8ddb9, 0x8fc9ea, 0xa8ddb9, 0xf3b61f, 0xa8ddb9, 0x8fc9ea, 0xa8ddb9];
+  const tokens = palette.map((c, i) => {
+    const g = new THREE.Group();
+    const m = new THREE.Mesh(tokenGeo, new THREE.MeshStandardMaterial({ color: c, metalness: 0.55, roughness: 0.25, emissive: c, emissiveIntensity: 0.18 }));
+    g.add(m);
+    g.add(new THREE.LineSegments(tokenEdges, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 })));
+    g.userData.phase = (i / palette.length) * Math.PI * 2;
+    world.add(g);
+    return g;
+  });
+
+  /* Settlement links: lines from tokens to the surface centre, pulsing */
+  const linkGeo = new THREE.BufferGeometry();
+  const linkPos = new Float32Array(tokens.length * 6);
+  linkGeo.setAttribute('position', new THREE.BufferAttribute(linkPos, 3));
+  const links = new THREE.LineSegments(linkGeo, new THREE.LineBasicMaterial({ color: 0x5ee59a, transparent: true, opacity: 0.18 }));
+  world.add(links);
+
+  /* Rising data streams */
+  const N = 420;
+  const pGeo = new THREE.BufferGeometry();
+  const pPos = new Float32Array(N * 3), pSpeed = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    const r = 2 + Math.random() * 13, a = Math.random() * Math.PI * 2;
+    pPos[i * 3] = Math.cos(a) * r; pPos[i * 3 + 1] = Math.random() * 12; pPos[i * 3 + 2] = Math.sin(a) * r;
+    pSpeed[i] = 0.4 + Math.random() * 1.4;
+  }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+  const points = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0xa8ddb9, size: 0.07, transparent: true, opacity: 0.7, depthWrite: false }));
+  world.add(points);
+
+  /* Camera, sizing and interaction */
+  const target = new THREE.Vector3(0, 1.4, 0);
+  let pointerX = 0, pointerY = 0, px = 0, py = 0;
+  host.addEventListener('pointermove', e => {
+    const r = host.getBoundingClientRect();
+    pointerX = (e.clientX - r.left) / r.width - 0.5;
+    pointerY = (e.clientY - r.top) / r.height - 0.5;
+  });
+  host.addEventListener('pointerleave', () => { pointerX = 0; pointerY = 0; });
+
+  function resize() {
+    const w = host.clientWidth, h = host.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    const narrow = w < 520;
+    camera.fov = narrow ? 40 : 33;
+    world.scale.setScalar(narrow ? 0.72 : 0.9);
+    camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(host); resize();
+
+  const hudAtm = document.getElementById('hud-atm'), hudSkew = document.getElementById('hud-skew');
+  let visible = true;
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(host);
+
+  const clock = new THREE.Clock();
+  let last = 0;
+  function frame() {
+    const t = reduce ? 2 : clock.getElapsedTime();
+    const dt = t - last; last = t;
+
+    if (!reduce) updateSurface(t);
+    world.rotation.y = (reduce ? 0.6 : t * 0.09) + px * 0.5;
+
+    px += (pointerX - px) * 0.05; py += (pointerY - py) * 0.05;
+    const R = 31;
+    camera.position.set(Math.sin(0.78) * R, 14 - py * 4, Math.cos(0.78) * R);
+    camera.lookAt(target);
+
+    tokens.forEach((g, i) => {
+      const a = g.userData.phase + t * 0.35;
+      g.position.set(Math.cos(a) * ORBIT_R, 2.2 + Math.sin(t * 1.3 + i) * 0.35, Math.sin(a) * ORBIT_R);
+      g.rotation.set(Math.PI / 2 * 0.9, a * 1.6, 0);
+      linkPos.set([g.position.x, g.position.y, g.position.z, 0, 3.2, 0], i * 6);
+    });
+    linkGeo.attributes.position.needsUpdate = true;
+    links.material.opacity = 0.1 + 0.12 * (0.5 + 0.5 * Math.sin(t * 2.2));
+
+    if (!reduce) {
+      for (let i = 0; i < N; i++) {
+        let y = pPos[i * 3 + 1] + pSpeed[i] * dt;
+        if (y > 12) y = 0;
+        pPos[i * 3 + 1] = y;
+      }
+      pGeo.attributes.position.needsUpdate = true;
+    }
+
+    const atm = iv(0, 0.5, t) * 100, skew = (iv(-0.5, 0.5, t) - iv(0.5, 0.5, t)) * -100;
+    hudAtm.textContent = atm.toFixed(1) + '%';
+    hudSkew.textContent = skew.toFixed(1);
+
+    renderer.render(scene, camera);
+  }
+
+  host.classList.add('live');
+  if (reduce) { frame(); }
+  else {
+    renderer.setAnimationLoop(() => { if (visible && !document.hidden) frame(); });
+  }
+}
 </script>
 </body>
 </html>
