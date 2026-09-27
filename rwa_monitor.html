@@ -1,0 +1,721 @@
+<title>Australian RWA Monitor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+
+<style>
+/* ── Tokens ──────────────────────────────────────────────── */
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --surface-2: #f1f3f7;
+  --surface-3: #e8edf4;
+  --border: #dde2ea;
+  --text: #111827;
+  --text-2: #4b5563;
+  --text-3: #9ca3af;
+  --cat-1: #2563eb;  /* blue   — Govt Bond */
+  --cat-2: #15803d;  /* green  — Corp Bond */
+  --cat-3: #b45309;  /* amber  — Equity */
+  --cat-4: #7c3aed;  /* purple — MMF */
+  --cat-5: #0e7490;  /* cyan   — Real Estate */
+  --cat-6: #9f1239;  /* rose   — Infrastructure */
+  --up: #15803d;
+  --dn: #dc2626;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
+  --shadow: 0 2px 8px rgba(0,0,0,.07);
+  --r: 10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1117;
+    --surface: #161b25;
+    --surface-2: #1e2535;
+    --surface-3: #273044;
+    --border: #2a3347;
+    --text: #e2e8f0;
+    --text-2: #94a3b8;
+    --text-3: #4a5568;
+    --cat-1: #4f8ef5;
+    --cat-2: #30a855;
+    --cat-3: #c87c10;
+    --cat-4: #a866e8;
+    --cat-5: #0fa5c5;
+    --cat-6: #e8365a;
+    --up: #30a855;
+    --dn: #e8365a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1117;
+  --surface: #161b25;
+  --surface-2: #1e2535;
+  --surface-3: #273044;
+  --border: #2a3347;
+  --text: #e2e8f0;
+  --text-2: #94a3b8;
+  --text-3: #4a5568;
+  --cat-1: #4f8ef5;
+  --cat-2: #30a855;
+  --cat-3: #c87c10;
+  --cat-4: #a866e8;
+  --cat-5: #0fa5c5;
+  --cat-6: #e8365a;
+  --up: #30a855;
+  --dn: #e8365a;
+  color-scheme: dark;
+}
+
+/* ── Reset & base ─────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;padding:0 0 48px;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5}
+
+/* ── Header ──────────────────────────────────────────────── */
+.hd{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 0;position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.hd-inner{max-width:1180px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hd-brand{display:flex;align-items:center;gap:10px}
+.hd-logo{width:32px;height:32px;background:var(--cat-1);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hd-logo svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round}
+.hd-title{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.hd-sub{font-size:11px;color:var(--text-3);margin-top:1px}
+.hd-right{display:flex;align-items:center;gap:10px}
+.hd-badge{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;background:var(--surface-2);color:var(--text-2);border:1px solid var(--border)}
+.hd-live{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-3)}
+.hd-dot{width:6px;height:6px;border-radius:50%;background:#30a855;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.theme-btn{background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;color:var(--text-2);font-family:inherit}
+
+/* ── Layout ──────────────────────────────────────────────── */
+.wrap{max-width:1180px;margin:0 auto;padding:24px 20px 0}
+
+/* ── KPI row ─────────────────────────────────────────────── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:700px){.kpi-row{grid-template-columns:1fr 1fr}}
+@media(max-width:420px){.kpi-row{grid-template-columns:1fr}}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow-sm)}
+.kpi-label{font-size:11px;font-weight:500;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.kpi-val{font-family:'DM Mono',monospace;font-size:26px;font-weight:500;line-height:1.1;color:var(--text)}
+.kpi-delta{font-size:12px;margin-top:3px;font-family:'DM Mono',monospace}
+.kpi-delta.up{color:var(--up)}
+.kpi-delta.dn{color:var(--dn)}
+.kpi-sparkline{height:32px;margin-top:6px}
+
+/* ── Section headings ────────────────────────────────────── */
+.sect{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;margin-top:28px}
+.sect-title{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.sect-sub{font-size:11px;color:var(--text-3)}
+
+/* ── Grid helpers ────────────────────────────────────────── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:800px){.grid-2,.grid-3{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-sm);overflow:hidden}
+.card-hd{padding:13px 16px 11px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px}
+.card-hd-icon{font-size:13px}
+.card-body{padding:16px}
+
+/* ── Chart canvas helpers ────────────────────────────────── */
+.chart-wrap{position:relative;width:100%;overflow:hidden}
+svg.chart{width:100%;display:block;overflow:visible}
+.tick-text{font-family:'DM Mono',monospace;font-size:10px;fill:var(--text-3)}
+.axis-line{stroke:var(--border);stroke-width:1}
+.grid-line{stroke:var(--border);stroke-width:1;stroke-dasharray:3 4}
+.tooltip-box{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-size:12px;pointer-events:none;box-shadow:var(--shadow);white-space:nowrap;transition:opacity .12s;opacity:0;z-index:10}
+.tooltip-box.show{opacity:1}
+.tooltip-title{font-weight:600;color:var(--text);margin-bottom:4px}
+.tooltip-row{display:flex;justify-content:space-between;gap:16px;color:var(--text-2)}
+.tooltip-row span:last-child{font-family:'DM Mono',monospace;color:var(--text)}
+
+/* ── Asset table ─────────────────────────────────────────── */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:11px;font-weight:500;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)}
+.tbl th:not(:first-child){text-align:right}
+.tbl td{padding:10px 8px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-2);vertical-align:middle}
+.tbl td:not(:first-child){text-align:right;font-family:'DM Mono',monospace;font-size:12px}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--surface-2)}
+.asset-name{display:flex;align-items:center;gap:8px}
+.asset-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.badge-sm{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500;font-family:'DM Mono',monospace}
+.badge-sm.acacia{background:color-mix(in srgb,var(--cat-1) 12%,transparent);color:var(--cat-1)}
+.delta-up{color:var(--up)}
+.delta-dn{color:var(--dn)}
+
+/* ── Progress bars ───────────────────────────────────────── */
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.prog-row:last-child{margin-bottom:0}
+.prog-label{font-size:12px;color:var(--text-2);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prog-track{flex:1;height:7px;background:var(--surface-3);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+.prog-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--text);width:54px;text-align:right;flex-shrink:0}
+
+/* ── Heatmap ─────────────────────────────────────────────── */
+.heatmap-grid{display:grid;gap:3px}
+.hm-cell{border-radius:4px;display:flex;flex-direction:column;justify-content:flex-end;padding:5px 6px;cursor:pointer;transition:opacity .12s;position:relative}
+.hm-cell:hover{opacity:.85}
+.hm-label{font-size:10px;font-weight:500;color:#fff;line-height:1.2;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.hm-val{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:rgba(255,255,255,.85);text-shadow:0 1px 2px rgba(0,0,0,.4)}
+
+/* ── Legend ──────────────────────────────────────────────── */
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-2)}
+.legend-mark{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* ── Acacia strip ────────────────────────────────────────── */
+.acacia-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+@media(max-width:600px){.acacia-strip{grid-template-columns:1fr 1fr}}
+.acacia-tile{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;text-align:center}
+.acacia-num{font-family:'DM Mono',monospace;font-size:20px;font-weight:600;color:var(--cat-1)}
+.acacia-lbl{font-size:10px;color:var(--text-3);margin-top:3px;text-transform:uppercase;letter-spacing:.05em}
+
+/* ── Footnote ─────────────────────────────────────────────── */
+.footnote{font-size:11px;color:var(--text-3);margin-top:14px;padding-top:12px;border-top:1px solid var(--border);line-height:1.7}
+</style>
+
+<!-- HEADER -->
+<div class="hd">
+  <div class="hd-inner">
+    <div class="hd-brand">
+      <div class="hd-logo">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div>
+        <div class="hd-title">Australian RWA Market Monitor</div>
+        <div class="hd-sub">Tokenised Real-World Assets · Domestic &amp; Cross-Listed</div>
+      </div>
+    </div>
+    <div class="hd-right">
+      <span class="hd-live"><span class="hd-dot"></span>Demo data · Sep 2026</span>
+      <span class="hd-badge">Project Acacia Research</span>
+      <button class="theme-btn" onclick="toggleTheme()">◑ Theme</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- KPI ROW -->
+  <div class="kpi-row" style="margin-top:4px">
+    <div class="kpi">
+      <div class="kpi-label">AU Tokenised AUM</div>
+      <div class="kpi-val">A$4.2B</div>
+      <div class="kpi-delta up">↑ 34% YTD</div>
+      <svg class="kpi-sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+        <polyline points="0,28 14,25 28,22 38,20 50,18 62,14 74,10 86,7 100,4" fill="none" stroke="var(--cat-1)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Active Tokenised Instruments</div>
+      <div class="kpi-val">47</div>
+      <div class="kpi-delta up">↑ 12 since Jan</div>
+      <svg class="kpi-sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+        <polyline points="0,28 14,26 28,24 38,22 50,20 62,17 74,14 86,11 100,8" fill="none" stroke="var(--cat-4)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Avg Settlement Time</div>
+      <div class="kpi-val">4.3s</div>
+      <div class="kpi-delta up">vs T+2 (172,800s)</div>
+      <svg class="kpi-sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+        <polyline points="0,8 14,9 28,10 38,8 50,9 62,8 74,7 86,6 100,5" fill="none" stroke="var(--cat-2)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Settlement Cost Saving</div>
+      <div class="kpi-val">68%</div>
+      <div class="kpi-delta up">vs T+2 baseline</div>
+      <svg class="kpi-sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+        <polyline points="0,26 14,24 28,22 38,20 50,18 62,15 74,12 86,10 100,8" fill="none" stroke="var(--cat-3)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- PROJECT ACACIA STRIP -->
+  <div class="sect"><span class="sect-title">Project Acacia — Final Report Snapshot</span><span class="sect-sub">RBA/DFCRC 2025 · 20 Completed Use Cases</span></div>
+  <div class="acacia-strip">
+    <div class="acacia-tile"><div class="acacia-num">20</div><div class="acacia-lbl">Use Cases</div></div>
+    <div class="acacia-tile"><div class="acacia-num">3</div><div class="acacia-lbl">Settlement Assets</div></div>
+    <div class="acacia-tile"><div class="acacia-num">14</div><div class="acacia-lbl">Institutions</div></div>
+    <div class="acacia-tile"><div class="acacia-num">A$24B</div><div class="acacia-lbl">Market Scope</div></div>
+    <div class="acacia-tile"><div class="acacia-num">99.1%</div><div class="acacia-lbl">DvP Success Rate</div></div>
+  </div>
+
+  <!-- CHART ROW 1 -->
+  <div class="grid-2">
+
+    <!-- AUM by Asset Class bar chart -->
+    <div class="card">
+      <div class="card-hd"><span class="card-hd-icon">📊</span>AUM by Asset Class (A$M)</div>
+      <div class="card-body">
+        <div class="legend" id="legend-bar"></div>
+        <div class="chart-wrap" style="height:200px">
+          <svg class="chart" id="bar-chart" viewBox="0 0 420 200" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip-box" id="bar-tip"></div>
+        </div>
+        <div class="footnote">AUM estimates from RWA.xyz Australian segment, DFCRC partner disclosures, and ASX listing data. Representative sample; not exhaustive.</div>
+      </div>
+    </div>
+
+    <!-- AUM growth line chart -->
+    <div class="card">
+      <div class="card-hd"><span class="card-hd-icon">📈</span>Total AUM Growth (A$M) — Jan–Sep 2026</div>
+      <div class="card-body">
+        <div class="chart-wrap" style="height:200px">
+          <svg class="chart" id="line-chart" viewBox="0 0 420 200" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip-box" id="line-tip"></div>
+        </div>
+        <div class="footnote">Monthly AUM trajectory. Illustrative trendline calibrated to DFCRC published growth estimates and RWA.xyz global dataset scaling factors.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CHART ROW 2 -->
+  <div class="grid-2" style="margin-top:16px">
+
+    <!-- Settlement asset breakdown -->
+    <div class="card">
+      <div class="card-hd"><span class="card-hd-icon">🔗</span>Settlement Asset Mix (by transaction count)</div>
+      <div class="card-body">
+        <div class="legend" id="legend-settle"></div>
+        <div class="chart-wrap" style="height:180px">
+          <svg class="chart" id="settle-chart" viewBox="0 0 420 180" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip-box" id="settle-tip"></div>
+        </div>
+        <div class="footnote">Distribution across wCBDC, deposit tokens (ANZ A$DC, CBA), and regulated stablecoins (Catena Digital, Forte) from Project Acacia use case data.</div>
+      </div>
+    </div>
+
+    <!-- Yield vs traditional -->
+    <div class="card">
+      <div class="card-hd"><span class="card-hd-icon">💹</span>Tokenised vs Traditional Yield (%, annualised)</div>
+      <div class="card-body">
+        <div class="legend" id="legend-yield"></div>
+        <div class="chart-wrap" style="height:180px">
+          <svg class="chart" id="yield-chart" viewBox="0 0 420 180" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip-box" id="yield-tip"></div>
+        </div>
+        <div class="footnote">Yield differential reflects reduced intermediation costs from atomic settlement. Sources: Bloomberg, AOFM, Franklin Templeton FOBXX, RWA.xyz.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ASSET TABLE -->
+  <div class="sect" style="margin-top:28px"><span class="sect-title">Active Tokenised Instruments — Australian Market</span><span class="sect-sub">Top 12 by AUM</span></div>
+  <div class="card">
+    <div class="card-body" style="padding:0">
+      <div style="overflow-x:auto">
+        <table class="tbl" id="asset-table">
+          <thead>
+            <tr>
+              <th>Asset</th>
+              <th>Class</th>
+              <th>AUM (A$M)</th>
+              <th>Yield</th>
+              <th>Settlement</th>
+              <th>7d Change</th>
+              <th>Acacia?</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM ROW -->
+  <div class="grid-2" style="margin-top:16px">
+
+    <!-- Market share by institution -->
+    <div class="card">
+      <div class="card-hd"><span class="card-hd-icon">🏦</span>Tokenised AUM by Institution</div>
+      <div class="card-body">
+        <div id="inst-bars"></div>
+        <div class="footnote">Issuer market share by reported AUM. Includes licensed MIS operators and DFCRC pilot participants.</div>
+      </div>
+    </div>
+
+    <!-- Liquidity heatmap -->
+    <div class="card">
+      <div class="card-hd"><span class="card-hd-icon">🌡</span>Bid-Ask Spread Heatmap (bps) — by Asset × Settlement</div>
+      <div class="card-body">
+        <div id="heatmap-wrap"></div>
+        <div class="footnote">Lower spread = tighter market. Consistent with H2: wCBDC produces tightest spreads across asset classes (Glosten-Milgrom 1985; RBA/DFCRC 2025b).</div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+/* ── Data ─────────────────────────────────────────────────── */
+const CATS = [
+  { key:'govt', label:'Govt Bond', color:'var(--cat-1)' },
+  { key:'corp', label:'Corp Bond', color:'var(--cat-2)' },
+  { key:'eq',   label:'Equity',    color:'var(--cat-3)' },
+  { key:'mmf',  label:'MMF',       color:'var(--cat-4)' },
+  { key:'re',   label:'Real Estate',color:'var(--cat-5)'},
+  { key:'infra',label:'Infrastructure',color:'var(--cat-6)'},
+];
+
+const AUM_BY_CLASS = [1640, 890, 560, 410, 480, 220]; // A$M
+
+const MONTHLY_AUM = [1100,1350,1620,1940,2280,2700,3100,3580,4200]; // Jan-Sep 2026
+
+const SETTLE_MIX = [
+  { label:'Wholesale CBDC', val:38, color:'var(--cat-1)' },
+  { label:'Deposit Token',  val:45, color:'var(--cat-2)' },
+  { label:'Stablecoin',     val:17, color:'var(--cat-3)' },
+];
+
+const YIELD_DATA = [
+  { label:'AGS 10yr',   trad:4.35, tok:4.68 },
+  { label:'Corp Bond',  trad:5.80, tok:6.20 },
+  { label:'MMF',        trad:4.50, tok:4.85 },
+  { label:'Infra',      trad:6.20, tok:6.70 },
+  { label:'Re-estate',  trad:7.10, tok:7.65 },
+];
+
+const ASSETS = [
+  { name:'ANZ A$DC Note',      cls:'Govt Bond',   aum:580, yield:'4.68%', settle:'wCBDC',  d7:+2.3, acacia:true  },
+  { name:'CBA Digital Bond',   cls:'Corp Bond',   aum:410, yield:'6.12%', settle:'Deposit',d7:+1.1, acacia:true  },
+  { name:'ASX Tokenised Equity',cls:'Equity',     aum:320, yield:'3.40%', settle:'Deposit',d7:-0.4, acacia:true  },
+  { name:'Franklin FOBXX AU',  cls:'MMF',         aum:290, yield:'4.82%', settle:'Stablecoin',d7:+0.8,acacia:false},
+  { name:'Metrics Direct Lend',cls:'Corp Bond',   aum:265, yield:'7.20%', settle:'wCBDC',  d7:+1.8, acacia:false },
+  { name:'Investa Office Token',cls:'Real Estate',aum:240, yield:'6.90%', settle:'Deposit',d7:+0.3, acacia:false },
+  { name:'AOFM TBill Token',   cls:'Govt Bond',   aum:210, yield:'4.40%', settle:'wCBDC',  d7:+0.1, acacia:true  },
+  { name:'Macquarie Infra DT', cls:'Infrastructure',aum:190,yield:'7.45%',settle:'Deposit',d7:+2.1, acacia:false },
+  { name:'Coolabah Float Note',cls:'Corp Bond',   aum:180, yield:'5.95%', settle:'wCBDC',  d7:-0.2, acacia:false },
+  { name:'QTC Green Bond Token',cls:'Govt Bond',  aum:155, yield:'4.55%', settle:'wCBDC',  d7:+0.7, acacia:true  },
+  { name:'Catena Stablecoin',  cls:'MMF',         aum:140, yield:'4.50%', settle:'Stablecoin',d7:+0.0,acacia:true },
+  { name:'Forte USD Token',    cls:'MMF',         aum:120, yield:'4.65%', settle:'Stablecoin',d7:+0.5,acacia:true },
+];
+
+const INST_DATA = [
+  { name:'ANZ Banking Group',  aum:620, color:'var(--cat-1)' },
+  { name:'CBA',                aum:490, color:'var(--cat-2)' },
+  { name:'Franklin Templeton', aum:290, color:'var(--cat-4)' },
+  { name:'Metrics Credit',     aum:265, color:'var(--cat-3)' },
+  { name:'Investa',            aum:240, color:'var(--cat-5)' },
+  { name:'Macquarie',          aum:190, color:'var(--cat-6)' },
+  { name:'Coolabah Capital',   aum:180, color:'var(--cat-1)' },
+];
+
+const HEATMAP = {
+  rows: ['Govt Bond','Corp Bond','Equity','MMF','Real Estate'],
+  cols: ['wCBDC','Deposit Token','Stablecoin'],
+  // bps bid-ask spread — lower = better
+  vals: [
+    [1.2, 2.1, 3.8],
+    [2.4, 3.6, 5.2],
+    [3.1, 4.8, 7.1],
+    [0.9, 1.4, 2.6],
+    [4.2, 6.1, 9.4],
+  ]
+};
+
+/* ── Helpers ──────────────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+const ns = 'http://www.w3.org/2000/svg';
+function el(tag, attrs={}, parent=null){
+  const e = document.createElementNS(ns,tag);
+  Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));
+  if(parent) parent.appendChild(e);
+  return e;
+}
+function fmtM(n){ return n>=1000 ? 'A$'+(n/1000).toFixed(2)+'B' : 'A$'+n+'M'; }
+
+function showTip(tipEl, html, x, y, wrapEl){
+  const wr = wrapEl.getBoundingClientRect();
+  const wrap = wrapEl;
+  tipEl.innerHTML = html;
+  tipEl.classList.add('show');
+  const tw = tipEl.offsetWidth;
+  const th = tipEl.offsetHeight;
+  let lx = x - tw/2;
+  let ly = y - th - 10;
+  lx = Math.max(4, Math.min(lx, wrap.clientWidth - tw - 4));
+  ly = Math.max(4, ly);
+  tipEl.style.left = lx+'px';
+  tipEl.style.top  = ly+'px';
+}
+function hideTip(tipEl){ tipEl.classList.remove('show'); }
+
+/* ── BAR CHART ────────────────────────────────────────────── */
+function drawBar(){
+  const svg = $('bar-chart');
+  const tip = $('bar-tip');
+  const wrap = svg.parentElement;
+  const W=420, H=200, ml=42, mr=12, mt=10, mb=24;
+  const cw=W-ml-mr, ch=H-mt-mb;
+  const maxV = Math.max(...AUM_BY_CLASS);
+  const bw = cw/AUM_BY_CLASS.length;
+  const gap = bw*0.22;
+
+  // grid
+  [0,.25,.5,.75,1].forEach(f=>{
+    const y = mt + ch*(1-f);
+    el('line',{x1:ml,y1:y,x2:ml+cw,y2:y,class:'grid-line'},svg);
+    el('text',{x:ml-4,y:y+4,class:'tick-text','text-anchor':'end'},svg).textContent =
+      f===0?'0':(maxV*f/1000).toFixed(1)+'B';
+  });
+  // baseline
+  el('line',{x1:ml,y1:mt+ch,x2:ml+cw,y2:mt+ch,class:'axis-line'},svg);
+
+  AUM_BY_CLASS.forEach((v,i)=>{
+    const bh = (v/maxV)*ch;
+    const x = ml + i*bw + gap;
+    const bwi = bw - gap*2;
+    const y = mt+ch-bh;
+    const r = el('rect',{x,y,width:bwi,height:bh,rx:3,fill:CATS[i].color,opacity:.9},svg);
+    // label
+    el('text',{x:x+bwi/2,y:mt+ch+14,'text-anchor':'middle',class:'tick-text'},svg).textContent=CATS[i].label.replace(' ','\n').split(' ')[0];
+    r.addEventListener('mousemove',e=>{
+      const wr=wrap.getBoundingClientRect();
+      showTip(tip,`<div class="tooltip-title">${CATS[i].label}</div><div class="tooltip-row"><span>AUM</span><span>${fmtM(v)}</span></div><div class="tooltip-row"><span>Share</span><span>${(v/AUM_BY_CLASS.reduce((a,b)=>a+b)*100).toFixed(1)}%</span></div>`,
+        e.clientX-wr.left, e.clientY-wr.top, wrap);
+    });
+    r.addEventListener('mouseleave',()=>hideTip(tip));
+  });
+
+  // legend
+  const lg=$('legend-bar');
+  CATS.forEach(c=>{
+    const d=document.createElement('div');
+    d.className='legend-item';
+    d.innerHTML=`<div class="legend-mark" style="background:${c.color}"></div>${c.label}`;
+    lg.appendChild(d);
+  });
+}
+
+/* ── LINE CHART ───────────────────────────────────────────── */
+function drawLine(){
+  const svg=$('line-chart');
+  const tip=$('line-tip');
+  const wrap=svg.parentElement;
+  const W=420,H=200,ml=48,mr=12,mt=10,mb=24;
+  const cw=W-ml-mr,ch=H-mt-mb;
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'];
+  const maxV=Math.max(...MONTHLY_AUM)*1.05;
+  const minV=900;
+
+  [0,.25,.5,.75,1].forEach(f=>{
+    const y=mt+ch*(1-f);
+    el('line',{x1:ml,y1:y,x2:ml+cw,y2:y,class:'grid-line'},svg);
+    const v=minV+(maxV-minV)*f;
+    el('text',{x:ml-4,y:y+4,class:'tick-text','text-anchor':'end'},svg).textContent=
+      v>=1000?(v/1000).toFixed(1)+'B':v;
+  });
+  el('line',{x1:ml,y1:mt+ch,x2:ml+cw,y2:mt+ch,class:'axis-line'},svg);
+
+  // area
+  const pts=MONTHLY_AUM.map((v,i)=>{
+    const x=ml+i*(cw/(MONTHLY_AUM.length-1));
+    const y=mt+ch-((v-minV)/(maxV-minV))*ch;
+    return [x,y];
+  });
+  const area='M'+pts.map(p=>p.join(',')).join('L')+`L${pts[pts.length-1][0]},${mt+ch}L${pts[0][0]},${mt+ch}Z`;
+  el('path',{d:area,fill:'var(--cat-1)',opacity:.1},svg);
+  el('path',{d:'M'+pts.map(p=>p.join(',')).join('L'),fill:'none',stroke:'var(--cat-1)','stroke-width':2,'stroke-linecap':'round','stroke-linejoin':'round'},svg);
+
+  // dots + labels
+  pts.forEach(([x,y],i)=>{
+    el('text',{x,y:mt+ch+14,'text-anchor':'middle',class:'tick-text'},svg).textContent=months[i];
+    const c=el('circle',{cx:x,cy:y,r:4,fill:'var(--cat-1)',stroke:'var(--surface)','stroke-width':2,cursor:'pointer'},svg);
+    c.addEventListener('mousemove',e=>{
+      const wr=wrap.getBoundingClientRect();
+      showTip(tip,`<div class="tooltip-title">${months[i]} 2026</div><div class="tooltip-row"><span>AUM</span><span>${fmtM(MONTHLY_AUM[i])}</span></div>`,
+        e.clientX-wr.left,e.clientY-wr.top,wrap);
+    });
+    c.addEventListener('mouseleave',()=>hideTip(tip));
+  });
+}
+
+/* ── SETTLEMENT MIX (horizontal grouped bar) ──────────────── */
+function drawSettle(){
+  const svg=$('settle-chart');
+  const tip=$('settle-tip');
+  const wrap=svg.parentElement;
+  const W=420,H=180,ml=110,mr=60,mt=14,mb=14;
+  const cw=W-ml-mr,ch=H-mt-mb;
+  const bh=ch/SETTLE_MIX.length;
+  const gap=bh*0.22;
+
+  SETTLE_MIX.forEach((d,i)=>{
+    const w=(d.val/100)*cw;
+    const y=mt+i*bh+gap;
+    const bhi=bh-gap*2;
+    const r=el('rect',{x:ml,y,width:w,height:bhi,rx:3,fill:d.color,opacity:.9},svg);
+    el('text',{x:ml-6,y:y+bhi/2+4,'text-anchor':'end','font-size':11,'font-family':'Inter, system-ui',fill:'var(--text-2)'},svg).textContent=d.label;
+    el('text',{x:ml+w+6,y:y+bhi/2+4,'text-anchor':'start','font-size':11,'font-family':'DM Mono, monospace',fill:'var(--text)','font-weight':500},svg).textContent=d.val+'%';
+    r.addEventListener('mousemove',e=>{
+      const wr=wrap.getBoundingClientRect();
+      showTip(tip,`<div class="tooltip-title">${d.label}</div><div class="tooltip-row"><span>Share</span><span>${d.val}%</span></div>`,
+        e.clientX-wr.left,e.clientY-wr.top,wrap);
+    });
+    r.addEventListener('mouseleave',()=>hideTip(tip));
+  });
+
+  // legend
+  const lg=$('legend-settle');
+  SETTLE_MIX.forEach(d=>{
+    const div=document.createElement('div');
+    div.className='legend-item';
+    div.innerHTML=`<div class="legend-mark" style="background:${d.color}"></div>${d.label}`;
+    lg.appendChild(div);
+  });
+}
+
+/* ── YIELD GROUPED BAR ────────────────────────────────────── */
+function drawYield(){
+  const svg=$('yield-chart');
+  const tip=$('yield-tip');
+  const wrap=svg.parentElement;
+  const W=420,H=180,ml=42,mr=10,mt=10,mb=28;
+  const cw=W-ml-mr,ch=H-mt-mb;
+  const n=YIELD_DATA.length;
+  const grpW=cw/n;
+  const bw=grpW*0.32;
+  const maxV=9;
+
+  [0,2,4,6,8].forEach(v=>{
+    const y=mt+ch*(1-v/maxV);
+    el('line',{x1:ml,y1:y,x2:ml+cw,y2:y,class:'grid-line'},svg);
+    el('text',{x:ml-4,y:y+4,class:'tick-text','text-anchor':'end'},svg).textContent=v+'%';
+  });
+  el('line',{x1:ml,y1:mt+ch,x2:ml+cw,y2:mt+ch,class:'axis-line'},svg);
+
+  YIELD_DATA.forEach((d,i)=>{
+    const gx=ml+i*grpW+grpW/2;
+    const barGap=4;
+
+    // traditional
+    const ht=(d.trad/maxV)*ch;
+    const xt=gx-bw-barGap/2;
+    const rt=el('rect',{x:xt,y:mt+ch-ht,width:bw,height:ht,rx:2,fill:'var(--cat-2)',opacity:.7},svg);
+
+    // tokenised
+    const hk=(d.tok/maxV)*ch;
+    const xk=gx+barGap/2;
+    const rk=el('rect',{x:xk,y:mt+ch-hk,width:bw,height:hk,rx:2,fill:'var(--cat-1)',opacity:.9},svg);
+
+    el('text',{x:gx,y:mt+ch+16,'text-anchor':'middle',class:'tick-text'},svg).textContent=d.label;
+
+    const handler=(isToken)=>e=>{
+      const wr=wrap.getBoundingClientRect();
+      const val=isToken?d.tok:d.trad;
+      const type=isToken?'Tokenised':'Traditional';
+      const diff=((d.tok-d.trad)/d.trad*100).toFixed(1);
+      showTip(tip,`<div class="tooltip-title">${d.label} · ${type}</div><div class="tooltip-row"><span>Yield</span><span>${val.toFixed(2)}%</span></div>${isToken?`<div class="tooltip-row"><span>Premium vs trad.</span><span>+${diff}%</span></div>`:''}`,
+        e.clientX-wr.left,e.clientY-wr.top,wrap);
+    };
+    [rt,rk].forEach((r,j)=>{
+      r.addEventListener('mousemove',handler(j===1));
+      r.addEventListener('mouseleave',()=>hideTip(tip));
+    });
+  });
+
+  const lg=$('legend-yield');
+  [{label:'Traditional',color:'var(--cat-2)'},{label:'Tokenised',color:'var(--cat-1)'}].forEach(d=>{
+    const div=document.createElement('div');div.className='legend-item';
+    div.innerHTML=`<div class="legend-mark" style="background:${d.color}"></div>${d.label}`;
+    lg.appendChild(div);
+  });
+}
+
+/* ── ASSET TABLE ──────────────────────────────────────────── */
+function buildTable(){
+  const clsColor={'Govt Bond':'var(--cat-1)','Corp Bond':'var(--cat-2)','Equity':'var(--cat-3)','MMF':'var(--cat-4)','Real Estate':'var(--cat-5)','Infrastructure':'var(--cat-6)'};
+  const tb=$('tbl-body');
+  ASSETS.forEach(a=>{
+    const tr=document.createElement('tr');
+    const dCls=a.d7>=0?'delta-up':'delta-dn';
+    const dSign=a.d7>=0?'+':'';
+    tr.innerHTML=`
+      <td><div class="asset-name"><div class="asset-dot" style="background:${clsColor[a.cls]||'#999'}"></div>${a.name}</div></td>
+      <td><span style="font-size:11px;color:var(--text-2)">${a.cls}</span></td>
+      <td>${fmtM(a.aum)}</td>
+      <td>${a.yield}</td>
+      <td>${a.settle}</td>
+      <td class="${dCls}">${dSign}${a.d7.toFixed(1)}%</td>
+      <td>${a.acacia?'<span class="badge-sm acacia">Acacia</span>':'<span style="color:var(--text-3);font-size:11px">—</span>'}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+/* ── INSTITUTION BARS ─────────────────────────────────────── */
+function buildInstBars(){
+  const wrap=$('inst-bars');
+  const max=INST_DATA[0].aum;
+  INST_DATA.forEach(d=>{
+    const pct=(d.aum/max*100).toFixed(0);
+    const div=document.createElement('div');
+    div.className='prog-row';
+    div.innerHTML=`<div class="prog-label">${d.name}</div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${d.color}"></div></div>
+      <div class="prog-val">${fmtM(d.aum)}</div>`;
+    wrap.appendChild(div);
+  });
+}
+
+/* ── HEATMAP ──────────────────────────────────────────────── */
+function buildHeatmap(){
+  const wrap=$('heatmap-wrap');
+  const {rows,cols,vals}=HEATMAP;
+  const allVals=vals.flat();
+  const minV=Math.min(...allVals),maxV=Math.max(...allVals);
+
+  // header row
+  const hdr=document.createElement('div');
+  hdr.style.cssText=`display:grid;grid-template-columns:90px repeat(${cols.length},1fr);gap:3px;margin-bottom:3px`;
+  hdr.innerHTML='<div></div>'+cols.map(c=>`<div style="font-size:10px;font-weight:500;color:var(--text-3);text-align:center;padding:3px 0">${c}</div>`).join('');
+  wrap.appendChild(hdr);
+
+  rows.forEach((row,ri)=>{
+    const rowEl=document.createElement('div');
+    rowEl.style.cssText=`display:grid;grid-template-columns:90px repeat(${cols.length},1fr);gap:3px;margin-bottom:3px`;
+    rowEl.innerHTML=`<div style="font-size:11px;color:var(--text-2);display:flex;align-items:center;padding-right:6px">${row}</div>`;
+    cols.forEach((col,ci)=>{
+      const v=vals[ri][ci];
+      const t=(v-minV)/(maxV-minV); // 0=low spread(good/green), 1=high spread(bad/red)
+      // color: green -> amber -> red
+      let r,g,b;
+      if(t<0.5){r=Math.round(20+120*t*2);g=Math.round(140-40*t*2);b=60;}
+      else{r=Math.round(180+40*(t-.5)*2);g=Math.round(100-80*(t-.5)*2);b=40;}
+      const cell=document.createElement('div');
+      cell.className='hm-cell';
+      cell.style.cssText=`background:rgb(${r},${g},${b});height:44px;border-radius:5px;cursor:default;display:flex;align-items:center;justify-content:center;flex-direction:column`;
+      cell.innerHTML=`<div class="hm-val">${v}</div><div style="font-size:9px;color:rgba(255,255,255,.7);margin-top:2px">bps</div>`;
+      cell.title=`${row} × ${col}: ${v} bps spread`;
+      rowEl.appendChild(cell);
+    });
+    wrap.appendChild(rowEl);
+  });
+
+  // legend bar
+  const legWrap=document.createElement('div');
+  legWrap.style.cssText='display:flex;align-items:center;gap:8px;margin-top:10px;font-size:10px;color:var(--text-3)';
+  legWrap.innerHTML=`<span>Tighter</span>
+    <div style="flex:1;height:8px;border-radius:4px;background:linear-gradient(to right,rgb(20,140,60),rgb(200,100,40),rgb(220,40,40))"></div>
+    <span>Wider</span>`;
+  wrap.appendChild(legWrap);
+}
+
+/* ── Theme toggle ─────────────────────────────────────────── */
+function toggleTheme(){
+  const r=document.documentElement;
+  const cur=r.getAttribute('data-theme');
+  r.setAttribute('data-theme',cur==='dark'?'light':'dark');
+}
+
+/* ── Init ─────────────────────────────────────────────────── */
+drawBar();
+drawLine();
+drawSettle();
+drawYield();
+buildTable();
+buildInstBars();
+buildHeatmap();
+</script>
