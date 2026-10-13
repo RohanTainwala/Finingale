@@ -1,0 +1,1080 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Steady-state P&amp;L, cost per GPU-hour and sensitivity analysis for GPU cloud providers.">
+<title>GPU Fleet Economics | Finingale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Finingale site theme */
+/* ==========================================================================
+   Finingale shared theme
+   Link this file from any page:
+     <link rel="stylesheet" href="finingale-theme.css"/>
+   Change the colours or the page background here and every page that
+   links this file updates at once.
+   ========================================================================== */
+
+
+:root {
+  /* Palette */
+  --paper:     #FAFDFB;   /* page background (white with a hint of green) */
+  --white:     #FFFFFF;
+  --mint:      #E3F4E8;   /* light green bands and panels */
+  --mint-2:    #D2ECDA;   /* extrusion edge on light surfaces */
+  --sage:      #A8DDB9;   /* light green highlight */
+  --leaf:      #3FA36B;   /* mid green */
+  --fern:      #1E7A4C;   /* primary actions and links */
+  --fern-deep: #145C38;   /* extrusion edge on green buttons */
+  --evergreen: #0F3D2E;   /* headings and main text */
+  --ink-2:     #4A6358;   /* secondary text */
+  --line:      #CFE5D6;   /* hairlines and borders */
+  --marigold:  #F3B61F;   /* small warm accent, used sparingly */
+
+  /* Page background: edit this one value to change it site-wide */
+  --page-bg:
+    radial-gradient(1200px 600px at 85% -10%, #E3F4E8 0%, transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, #EEF8F1 0%, transparent 55%),
+    var(--paper);
+
+  /* Type */
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
+
+  /* Depth */
+  --lift: 0 1px 2px rgba(15,61,46,.06), 0 12px 28px -12px rgba(15,61,46,.18);
+  --radius-lg: 22px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --max: 1200px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--evergreen);
+  background: var(--page-bg);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; }
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; line-height: 1.08; }
+:focus-visible { outline: 3px solid var(--marigold); outline-offset: 3px; border-radius: 4px; }
+
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+
+/* ---------- Nav ---------- */
+.site-nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(250,253,251,.82);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.site-nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 72px; gap: 24px; }
+.brand {
+  font-family: var(--font-display); font-weight: 800; font-size: 1.6rem;
+  letter-spacing: -0.03em; text-decoration: none; color: var(--evergreen);
+  display: flex; align-items: center; gap: 10px;
+}
+.brand-mark {
+  width: 30px; height: 30px; border-radius: 9px; background: var(--fern);
+  box-shadow: 0 4px 0 var(--fern-deep); position: relative; top: -2px;
+  display: grid; place-items: center;
+}
+.brand-mark::after { content: ''; width: 11px; height: 11px; border-radius: 50%; background: var(--marigold); }
+.nav-links { display: flex; align-items: center; gap: 6px; list-style: none; }
+.nav-links a {
+  text-decoration: none; font-size: .95rem; font-weight: 500; color: var(--ink-2);
+  padding: 8px 14px; border-radius: 999px; transition: background .2s, color .2s;
+}
+.nav-links a:hover { background: var(--mint); color: var(--evergreen); }
+.nav-links a[aria-current="page"] { color: var(--evergreen); background: var(--mint); }
+.nav-toggle {
+  display: none; background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+  width: 44px; height: 44px; cursor: pointer; box-shadow: 0 3px 0 var(--mint-2);
+}
+.nav-toggle span { display: block; width: 18px; height: 2px; background: var(--evergreen); margin: 4px auto; border-radius: 2px; transition: transform .25s, opacity .25s; }
+.nav-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.nav-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+/* ---------- Buttons (extruded, press down on click) ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-body); font-weight: 600; font-size: 1rem;
+  text-decoration: none; border-radius: 14px; padding: 14px 24px;
+  border: 0; cursor: pointer; position: relative;
+  transition: transform .12s ease, box-shadow .12s ease, background .2s;
+}
+.btn-primary { background: var(--fern); color: var(--white); box-shadow: 0 5px 0 var(--fern-deep), 0 14px 24px -10px rgba(20,92,56,.55); }
+.btn-primary:hover { background: #22875A; }
+.btn-primary:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--fern-deep), 0 6px 12px -8px rgba(20,92,56,.5); }
+.btn-soft { background: var(--white); color: var(--evergreen); box-shadow: inset 0 0 0 1px var(--line), 0 5px 0 var(--mint-2); }
+.btn-soft:hover { background: var(--mint); }
+.btn-soft:active { transform: translateY(4px); box-shadow: inset 0 0 0 1px var(--line), 0 1px 0 var(--mint-2); }
+.btn-sm { padding: 10px 18px; font-size: .92rem; border-radius: 12px; }
+
+/* ---------- Extruded surface (the 3D card language) ---------- */
+.slab {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 0 var(--mint-2), var(--lift);
+}
+
+/* ---------- Footer ---------- */
+.site-footer { background: var(--evergreen); color: #CFE5D6; margin-top: 120px; }
+.site-footer .wrap { padding-top: 72px; padding-bottom: 40px; }
+.footer-top { display: grid; grid-template-columns: 1.3fr repeat(3, 1fr); gap: 40px; padding-bottom: 48px; border-bottom: 1px solid rgba(207,229,214,.18); }
+.footer-brand { font-family: var(--font-display); font-weight: 800; font-size: 1.9rem; color: var(--white); letter-spacing: -0.03em; }
+.footer-tag { margin-top: 10px; font-size: .95rem; color: #A9C9B6; max-width: 280px; }
+.footer-col h4 { font-family: var(--font-body); font-size: .95rem; font-weight: 600; color: var(--sage); margin-bottom: 14px; letter-spacing: 0; }
+.footer-col ul { list-style: none; display: grid; gap: 9px; }
+.footer-col a { text-decoration: none; font-size: .95rem; color: #CFE5D6; }
+.footer-col a:hover { color: var(--white); text-decoration: underline; text-underline-offset: 3px; }
+.footer-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 28px; font-size: .88rem; color: #A9C9B6; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .wrap { padding: 0 20px; }
+  .nav-toggle { display: block; }
+  .nav-links {
+    position: absolute; top: 72px; left: 0; right: 0;
+    flex-direction: column; align-items: stretch; gap: 2px;
+    background: var(--paper); border-bottom: 1px solid var(--line);
+    padding: 10px 16px 18px; display: none;
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a { padding: 12px 14px; font-size: 1.05rem; }
+  .nav-cta-desktop { display: none; }
+  .footer-top { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) { .footer-top { grid-template-columns: 1fr; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
+</style>
+<style>
+/* ---------- GPU fleet economics: restyled to the Finingale theme ----------
+   Selectors are unchanged from the original; only colours, type, radius and depth differ. */
+.fg-calc{
+  --ink:#0F3D2E; --ink-soft:#4A6358; --line:#CFE5D6; --paper:#FFFFFF; --wash:#F2FAF5;
+  --steel:#1E7A4C; --profit:#1E7A4C; --loss:#B3412E; --edge:#D2ECDA;
+  font-family:var(--font-body); color:var(--ink); background:transparent;
+  line-height:1.5; font-size:16px; padding:40px 0 24px; box-sizing:border-box;
+}
+.fg-calc *,.fg-calc *::before,.fg-calc *::after{box-sizing:inherit}
+.fg-calc input,.fg-calc select,.fg-calc button,.fg-calc fieldset,.fg-calc .field,.fg-calc .conv{box-sizing:border-box}
+.fg-calc .wrap{max-width:var(--max);margin:0 auto;padding:0 32px}
+.fg-calc h1{font-family:var(--font-display);font-weight:800;font-size:clamp(2.4rem,5vw,3.8rem);line-height:1;margin:0 0 1rem;letter-spacing:-.035em}
+.fg-calc h2{font-family:var(--font-display);font-weight:700;font-size:1.3rem;margin:0 0 .5rem;letter-spacing:-.02em}
+.fg-calc p{margin:0 0 .8rem;max-width:70ch}
+.fg-calc .lede{color:var(--ink-soft);font-size:1.12rem;max-width:62ch}
+.fg-calc .sub{color:var(--ink-soft);font-size:.9rem;margin:0 0 1rem}
+
+.fg-calc .grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:28px;align-items:start;margin-top:36px}
+@media (max-width:900px){.fg-calc .grid{grid-template-columns:minmax(0,1fr)}}
+.fg-calc .grid>*{min-width:0}
+.fg-calc .panel{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:24px;
+  box-shadow:0 6px 0 var(--edge),0 1px 2px rgba(15,61,46,.05),0 14px 30px -16px rgba(15,61,46,.2)}
+.fg-calc .stackgap>*+*{margin-top:24px}
+
+/* Hover explanations */
+.fg-calc .tip{border-bottom:1px dotted var(--ink-soft);cursor:help;position:relative}
+.fg-calc .tip:hover::after,.fg-calc .tip:focus::after{
+  content:attr(data-tip);position:absolute;left:0;top:calc(100% + 8px);width:max-content;max-width:min(270px,72vw);
+  background:var(--ink);color:#fff;font-family:var(--font-body);font-size:.82rem;font-weight:400;line-height:1.45;
+  padding:10px 12px;border-radius:10px;z-index:20;white-space:normal;text-align:left;letter-spacing:0;
+  box-shadow:0 4px 0 #0A2B20,0 14px 26px -12px rgba(0,0,0,.4)}
+.fg-calc .tip.right:hover::after,.fg-calc .tip.right:focus::after{left:auto;right:0}
+
+/* Inputs */
+.fg-calc fieldset{min-width:0;border:0;border-top:1px solid var(--line);margin:0;padding:16px 0 4px}
+.fg-calc fieldset:first-of-type{border-top:0;padding-top:4px}
+.fg-calc legend{font-family:var(--font-display);font-weight:700;font-size:1rem;padding:0;letter-spacing:-.01em}
+.fg-calc .field{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:10px;align-items:center;margin:12px 0}
+.fg-calc .field label{font-size:.92rem}
+.fg-calc .field>input,.fg-calc .field>select{min-width:0}
+.fg-calc details.more{min-width:0;overflow:hidden}
+.fg-calc .field small{display:block;color:var(--ink-soft);font-size:.78rem;line-height:1.35;margin-top:2px}
+.fg-calc input[type=number],.fg-calc select{width:100%;font:inherit;font-size:.95rem;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--wash);color:var(--ink);font-variant-numeric:tabular-nums;transition:border-color .15s,background .15s,box-shadow .15s}
+.fg-calc input[type=number]:hover,.fg-calc select:hover{border-color:#A8DDB9}
+.fg-calc input[type=number]:focus,.fg-calc select:focus{background:#fff;border-color:var(--steel);box-shadow:0 0 0 3px rgba(30,122,76,.16)}
+.fg-calc input:focus-visible,.fg-calc select:focus-visible,.fg-calc button:focus-visible,.fg-calc summary:focus-visible,.fg-calc .tip:focus-visible{outline:3px solid #F3B61F;outline-offset:2px}
+.fg-calc .presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.fg-calc button{font:inherit;font-size:.86rem;font-weight:500;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:7px 13px;cursor:pointer;
+  box-shadow:0 3px 0 var(--edge);transition:transform .1s,box-shadow .1s,background .2s}
+.fg-calc button:hover{background:var(--wash)}
+.fg-calc button:active{transform:translateY(3px);box-shadow:0 0 0 var(--edge)}
+.fg-calc button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink);box-shadow:0 3px 0 #0A2B20}
+.fg-calc button.primary{background:var(--steel);color:#fff;border-color:var(--steel);border-radius:12px;padding:11px 18px;font-weight:600;box-shadow:0 4px 0 #145C38,0 12px 20px -10px rgba(20,92,56,.5)}
+.fg-calc button.primary:hover{background:#22875A}
+.fg-calc button.primary:active{transform:translateY(4px);box-shadow:0 0 0 #145C38}
+.fg-calc button.link{border:0;background:none;padding:0;color:var(--steel);text-decoration:underline;text-underline-offset:2px;font-size:.82rem;font-weight:500;box-shadow:none;border-radius:0}
+.fg-calc button.link:active{transform:none}
+.fg-calc .disabled{opacity:.45}
+.fg-calc details.more{border-top:1px solid var(--line);padding:14px 0 0;margin-top:10px}
+.fg-calc details.more>summary{cursor:pointer;font-family:var(--font-display);font-weight:700;font-size:1rem;list-style-position:outside;letter-spacing:-.01em}
+.fg-calc details.more>summary small{display:block;font-family:var(--font-body);font-weight:400;color:var(--ink-soft);font-size:.8rem;letter-spacing:0}
+.fg-calc details.more[open]>summary{margin-bottom:6px}
+.fg-calc .conv{background:var(--wash);border:1px solid var(--line);border-radius:14px;padding:14px;margin:-2px 0 12px}
+.fg-calc .conv .field{grid-template-columns:minmax(0,1fr) 140px;margin:6px 0}
+.fg-calc .conv input[type=number]{background:#fff}
+.fg-calc .conv p{font-size:.85rem;margin:8px 0}
+
+/* Summary */
+.fg-calc .summary{border:1px solid var(--line);border-left:6px solid var(--steel);background:var(--paper);border-radius:20px;padding:22px 24px;
+  box-shadow:0 6px 0 var(--edge),0 14px 30px -16px rgba(15,61,46,.2)}
+.fg-calc .summary.good{border-left-color:var(--profit);background:linear-gradient(110deg,#fff 55%,#EAF7EF)}
+.fg-calc .summary.bad{border-left-color:var(--loss);background:linear-gradient(110deg,#fff 55%,#FBEDEA)}
+.fg-calc .summary p{font-size:1.04rem;margin:0 0 .6rem}
+.fg-calc .summary p:last-child{margin:0}
+
+.fg-calc .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media (max-width:640px){.fg-calc .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.fg-calc .kpis>div{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:0 5px 0 var(--edge)}
+.fg-calc .kpis>div:first-child,.fg-calc .kpis>div:last-child{border-radius:16px}
+.fg-calc .kpis .k{font-size:.82rem;color:var(--ink-soft)}
+.fg-calc .kpis .v{font-family:var(--font-display);font-size:1.6rem;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.25;margin:2px 0}
+.fg-calc .kpis .n{font-size:.76rem;color:var(--ink-soft)}
+.fg-calc .pos{color:var(--profit)} .fg-calc .neg{color:var(--loss)}
+
+/* Tables */
+.fg-calc table{width:100%;border-collapse:collapse;font-size:.92rem;font-variant-numeric:tabular-nums}
+.fg-calc th,.fg-calc td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
+.fg-calc th:first-child,.fg-calc td:first-child{text-align:left}
+.fg-calc thead th{font-weight:600;color:var(--ink-soft);font-size:.8rem}
+.fg-calc tr.indent td:first-child{padding-left:20px;color:var(--ink-soft)}
+.fg-calc tr.total td{font-weight:600;border-top:1.5px solid var(--ink)}
+.fg-calc tr.memo td{color:var(--ink-soft);font-size:.85rem}
+.fg-calc tr.gap td{border-bottom:0;padding-top:16px;font-size:.8rem;font-weight:600;color:var(--ink-soft)}
+.fg-calc tbody tr:not(.gap):hover td{background:var(--wash)}
+.fg-calc .tablewrap{overflow-x:auto}
+
+/* Sensitivity bars */
+.fg-calc .sens td{white-space:nowrap}
+.fg-calc .sens td.lbl{white-space:normal}
+.fg-calc .tor{display:grid;grid-template-columns:1fr 1fr;width:170px;height:14px;margin-left:auto}
+.fg-calc .tor .l{display:flex;justify-content:flex-end;border-right:1.5px solid var(--ink)}
+.fg-calc .tor .r{display:flex}
+.fg-calc .tor b{display:block;height:100%}
+.fg-calc .tor .l b{border-radius:4px 0 0 4px}
+.fg-calc .tor .r b{border-radius:0 4px 4px 0}
+@media (max-width:640px){.fg-calc .tor{width:90px}}
+
+.fg-calc .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.fg-calc .note{font-size:.84rem;color:var(--ink-soft);margin:10px 0 0}
+.fg-calc .empty{color:var(--ink-soft);font-size:.9rem;margin:12px 0 0}
+.fg-calc .fine{font-size:.82rem;color:var(--ink-soft);margin-top:28px;max-width:none}
+.fg-calc .terms details{border-top:1px solid var(--line);padding:11px 0}
+.fg-calc .terms details:first-of-type{border-top:0}
+.fg-calc .terms summary{cursor:pointer;font-weight:600;font-size:.94rem}
+.fg-calc .terms summary:hover{color:var(--steel)}
+.fg-calc .terms details p{margin:.5rem 0 0;font-size:.9rem;color:var(--ink-soft)}
+.fg-calc .units{margin-top:40px;padding:32px;background:linear-gradient(160deg,#fff 45%,#EAF7EF)}
+.fg-calc .units h2{font-size:clamp(1.5rem,2.6vw,2rem)}
+.fg-calc .units .answer{font-size:1.06rem;max-width:80ch}
+.fg-calc .unitTable td{text-align:left;vertical-align:top}
+.fg-calc .unitTable th{text-align:left}
+.fg-calc .unitTable td:last-child{color:var(--ink-soft);min-width:240px}
+.fg-calc .unitTable td:nth-child(2){min-width:150px}
+.fg-calc .unitsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px;margin-top:26px}
+@media (max-width:760px){.fg-calc .unitsGrid{grid-template-columns:minmax(0,1fr)}}
+.fg-calc .units h3{font-size:1.1rem;font-weight:700;margin:0 0 .5rem}
+.fg-calc .units p{font-size:.94rem}
+.fg-calc .steps{margin:0;padding-left:1.2rem;font-size:.94rem}
+.fg-calc .steps li{margin:0 0 .55rem;padding-left:.2rem}
+.fg-calc .steps li::marker{color:var(--steel);font-weight:700}
+@media (max-width:900px){.fg-calc .wrap,.crumb{padding-left:20px;padding-right:20px}}
+@media (max-width:560px){.fg-calc{padding:28px 0 16px}.fg-calc .panel{padding:20px 18px}.fg-calc .units{padding:24px 18px}}
+
+/* Page chrome around the calculator */
+.crumb{max-width:var(--max);margin:0 auto;padding:28px 32px 0;font-size:.95rem;color:#4A6358}
+.crumb a{color:#1E7A4C;text-underline-offset:3px}
+.site-footer{margin-top:72px}
+@media (max-width:900px){.crumb{padding:24px 20px 0}}
+@media (max-width:640px){.fg-calc .kpis{gap:10px}.fg-calc .kpis .v{font-size:1.08rem;letter-spacing:-.01em}.fg-calc .kpis>div{padding:13px 12px}}
+</style>
+</head>
+<body style="margin:0">
+<header class="site-nav">
+  <div class="wrap">
+    <a href="index.html" class="brand" aria-label="Finingale home"><span class="brand-mark" aria-hidden="true"></span>Finingale</a>
+    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><span></span><span></span><span></span></button>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="articles.html">Articles</a></li>
+      <li><a href="calculators.html" aria-current="page">Calculators</a></li>
+      <li><a href="dcf-model-builder.html">DCF model</a></li>
+      <li><a href="index.html#digital-assets">Digital assets</a></li>
+      <li><a href="finingale-letstalk.html">Let's talk</a></li>
+    </ul>
+  </div>
+</header>
+<nav class="crumb" aria-label="Breadcrumb"><a href="calculators.html">Calculators</a> / GPU fleet economics</nav>
+<div class="fg-calc" id="fg-calc">
+ <div class="wrap">
+  <h1>GPU fleet economics</h1>
+  <p class="lede">For finance teams at GPU cloud providers. Enter how the fleet is sold and what it costs, and see a <span class="tip" tabindex="0" data-tip="All GPUs installed and contracts running for the full year. A contract's first year usually earns less, because installing the GPUs takes several months before billing starts.">steady-state year</span> of P&amp;L, the cost of each <span class="tip" tabindex="0" data-tip="One GPU working for one hour. Eight GPUs for three hours is 24 GPU-hours. A 1,000-GPU fleet has 8,760,000 GPU-hours a year to sell.">GPU-hour</span>, and which assumptions matter most.</p>
+
+  <div class="grid">
+   <!-- Inputs -->
+   <form class="panel" id="inputs" onsubmit="return false">
+    <h2>Assumptions</h2>
+    <p class="sub">Start from an example, then change any number.</p>
+    <div class="presets" role="group" aria-label="Example scenarios">
+     <button type="button" data-preset="anchor" aria-pressed="true">Long anchor contract</button>
+     <button type="button" data-preset="large" aria-pressed="false">Large 5-yr contract</button>
+     <button type="button" data-preset="small" aria-pressed="false">Small 5-yr contract</button>
+     <button type="button" data-preset="mixed" aria-pressed="false">Part-contracted fleet</button>
+    </div>
+
+    <fieldset>
+     <legend>Key inputs</legend>
+     <div class="field"><label for="gpus">Number of GPUs</label><input id="gpus" type="number" min="1" step="1"></div>
+     <div class="field"><label for="cost">Capital cost per GPU<small>Chip plus its share of servers, network and storage</small></label><input id="cost" type="number" min="0" step="500"></div>
+     <div class="field"><label for="contracted">Share under contract (%)<small>GPUs reserved on <span class="tip" tabindex="0" data-tip="The customer reserves GPUs for a fixed term and pays for every hour whether they use it or not. It removes occupancy risk and replaces it with customer credit risk and renewal risk at the end of the term.">take-or-pay</span> terms</small></label><input id="contracted" type="number" min="0" max="100" step="1"></div>
+     <div class="field"><label for="pc">Contract price per GPU-hour<small><button type="button" class="link" id="convToggle" aria-expanded="false" aria-controls="conv">Calculate from deal value</button></small></label><input id="pc" type="number" min="0" step="0.01"></div>
+     <div class="conv" id="conv" hidden>
+      <div class="field"><label for="cvVal">Total contract value</label><input id="cvVal" type="number" min="0" step="1000000" value="1250000000"></div>
+      <div class="field"><label for="cvYrs">Length (years)</label><input id="cvYrs" type="number" min="0.5" step="0.5" value="5"></div>
+      <div class="field"><label for="cvGpus">GPUs covered</label><input id="cvGpus" type="number" min="1" step="1" value="8200"></div>
+      <p id="cvMath"></p>
+      <button type="button" id="cvUse">Use this price</button>
+     </div>
+     <div class="field" data-od><label for="po">On-demand price per GPU-hour<small>For GPUs not under contract</small></label><input id="po" type="number" min="0" step="0.05"></div>
+     <div class="field" data-od><label for="occ">On-demand <span class="tip" tabindex="0" data-tip="How often uncontracted GPUs are rented. An idle hour still carries depreciation, rent and overheads, so low occupancy raises the cost of every hour that does sell.">occupancy</span> (%)</label><input id="occ" type="number" min="0" max="100" step="5"></div>
+    </fieldset>
+
+    <details class="more" id="resaleBox">
+     <summary>Resale of contracted capacity<small>Optional: when the contract customer lets you resell its capacity at a higher price</small></summary>
+     <div class="field"><label for="rs">Share of contracted hours resold (%)</label><input id="rs" type="number" min="0" max="100" step="5"></div>
+     <div class="field"><label for="pr">Resale price per GPU-hour</label><input id="pr" type="number" min="0" step="0.05"></div>
+     <div class="field"><label for="us">Your share of the uplift (%)<small>Part of the margin above the contract price that you keep</small></label><input id="us" type="number" min="0" max="100" step="5"></div>
+    </details>
+
+    <details class="more">
+     <summary>Advanced assumptions<small>Sensible defaults; change if you have better figures</small></summary>
+     <fieldset>
+      <legend>Contract terms</legend>
+      <div class="field"><label for="term">Contract term (years)</label><input id="term" type="number" min="0.5" max="10" step="0.5"></div>
+      <div class="field"><label for="prepay"><span class="tip" tabindex="0" data-tip="Cash a contract customer pays at signing, used to place the GPU order. It reduces the capital you fund and borrow. It is not extra income: it is part of the contract value, received early.">Customer prepayment</span> (%)<small>Share of contracted GPUs' capital cost paid upfront</small></label><input id="prepay" type="number" min="0" max="100" step="5"></div>
+     </fieldset>
+     <fieldset>
+      <legend>Fleet life</legend>
+      <div class="field"><label for="life"><span class="tip" tabindex="0" data-tip="The purchase price of the GPUs spread evenly over the years they earn money. Not a cash payment each year, but a real cost: the money was spent upfront and has to be earned back.">Depreciation</span> period (years)</label><input id="life" type="number" min="1" max="10" step="0.5"></div>
+      <div class="field"><label for="residual">Resale value at end (%)</label><input id="residual" type="number" min="0" max="90" step="1"></div>
+     </fieldset>
+     <fieldset>
+      <legend>Data centre and power</legend>
+      <div class="field"><label for="kw">Power per GPU, all-in (kW)<small>Its share of servers, network and cooling</small></label><input id="kw" type="number" min="0.1" step="0.05"></div>
+      <div class="field"><label for="colo">Data-centre rent (per kW per month)</label><input id="colo" type="number" min="0" step="5"></div>
+      <div class="field"><label for="energy">Electricity price (per kWh)</label><input id="energy" type="number" min="0" step="0.01"></div>
+      <div class="field"><label for="idle">Power drawn when idle (%)</label><input id="idle" type="number" min="0" max="100" step="5"></div>
+     </fieldset>
+     <fieldset>
+      <legend>Overheads and financing</legend>
+      <div class="field"><label for="opex">Other operating costs (per GPU per year)<small>Staff, support, software, bandwidth</small></label><input id="opex" type="number" min="0" step="100"></div>
+      <div class="field"><label for="debt">Share of capital borrowed (%)<small>After customer prepayments</small></label><input id="debt" type="number" min="0" max="100" step="5"></div>
+      <div class="field"><label for="rate">Interest rate (%)</label><input id="rate" type="number" min="0" max="30" step="0.05"></div>
+      <div class="field"><label for="cur">Currency</label>
+       <select id="cur"><option value="US$">US$</option><option value="A$">A$</option><option value="€">€</option><option value="£">£</option><option value="₹">₹</option></select>
+      </div>
+     </fieldset>
+    </details>
+   </form>
+
+   <!-- Results -->
+   <div class="stackgap">
+    <div class="summary" id="summary" aria-live="polite"></div>
+
+    <div class="kpis">
+     <div><div class="k">Profit before tax</div><div class="v" id="kProfit">–</div><div class="n" id="kProfitN"></div></div>
+     <div><div class="k"><span class="tip" tabindex="0" data-tip="Earnings before interest, tax, depreciation and amortisation, as a share of revenue. Revenue minus cash operating costs: the cash the fleet generates before paying back the capital and the lenders.">EBITDA</span> margin</div><div class="v" id="kMargin">–</div><div class="n">Before depreciation and interest</div></div>
+     <div><div class="k"><span class="tip" tabindex="0" data-tip="Years of cash earnings (after interest) needed to recover the capital you funded. Longer than the GPU life means the GPUs wear out before paying for themselves.">Payback</span></div><div class="v" id="kPay">–</div><div class="n" id="kPayN"></div></div>
+     <div><div class="k"><span class="tip right" tabindex="0" data-tip="How far revenue could fall, across every price, before profit reaches zero. A negative cushion is how much revenue would need to rise to break even.">Price cushion</span></div><div class="v" id="kCush">–</div><div class="n" id="kCushN"></div></div>
+    </div>
+
+    <div class="panel">
+     <h2>Annual P&amp;L</h2>
+     <p class="sub">Steady-state year. Per GPU-hour divides by every hour in the year, sold or not, so the lines add up.</p>
+     <table>
+      <thead><tr><th>Line</th><th>Per year</th><th>Per GPU-hour</th></tr></thead>
+      <tbody id="pl"></tbody>
+     </table>
+    </div>
+
+    <div class="panel">
+     <h2>Which assumptions matter most</h2>
+     <p class="sub">Change in annual profit if each input is 10% lower or higher, everything else unchanged. Largest effect first.</p>
+     <div class="tablewrap">
+      <table class="sens">
+       <thead><tr><th>Input</th><th>10% lower</th><th>10% higher</th><th aria-hidden="true"></th></tr></thead>
+       <tbody id="sens"></tbody>
+      </table>
+     </div>
+    </div>
+
+    <div class="panel">
+     <h2>Compare scenarios</h2>
+     <p class="sub">Save the current numbers as A or B, change the inputs, and compare.</p>
+     <div class="actions">
+      <button type="button" data-save="A">Save as scenario A</button>
+      <button type="button" data-save="B">Save as scenario B</button>
+      <button type="button" class="link" id="clearSc">Clear</button>
+     </div>
+     <div id="compare"></div>
+    </div>
+
+    <div class="panel">
+     <h2>Export to Excel</h2>
+     <p class="sub">A formatted workbook: summary, assumptions, a P&amp;L built on live formulas you can edit, a shaded sensitivity table, and any saved scenarios.</p>
+     <div class="actions"><button type="button" class="primary" id="xlsx">Download Excel workbook</button><span class="note" id="xlsxNote" role="status"></span></div>
+    </div>
+    <div class="panel terms">
+     <h2>Terms used</h2>
+     <details><summary>GPU-hour</summary><p>One GPU working for one hour. Eight GPUs for three hours is 24 GPU-hours. A fleet of 1,000 GPUs has 8,760,000 GPU-hours a year to sell.</p></details>
+     <details><summary>Steady-state year</summary><p>A full year with every GPU installed and every contract running. A contract's first year usually earns less, because installing the GPUs takes several months before billing starts.</p></details>
+     <details><summary>Take-or-pay contract</summary><p>A customer reserves a block of GPUs for a fixed term and pays for every hour whether they use it or not. It removes occupancy risk for those GPUs and replaces it with customer credit risk and renewal risk at the end of the term.</p></details>
+     <details><summary>Contract price per GPU-hour</summary><p>A contract's total value divided by its length, the number of GPUs it covers and 8,760 hours a year. If the contract also covers storage or services, part of this price pays for those.</p></details>
+     <details><summary>Occupancy</summary><p>The share of hours an on-demand GPU is actually rented out. An empty hour still carries its depreciation, rent and overheads, so low occupancy pushes up the cost of every hour that does sell.</p></details>
+     <details><summary>Resale uplift</summary><p>Some contracts let the provider resell the customer's reserved capacity to others at a higher price. The uplift is the margin above the contract price; the provider usually keeps only part of it.</p></details>
+     <details><summary>Customer prepayment</summary><p>Cash a contract customer pays at signing, used to place the GPU order. It reduces the capital the provider funds and borrows. It is not extra income: it is part of the contract value, received early.</p></details>
+     <details><summary>Depreciation</summary><p>The purchase price of the GPUs spread evenly over the years they are expected to earn money, less any resale value. It is not a cash payment each year, but it is a real cost: the money was spent upfront and has to be earned back.</p></details>
+     <details><summary>EBITDA</summary><p>Earnings before interest, tax, depreciation and amortisation. Revenue minus cash operating costs. It shows how much cash the fleet generates before paying back the capital and the lenders.</p></details>
+     <details><summary>Payback</summary><p>Years of cash earnings (after interest) needed to recover the capital the provider funded. Payback longer than the GPUs' useful life means they wear out before they have paid for themselves.</p></details>
+     <details><summary>Price cushion</summary><p>How far revenue could fall, across every price, before profit before tax reaches zero. A negative cushion is how much revenue would need to rise to break even.</p></details>
+     <details><summary>Revenue per MW</summary><p>Annual revenue divided by the fleet's power capacity in megawatts. Data-centre capacity is secured in MW, so this shows how much each MW earns and makes fleets of different sizes comparable.</p></details>
+    </div>
+   </div>
+  </div>
+
+  <section class="panel units" aria-labelledby="unitsH">
+   <h2 id="unitsH">What unit should GPU costs be measured in?</h2>
+   <p class="answer">The <span class="tip" tabindex="0" data-tip="One GPU working for one hour.">GPU-hour</span>: one GPU working for one hour. Customers pay per GPU-hour, and a provider's finance team should express every cost per available GPU-hour, so revenue and cost sit on the same unit. Capacity is a second unit alongside it: data-centre space is bought in megawatts, which caps how many GPU-hours there are to sell.</p>
+   <div class="tablewrap">
+    <table class="unitTable">
+     <thead><tr><th>Level</th><th>Unit</th><th>Used by</th><th>Why it matters</th></tr></thead>
+     <tbody><tr><td>Customer billing</td><td><b>GPU-hour</b></td><td>Customers</td><td>What customers pay for: one GPU for one hour, on-demand or reserved under a contract. Contracts are usually quoted as a total value, which converts back to a price per GPU-hour.</td></tr><tr><td>Provider cost</td><td><b>Cost per available GPU-hour</b></td><td>Finance team</td><td>Every cost (depreciation, data-centre rent, electricity, overheads, interest) divided by all the GPU-hours the fleet could sell in a year. This is the unit to standardise on.</td></tr><tr><td>Profitability</td><td><b>Cost per billed GPU-hour</b></td><td>Finance team</td><td>Total cost divided by the hours customers actually pay for. The gap between this and cost per available hour is the cost of empty capacity.</td></tr><tr><td>Capacity</td><td><b>Megawatts (MW) and per kW per month</b></td><td>Planning and treasury</td><td>Data-centre space is secured and rented by power capacity, so growth, contracts and rent are tracked in MW. Revenue and EBITDA per MW compare fleets of different sizes.</td></tr><tr><td>Energy</td><td><b>kWh</b></td><td>Operations</td><td>Electricity is billed per kWh. It matters, but it is a smaller share of cost than paying off the GPUs.</td></tr></tbody>
+    </table>
+   </div>
+   <div class="unitsGrid">
+    <div>
+     <h3>Why not tokens or energy?</h3>
+     <p><b>Tokens</b> are one layer further from the hardware. A company running AI models on rented GPUs may charge its own users per token, but the GPU provider never sees tokens in its billing: it sells GPU time.</p>
+     <p><b>Energy</b> is a real cost but not the main one. <span id="uEnergy"></span></p>
+    </div>
+    <div>
+     <h3>How to standardise GPU costs</h3>
+     <ol class="steps"><li><b>Pick one base unit.</b> Express every cost per available GPU-hour, so depreciation, rent, power and overheads add up on the same basis.</li><li><b>Use effective prices, not list prices.</b> Convert each contract to a price per GPU-hour from its total value, term and GPU count, after discounts, prepayments and any resale uplift.</li><li><b>Adjust for GPU type.</b> An hour on an older GPU does far less work than an hour on the newest one. Compare different models using a reference GPU, measured on your own workloads.</li><li><b>Track utilisation separately.</b> Report cost per available hour and cost per billed hour side by side. The gap is the cost of capacity that sat empty.</li><li><b>Load in every cost.</b> Include storage, networking, support and financing, not only the GPU and its power, so the unit cost is complete.</li><li><b>Report capacity in MW.</b> Tie GPU-hour economics back to the MW of data-centre capacity they use, because that is how capacity is bought and how lenders and investors compare providers.</li></ol>
+    </div>
+   </div>
+  </section>
+
+  <p class="fine">Illustrative estimates, not financial advice. Example scenarios use illustrative contract sizes and prices; capital cost per GPU, power, data-centre rent, electricity, overheads, prepayment and financing are assumptions to replace with your own figures. Steady-state year: straight-line depreciation, no tax, no price decline over time, contracted GPUs assumed to run at full power.</p>
+ </div>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand">Finingale</div>
+        <p class="footer-tag">Financial engineering meets data mastery. Built by Rohan Tainwala.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Pages</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="articles.html">Articles</a></li>
+          <li><a href="calculators.html">Calculators</a></li>
+          <li><a href="dcf-model-builder.html">DCF model</a></li>
+          <li><a href="index.html#digital-assets">Digital assets</a></li>
+          <li><a href="finingale-letstalk.html">Let's talk</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Popular tools</h4>
+        <ul>
+          <li><a href="calc-01-compound-interest.html">Compound interest</a></li>
+          <li><a href="calc-11-black-scholes.html">Black-Scholes</a></li>
+          <li><a href="calc-15-kelly-criterion.html">Kelly criterion</a></li>
+          <li><a href="calc-16-dcf.html">DCF valuation</a></li>
+          <li><a href="settlement_calc.html">Settlement cost analyser</a></li>
+          <li><a href="rwa_monitor.html">Tokenised asset monitor</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Articles</h4>
+        <ul>
+          <li><a href="article-01-the-investor-nobody-talks-about.html">The investor nobody talks about</a></li>
+          <li><a href="article-02-kelly-criterion.html">The Kelly criterion</a></li>
+          <li><a href="article-03-esg.html">Science and finance</a></li>
+          <li><a href="article-04-risk-free-rate.html">Risk-free, is it though?</a></li>
+          <li><a href="article-05-us-markets.html">The architecture of US markets</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Finingale, Rohan Tainwala</span>
+      <span>For educational purposes only. Not financial advice.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var H = 8760;
+  var UNITS = [["Customer billing", "GPU-hour", "Customers", "What customers pay for: one GPU for one hour, on-demand or reserved under a contract. Contracts are usually quoted as a total value, which converts back to a price per GPU-hour."], ["Provider cost", "Cost per available GPU-hour", "Finance team", "Every cost (depreciation, data-centre rent, electricity, overheads, interest) divided by all the GPU-hours the fleet could sell in a year. This is the unit to standardise on."], ["Profitability", "Cost per billed GPU-hour", "Finance team", "Total cost divided by the hours customers actually pay for. The gap between this and cost per available hour is the cost of empty capacity."], ["Capacity", "Megawatts (MW) and per kW per month", "Planning and treasury", "Data-centre space is secured and rented by power capacity, so growth, contracts and rent are tracked in MW. Revenue and EBITDA per MW compare fleets of different sizes."], ["Energy", "kWh", "Operations", "Electricity is billed per kWh. It matters, but it is a smaller share of cost than paying off the GPUs."]];
+  var STEPS = [["Pick one base unit", "Express every cost per available GPU-hour, so depreciation, rent, power and overheads add up on the same basis."], ["Use effective prices, not list prices", "Convert each contract to a price per GPU-hour from its total value, term and GPU count, after discounts, prepayments and any resale uplift."], ["Adjust for GPU type", "An hour on an older GPU does far less work than an hour on the newest one. Compare different models using a reference GPU, measured on your own workloads."], ["Track utilisation separately", "Report cost per available hour and cost per billed hour side by side. The gap is the cost of capacity that sat empty."], ["Load in every cost", "Include storage, networking, support and financing, not only the GPU and its power, so the unit cost is complete."], ["Report capacity in MW", "Tie GPU-hour economics back to the MW of data-centre capacity they use, because that is how capacity is bought and how lenders and investors compare providers."]];
+  var TERMS = [["GPU-hour", "One GPU working for one hour. Eight GPUs for three hours is 24 GPU-hours. A fleet of 1,000 GPUs has 8,760,000 GPU-hours a year to sell."], ["Steady-state year", "A full year with every GPU installed and every contract running. A contract's first year usually earns less, because installing the GPUs takes several months before billing starts."], ["Take-or-pay contract", "A customer reserves a block of GPUs for a fixed term and pays for every hour whether they use it or not. It removes occupancy risk for those GPUs and replaces it with customer credit risk and renewal risk at the end of the term."], ["Contract price per GPU-hour", "A contract's total value divided by its length, the number of GPUs it covers and 8,760 hours a year. If the contract also covers storage or services, part of this price pays for those."], ["Occupancy", "The share of hours an on-demand GPU is actually rented out. An empty hour still carries its depreciation, rent and overheads, so low occupancy pushes up the cost of every hour that does sell."], ["Resale uplift", "Some contracts let the provider resell the customer's reserved capacity to others at a higher price. The uplift is the margin above the contract price; the provider usually keeps only part of it."], ["Customer prepayment", "Cash a contract customer pays at signing, used to place the GPU order. It reduces the capital the provider funds and borrows. It is not extra income: it is part of the contract value, received early."], ["Depreciation", "The purchase price of the GPUs spread evenly over the years they are expected to earn money, less any resale value. It is not a cash payment each year, but it is a real cost: the money was spent upfront and has to be earned back."], ["EBITDA", "Earnings before interest, tax, depreciation and amortisation. Revenue minus cash operating costs. It shows how much cash the fleet generates before paying back the capital and the lenders."], ["Payback", "Years of cash earnings (after interest) needed to recover the capital the provider funded. Payback longer than the GPUs' useful life means they wear out before they have paid for themselves."], ["Price cushion", "How far revenue could fall, across every price, before profit before tax reaches zero. A negative cushion is how much revenue would need to rise to break even."], ["Revenue per MW", "Annual revenue divided by the fleet's power capacity in megawatts. Data-centre capacity is secured in MW, so this shows how much each MW earns and makes fleets of different sizes comparable."]];
+  var EXCELJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';
+  var adv = {term:5,prepay:20,rs:0,pr:4.5,us:50,life:6,residual:0,kw:1.8,colo:180,energy:0.15,idle:40,opex:1500,debt:50,rate:9.95};
+  function mk(o){ var r = {}; for (var k in adv) r[k]=adv[k]; for (var k2 in o) r[k2]=o[k2]; return r; }
+  var presets = {
+    anchor: mk({gpus:40000,cost:85000,contracted:100,pc:2.33,po:4.5,occ:65,term:6,prepay:0}),
+    large:  mk({gpus:8200,cost:85000,contracted:100,pc:3.48,po:4.5,occ:65}),
+    small:  mk({gpus:2048,cost:85000,contracted:100,pc:4.16,po:4.5,occ:65}),
+    mixed:  mk({gpus:10000,cost:85000,contracted:57,pc:3.48,po:4.5,occ:65})
+  };
+  var presetLabels = {anchor:'Long anchor contract',large:'Large 5-yr contract',small:'Small 5-yr contract',mixed:'Part-contracted fleet'};
+
+  // id, label, unit, kind (pct inputs are entered as whole numbers)
+  var defs = [
+    ['gpus','Number of GPUs','GPUs','int','Fleet'],
+    ['cost','Capital cost per GPU','per GPU','money0','Fleet'],
+    ['contracted','Share under contract','%','pct','Sales'],
+    ['pc','Contract price','per GPU-hour','money2','Sales'],
+    ['po','On-demand price','per GPU-hour','money2','Sales'],
+    ['occ','On-demand occupancy','%','pct','Sales'],
+    ['rs','Share of contracted hours resold','%','pct','Resale'],
+    ['pr','Resale price','per GPU-hour','money2','Resale'],
+    ['us','Share of resale uplift kept','%','pct','Resale'],
+    ['term','Contract term','years','num','Contract terms'],
+    ['prepay','Customer prepayment','% of contracted capital','pct','Contract terms'],
+    ['life','Depreciation period','years','num','Fleet'],
+    ['residual','Resale value at end of life','%','pct','Fleet'],
+    ['kw','Power per GPU, all-in','kW','num2','Power and data centre'],
+    ['colo','Data-centre rent','per kW per month','money0','Power and data centre'],
+    ['energy','Electricity price','per kWh','money2','Power and data centre'],
+    ['idle','Power drawn when idle','%','pct','Power and data centre'],
+    ['opex','Other operating costs','per GPU per year','money0','Overheads and financing'],
+    ['debt','Share of capital borrowed','%','pct','Overheads and financing'],
+    ['rate','Interest rate','%','pct','Overheads and financing']
+  ];
+  var ids = defs.map(function(d){ return d[0]; });
+  var label = {}; defs.forEach(function(d){ label[d[0]] = d[1]; });
+  var pctIds = defs.filter(function(d){ return d[3]==='pct'; }).map(function(d){ return d[0]; });
+  var sensIds = ['pc','po','occ','contracted','pr','rs','cost','life','kw','colo','energy','opex','rate','debt','prepay'];
+
+  var root = document.getElementById('fg-calc');
+  var $ = function(id){ return root.querySelector('#'+id); };
+  var cur = function(){ return $('cur').value; };
+  var val = function(id){ var n = parseFloat($(id).value); return isFinite(n) ? n : 0; };
+  var pct = function(x){ return Math.min(100, Math.max(0, x))/100; };
+  var activePreset = 'anchor';
+
+  function money(x, dp){
+    var neg = x < 0; x = Math.abs(x); var s;
+    if (dp === undefined){
+      if (x >= 1e9) s = (x/1e9).toFixed(2)+'B';
+      else if (x >= 1e6) s = (x/1e6).toFixed(1)+'M';
+      else if (x >= 1e4) s = Math.round(x).toLocaleString('en-US');
+      else s = x.toFixed(2);
+    } else s = x.toLocaleString('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp});
+    return (neg?'−':'') + cur() + s;
+  }
+  var signed = function(x){ return (x>=0?'+':'') + money(x); };
+  var pctTxt = function(x, dp){ return (x<0?'−':'') + Math.abs(x*100).toFixed(dp||0) + '%'; };
+  var lc = function(s){ return s.charAt(0).toLowerCase() + s.slice(1); };
+
+  function readInputs(){ var p = {}; ids.forEach(function(id){ p[id] = val(id); }); return p; }
+
+  // ---- Core model: one steady-state year ----
+  function model(p){
+    var N = Math.max(1, p.gpus), avail = N*H;
+    var c = pct(p.contracted), o = pct(p.occ), idle = pct(p.idle), rs = pct(p.rs), us = pct(p.us);
+    var uplift = rs*us*Math.max(0, p.pr - p.pc);             // extra earned per contracted hour from resale
+    var pcEff = p.pc + uplift;
+    var busy = c + (1-c)*o;
+    var revC = N*c*H*pcEff, revO = N*(1-c)*H*o*p.po, rev = revC + revO;
+    var colo = N*p.kw*p.colo*12;
+    var energy = N*p.kw*H*p.energy*(busy + (1-busy)*idle);
+    var opex = N*p.opex;
+    var ebitda = rev - colo - energy - opex;
+    var capex = N*p.cost;
+    var dep = capex*(1-pct(p.residual))/Math.max(0.5, p.life);
+    var ebit = ebitda - dep;
+    var prepayAmt = N*c*p.cost*pct(p.prepay);
+    var netCap = capex - prepayAmt;
+    var interest = netCap*pct(p.debt)*p.rate/100;
+    var pbt = ebit - interest;
+    var prepayRelease = c > 0 ? prepayAmt/Math.max(0.5, p.term) : 0;
+    var cash = ebitda - interest - prepayRelease;
+    var payback = cash > 0 ? netCap/cash : Infinity;
+    var mw = N*p.kw/1000;
+    var beOcc = null;
+    if (c < 1){
+      var e = p.kw*p.energy*(1-idle);
+      var fixedHr = (colo + opex + dep + interest)/avail + p.kw*p.energy*idle;
+      var den = (1-c)*(p.po - e);
+      beOcc = den > 0 ? (fixedHr + e*c - c*pcEff)/den : Infinity;
+    }
+    // Resale share needed to break even (contracted fleets only)
+    var rsNeeded = null;
+    if (c > 0 && pbt < 0 && us > 0 && p.pr > p.pc){
+      rsNeeded = rs + (-pbt)/(N*c*H*us*(p.pr - p.pc));
+    }
+    return {N:N,avail:avail,c:c,o:o,busy:busy,revC:revC,revO:revO,rev:rev,colo:colo,energy:energy,opex:opex,
+      ebitda:ebitda,dep:dep,ebit:ebit,interest:interest,pbt:pbt,capex:capex,prepayAmt:prepayAmt,netCap:netCap,
+      payback:payback,cash:cash,mw:mw,beOcc:beOcc,rsNeeded:rsNeeded,uplift:uplift,
+      margin: rev>0 ? ebitda/rev : 0, cushion: rev>0 ? pbt/rev : -1,
+      totalCost: colo+energy+opex+dep+interest, cashCost: colo+energy+opex, billedHrs: N*H*busy};
+  }
+
+  function sensitivity(p, base){
+    return sensIds.map(function(id){
+      var lo = Object.assign({}, p), hi = Object.assign({}, p);
+      lo[id] = p[id]*0.9; hi[id] = p[id]*1.1;
+      if (pctIds.indexOf(id) > -1){ lo[id] = Math.min(100,Math.max(0,lo[id])); hi[id] = Math.min(100,Math.max(0,hi[id])); }
+      return {id:id, name:label[id], base:p[id], lo:model(lo).pbt - base.pbt, hi:model(hi).pbt - base.pbt,
+              loCap: lo[id]===p[id], hiCap: hi[id]===p[id]};
+    }).filter(function(s){ return Math.abs(s.lo) > 0.5 || Math.abs(s.hi) > 0.5; })
+      .sort(function(a,b){ return Math.max(Math.abs(b.lo),Math.abs(b.hi)) - Math.max(Math.abs(a.lo),Math.abs(a.hi)); });
+  }
+
+  var last = {};
+  var scenarios = {A:null, B:null};
+  try { var saved = JSON.parse(localStorage.getItem('fg-gpu-scenarios')||'null'); if (saved) scenarios = saved; } catch(e){}
+
+  function render(){
+    var p = readInputs(), r = model(p), s = sensitivity(p, r);
+    last = {p:p, r:r, s:s, preset:activePreset};
+    root.querySelectorAll('[data-od]').forEach(function(el){ el.classList.toggle('disabled', r.c >= 1); });
+
+    // KPIs
+    var kp = $('kProfit'); kp.textContent = money(r.pbt); kp.className = 'v '+(r.pbt>=0?'pos':'neg');
+    $('kProfitN').textContent = r.rev>0 ? pctTxt(r.pbt/r.rev,1)+' of revenue' : '';
+    $('kMargin').textContent = pctTxt(r.margin);
+    $('kPay').textContent = isFinite(r.payback) ? r.payback.toFixed(1)+' yrs' : 'Never';
+    $('kPay').className = 'v '+(isFinite(r.payback) && r.payback <= p.life ? '' : 'neg');
+    $('kPayN').textContent = 'vs '+p.life+'-year GPU life';
+    var kc = $('kCush'); kc.textContent = pctTxt(r.cushion); kc.className = 'v '+(r.cushion>=0?'pos':'neg');
+    $('kCushN').textContent = r.cushion >= 0 ? 'Revenue can fall this much before a loss' : 'Revenue must rise this much to break even';
+
+    // P&L
+    var row = function(lbl, x, cls){ return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+lbl+'</td><td>'+money(x)+'</td><td>'+money(x/r.avail,2)+'</td></tr>'; };
+    var memo = function(lbl, a, b){ return '<tr class="memo"><td>'+lbl+'</td><td>'+a+'</td><td>'+(b||'')+'</td></tr>'; };
+    var h = row('Revenue', r.rev, 'total');
+    if (r.c > 0) h += row('Contracted'+(r.uplift>0?' (incl. resale uplift)':''), r.revC, 'indent');
+    if (r.c < 1) h += row('On-demand', r.revO, 'indent');
+    h += row('Data-centre rent', -r.colo, 'indent');
+    h += row('Electricity', -r.energy, 'indent');
+    h += row('Other operating costs', -r.opex, 'indent');
+    h += row('<span class="tip" tabindex="0" data-tip="Earnings before interest, tax, depreciation and amortisation: revenue minus cash operating costs.">EBITDA</span>', r.ebitda, 'total');
+    h += row('<span class="tip" tabindex="0" data-tip="The capital cost of the GPUs spread evenly over their useful life, less any resale value.">Depreciation</span>', -r.dep, 'indent');
+    h += row('EBIT', r.ebit, 'total');
+    h += row('Interest', -r.interest, 'indent');
+    var cls = r.pbt>=0?'pos':'neg';
+    h += '<tr class="total"><td>Profit before tax</td><td class="'+cls+'">'+money(r.pbt)+'</td><td class="'+cls+'">'+money(r.pbt/r.avail,2)+'</td></tr>';
+    h += '<tr class="gap"><td colspan="3">Memo</td></tr>';
+    h += memo('Capital cost of fleet', money(r.capex));
+    if (r.prepayAmt > 0) h += memo('Less customer prepayments', money(-r.prepayAmt));
+    h += memo('Fleet power', r.mw.toFixed(1)+' MW', p.kw+' kW per GPU');
+    h += memo('<span class="tip" tabindex="0" data-tip="Annual revenue divided by the fleet\'s power capacity. Data-centre capacity is secured in megawatts, so this shows what each MW earns.">Revenue per MW</span>', money(r.rev/r.mw));
+    h += memo('EBITDA per MW', money(r.ebitda/r.mw));
+    h += memo('Billed GPU-hours', Math.round(r.billedHrs).toLocaleString('en-US'), pctTxt(r.busy)+' of hours');
+    h += memo('Cost per available GPU-hour', '', money(r.totalCost/r.avail,2));
+    h += memo('Cost per billed GPU-hour', '', money(r.totalCost/r.billedHrs,2));
+    if (r.beOcc !== null){
+      var b = r.beOcc;
+      h += memo('Break-even on-demand occupancy', !isFinite(b)||b>1 ? 'Not reachable' : (b<=0 ? 'Covered by contracts' : pctTxt(b)));
+    }
+    $('pl').innerHTML = h;
+
+    // Sensitivity
+    var maxAbs = s.reduce(function(m,x){ return Math.max(m,Math.abs(x.lo),Math.abs(x.hi)); }, 0) || 1;
+    var cell = function(v, cap){ return cap ? '<td>At limit</td>' : '<td class="'+(v>=0?'pos':'neg')+'">'+signed(v)+'</td>'; };
+    var bar = function(v){ return '<b style="width:'+(Math.abs(v)/maxAbs*100)+'%;background:var('+(v>=0?'--profit':'--loss')+')"></b>'; };
+    $('sens').innerHTML = s.map(function(x){
+      var neg = Math.min(x.lo,x.hi), pos = Math.max(x.lo,x.hi);
+      return '<tr><td class="lbl">'+x.name+'</td>'+cell(x.lo,x.loCap)+cell(x.hi,x.hiCap)+
+        '<td aria-hidden="true"><div class="tor"><div class="l">'+(neg<0?bar(neg):'')+'</div><div class="r">'+(pos>0?bar(pos):'')+'</div></div></td></tr>';
+    }).join('');
+
+    renderSummary(p, r, s);
+    renderConverter();
+    renderCompare();
+    var eh = r.energy/r.avail, dh = r.dep/r.avail, th = r.totalCost/r.avail;
+    $('uEnergy').innerHTML = 'In the scenario above, electricity is <b>'+money(eh,2)+'</b> of the '+money(th,2)+' it costs to provide each GPU-hour ('+pctTxt(eh/th)+'), while paying off the GPUs is <b>'+money(dh,2)+'</b> ('+pctTxt(dh/th)+'). Power matters more as a limit on capacity, measured in MW, than as a running cost.';
+    last.unitsEnergy = $('uEnergy').textContent;
+  }
+
+  function renderSummary(p, r, s){
+    var el = $('summary'), good = r.pbt >= 0;
+    el.className = 'summary ' + (good ? 'good' : 'bad');
+    var n = r.N.toLocaleString('en-US');
+    var mix = r.c >= 1 ? 'All '+n+' GPUs are under contract' : r.c <= 0 ? 'None of the '+n+' GPUs are under contract' : pctTxt(r.c)+' of the '+n+' GPUs are under contract';
+    var paras = [];
+    paras.push(mix+'. In a steady-state year the fleet earns <b>'+money(r.rev)+'</b> and makes <b class="'+(good?'pos':'neg')+'">'+(good?'a profit of ':'a loss of ')+money(Math.abs(r.pbt))+'</b> before tax.');
+    paras.push('Each GPU-hour costs '+money(r.totalCost/r.avail,2)+' to provide. Only '+money(r.cashCost/r.avail,2)+' of that is cash spent during the year (rent, power, overheads); the rest is paying off the GPUs and the debt.');
+    var p3;
+    if (isFinite(r.payback)){
+      p3 = 'The GPUs pay for themselves in <b>'+r.payback.toFixed(1)+' years</b>, '+(r.payback <= p.life ? 'inside' : '<b>beyond</b>')+' their '+p.life+'-year life';
+      if (r.c > 0) p3 += ' and '+(r.payback <= p.term ? 'inside' : '<b>beyond</b>')+' the '+p.term+'-year contract, so '+
+        (r.payback <= p.term ? (r.c>=1 ? 'the contract alone recovers the investment.' : 'the investment is recovered within the contract term.')
+                             : 'recovering the investment depends on re-contracting or reselling capacity after the term.');
+      else p3 += '.';
+    } else p3 = 'Cash earnings after interest are too low for the GPUs to <b>ever pay for themselves</b> at these assumptions.';
+    paras.push(p3);
+    var p4 = r.cushion >= 0 ? 'Revenue could fall <b>'+pctTxt(r.cushion)+'</b> before the fleet makes a loss.'
+                            : 'Revenue would need to rise <b>'+pctTxt(-r.pbt/r.rev)+'</b> to break even.';
+    if (r.rsNeeded !== null){
+      p4 += r.rsNeeded <= 1 ? ' Reselling <b>'+pctTxt(r.rsNeeded)+'</b> of contracted hours at '+money(p.pr,2)+', keeping '+pctTxt(pct(p.us))+' of the uplift, would close the gap.'
+                            : ' Even reselling every contracted hour at '+money(p.pr,2)+' would not close the gap.';
+    } else if (r.pbt < 0 && r.c > 0){
+      p4 += ' Open "Resale of contracted capacity" to test reselling contracted hours at a higher price.';
+    }
+    paras.push(p4);
+    if (s[0]) paras.push('The biggest swing factor is <b>'+lc(s[0].name)+'</b>: a 10% change moves annual profit by about '+money(Math.max(Math.abs(s[0].lo),Math.abs(s[0].hi)))+'.');
+    el.innerHTML = '<h2>Overview</h2>' + paras.map(function(x){ return '<p>'+x+'</p>'; }).join('');
+    last.summary = paras.map(function(x){ return x.replace(/<[^>]+>/g,''); });
+  }
+
+  function renderConverter(){
+    var v = val('cvVal'), y = val('cvYrs'), g = val('cvGpus');
+    var price = (y>0 && g>0) ? v/(y*g*H) : 0;
+    last.cvPrice = price;
+    $('cvMath').innerHTML = money(v)+' ÷ '+y+' yrs ÷ '+g.toLocaleString('en-US')+' GPUs ÷ 8,760 hrs = <b>'+money(price,2)+'</b> per GPU-hour. If the deal also covers storage or services, part of this pays for those.';
+  }
+
+  // ---- Scenario comparison ----
+  var metricRows = [
+    ['Number of GPUs', function(sc){ return sc.p.gpus.toLocaleString('en-US'); }],
+    ['Share under contract', function(sc){ return sc.p.contracted+'%'; }],
+    ['Contract price per GPU-hour', function(sc){ return money(sc.p.pc,2); }],
+    ['Capital cost per GPU', function(sc){ return money(sc.p.cost,0); }],
+    ['Revenue', function(sc){ return money(sc.r.rev); }],
+    ['EBITDA', function(sc){ return money(sc.r.ebitda); }],
+    ['EBITDA margin', function(sc){ return pctTxt(sc.r.margin); }],
+    ['Profit before tax', function(sc){ return money(sc.r.pbt); }, function(sc){ return sc.r.pbt>=0?'pos':'neg'; }],
+    ['Payback', function(sc){ return isFinite(sc.r.payback) ? sc.r.payback.toFixed(1)+' yrs' : 'Never'; }],
+    ['Price cushion', function(sc){ return pctTxt(sc.r.cushion); }, function(sc){ return sc.r.cushion>=0?'pos':'neg'; }],
+    ['Revenue per MW', function(sc){ return money(sc.r.rev/sc.r.mw); }]
+  ];
+  function snapshot(){ return {label: activePreset ? presetLabels[activePreset] : 'Custom', p: Object.assign({}, last.p), r: model(last.p)}; }
+  function renderCompare(){
+    var cols = [];
+    if (scenarios.A) cols.push(['A: '+scenarios.A.label, rehydrate(scenarios.A)]);
+    if (scenarios.B) cols.push(['B: '+scenarios.B.label, rehydrate(scenarios.B)]);
+    if (!cols.length){ $('compare').innerHTML = '<p class="empty">No scenarios saved yet.</p>'; return; }
+    cols.push(['Current', {p:last.p, r:last.r}]);
+    var h = '<div class="tablewrap" style="margin-top:14px"><table><thead><tr><th>Metric</th>'+cols.map(function(c){ return '<th>'+c[0]+'</th>'; }).join('')+'</tr></thead><tbody>';
+    metricRows.forEach(function(m){
+      h += '<tr><td>'+m[0]+'</td>'+cols.map(function(c){ return '<td class="'+(m[2]?m[2](c[1]):'')+'">'+m[1](c[1])+'</td>'; }).join('')+'</tr>';
+    });
+    $('compare').innerHTML = h + '</tbody></table></div>';
+  }
+  function rehydrate(sc){ return {label: sc.label, p: sc.p, r: model(sc.p)}; }
+  function persist(){ try { localStorage.setItem('fg-gpu-scenarios', JSON.stringify(scenarios)); } catch(e){} }
+
+  // ---- Excel export ----
+  function loadExcelJS(){
+    return new Promise(function(resolve, reject){
+      if (window.ExcelJS) return resolve(window.ExcelJS);
+      var sc = document.createElement('script'); sc.src = EXCELJS_URL; sc.async = true;
+      sc.onload = function(){ window.ExcelJS ? resolve(window.ExcelJS) : reject(new Error('ExcelJS missing')); };
+      sc.onerror = function(){ reject(new Error('load failed')); };
+      document.head.appendChild(sc);
+    });
+  }
+
+  function mixHex(a, b, t){
+    var pa = [1,3,5].map(function(i){ return parseInt(a.substr(i,2),16); }), pb = [1,3,5].map(function(i){ return parseInt(b.substr(i,2),16); });
+    return 'FF' + pa.map(function(v,i){ var x = Math.round(v + (pb[i]-v)*t).toString(16).toUpperCase(); return x.length<2?'0'+x:x; }).join('');
+  }
+
+  function buildWorkbook(ExcelJS){
+    var p = last.p, r = last.r, s = last.s, C = cur();
+    var NAVY='FF1C2541', SOFT='FF4B5873', LINE='FFD5DCE4', WASH='FFF2F5F8', INPUT_FILL='FFFFF7E0', INPUT_FONT='FF1F4E9A';
+    var font = 'Arial';
+    var fM0 = '"'+C+'"#,##0_);("'+C+'"#,##0)', fM2 = '"'+C+'"#,##0.00_);("'+C+'"#,##0.00)', fPct = '0.0%_);(0.0%)';
+    var wb = new ExcelJS.Workbook(); wb.creator = 'Finingale'; wb.created = new Date();
+    var wsum = wb.addWorksheet('Summary', {views:[{showGridLines:false}]});   // first tab, filled last
+
+    function title(ws, text, subtitle, span){
+      ws.mergeCells(1,1,1,span); var t = ws.getCell(1,1); t.value = text; t.font = {name:font,size:15,bold:true,color:{argb:NAVY}};
+      ws.getRow(1).height = 24;
+      if (subtitle){ ws.mergeCells(2,1,2,span); var st = ws.getCell(2,1); st.value = subtitle; st.font = {name:font,size:9,italic:true,color:{argb:SOFT}}; st.alignment = {wrapText:true,vertical:'top'}; ws.getRow(2).height = 26; }
+    }
+    function header(ws, rowNo, labels, aligns){
+      var row = ws.getRow(rowNo);
+      labels.forEach(function(l,i){ var c = row.getCell(i+1); c.value = l;
+        c.font = {name:font,size:10,bold:true,color:{argb:'FFFFFFFF'}}; c.fill = {type:'pattern',pattern:'solid',fgColor:{argb:NAVY}};
+        c.alignment = {vertical:'middle',wrapText:true,horizontal: aligns ? aligns[i] : (i===0?'left':'right')}; });
+      row.height = 20;
+    }
+    function body(c, fmt, bold){ c.font = {name:font,size:10,bold:!!bold,color:{argb:NAVY}}; if (fmt) c.numFmt = fmt; c.border = {bottom:{style:'thin',color:{argb:LINE}}}; }
+
+    // ---------- Assumptions ----------
+    var wa = wb.addWorksheet('Assumptions', {views:[{showGridLines:false, state:'frozen', ySplit:4}]});
+    wa.columns = [{width:26},{width:36},{width:16},{width:24}];
+    title(wa, 'Assumptions', 'Blue cells on a yellow background are inputs. Change them and the P&L sheet recalculates.', 4);
+    header(wa, 4, ['Section','Assumption','Value','Unit'], ['left','left','right','left']);
+    var ref = {}, rowNo = 5;
+    var order = ['Fleet','Sales','Resale','Contract terms','Power and data centre','Overheads and financing'];
+    order.forEach(function(sec){
+      defs.filter(function(d){ return d[4]===sec; }).forEach(function(d, i){
+        var row = wa.getRow(rowNo);
+        row.getCell(1).value = i===0 ? sec : ''; body(row.getCell(1), null, true);
+        row.getCell(2).value = d[1]; body(row.getCell(2));
+        var vc = row.getCell(3), v = p[d[0]];
+        var fmt = {pct:'0.0#%', money0:'"'+C+'"#,##0', money2:'"'+C+'"#,##0.00', int:'#,##0', num:'0.0', num2:'0.00'}[d[3]];
+        vc.value = d[3]==='pct' ? v/100 : v;
+        body(vc, fmt); vc.font = {name:font,size:10,color:{argb:INPUT_FONT}}; vc.fill = {type:'pattern',pattern:'solid',fgColor:{argb:INPUT_FILL}};
+        row.getCell(4).value = d[2]; body(row.getCell(4)); row.getCell(4).font = {name:font,size:10,color:{argb:SOFT}};
+        ref[d[0]] = 'Assumptions!$C$'+rowNo; rowNo++;
+      });
+    });
+    var hr = wa.getRow(rowNo); hr.getCell(1).value = 'Constants'; body(hr.getCell(1),null,true);
+    hr.getCell(2).value = 'Hours per year'; body(hr.getCell(2)); hr.getCell(3).value = H; body(hr.getCell(3),'#,##0'); hr.getCell(4).value = 'hours'; body(hr.getCell(4));
+    ref.H = 'Assumptions!$C$'+rowNo;
+    wa.getRow(rowNo+2).getCell(1).value = 'Currency: '+C+'. Figures are a steady-state year: all GPUs installed and contracts running all year.';
+    wa.getRow(rowNo+2).getCell(1).font = {name:font,size:9,italic:true,color:{argb:SOFT}};
+
+    // ---------- P&L (live formulas) ----------
+    var wp = wb.addWorksheet('P&L', {views:[{showGridLines:false, state:'frozen', ySplit:4}]});
+    wp.columns = [{width:50},{width:20},{width:18}];
+    title(wp, 'Annual P&L, steady-state year', 'Formulas link to the Assumptions sheet. Per GPU-hour divides by every hour in the year, sold or not.', 3);
+    header(wp, 4, ['Line','Per year','Per GPU-hour']);
+    var R = ref, N = R.gpus, Hh = R.H, c = R.contracted;
+    var busy = '('+c+'+(1-'+c+')*'+R.occ+')';
+    var prepayF = N+'*'+c+'*'+R.cost+'*'+R.prepay;
+    var at = {}, pr = 5;
+    function line(key, lbl, formula, result, style){
+      var row = wp.getRow(pr), a = row.getCell(1), b = row.getCell(2), cc = row.getCell(3);
+      a.value = (style==='indent' ? '    ' : '') + lbl;
+      b.value = {formula: formula, result: result};
+      cc.value = {formula: 'B'+pr+'/('+N+'*'+Hh+')', result: result/r.avail};
+      var bold = style==='total';
+      body(a, null, bold); body(b, fM0, bold); body(cc, fM2, bold);
+      if (style==='indent') a.font = {name:font,size:10,color:{argb:SOFT}};
+      if (bold){ [a,b,cc].forEach(function(x){ x.border = {top:{style:'thin',color:{argb:NAVY}},bottom:{style:'thin',color:{argb:LINE}}}; }); }
+      if (key==='pbt'){ [a,b,cc].forEach(function(x){ x.fill = {type:'pattern',pattern:'solid',fgColor:{argb:WASH}}; x.border = {top:{style:'thin',color:{argb:NAVY}},bottom:{style:'double',color:{argb:NAVY}}}; }); }
+      at[key] = pr; pr++;
+    }
+    line('revC','Contracted revenue (incl. resale uplift)', N+'*'+c+'*'+Hh+'*('+R.pc+'+'+R.rs+'*'+R.us+'*MAX(0,'+R.pr+'-'+R.pc+'))', r.revC, 'indent');
+    line('revO','On-demand revenue', N+'*(1-'+c+')*'+Hh+'*'+R.occ+'*'+R.po, r.revO, 'indent');
+    line('rev','Revenue', 'B'+at.revC+'+B'+at.revO, r.rev, 'total');
+    line('colo','Data-centre rent', '-'+N+'*'+R.kw+'*'+R.colo+'*12', -r.colo, 'indent');
+    line('energy','Electricity', '-'+N+'*'+R.kw+'*'+Hh+'*'+R.energy+'*('+busy+'+(1-'+busy+')*'+R.idle+')', -r.energy, 'indent');
+    line('opex','Other operating costs', '-'+N+'*'+R.opex, -r.opex, 'indent');
+    line('ebitda','EBITDA', 'B'+at.rev+'+B'+at.colo+'+B'+at.energy+'+B'+at.opex, r.ebitda, 'total');
+    line('dep','Depreciation', '-'+N+'*'+R.cost+'*(1-'+R.residual+')/'+R.life, -r.dep, 'indent');
+    line('ebit','EBIT', 'B'+at.ebitda+'+B'+at.dep, r.ebit, 'total');
+    line('int','Interest', '-('+N+'*'+R.cost+'-'+prepayF+')*'+R.debt+'*'+R.rate, -r.interest, 'indent');
+    line('pbt','Profit before tax', 'B'+at.ebit+'+B'+at.int, r.pbt, 'total');
+
+    pr++;
+    var mh = wp.getRow(pr); mh.getCell(1).value = 'Memo'; mh.getCell(1).font = {name:font,size:10,bold:true,color:{argb:SOFT}}; pr++;
+    function memo(key, lbl, formula, result, fmt){
+      var row = wp.getRow(pr); row.getCell(1).value = lbl; body(row.getCell(1));
+      row.getCell(2).value = {formula: formula, result: result}; body(row.getCell(2), fmt);
+      at[key] = pr; pr++;
+    }
+    memo('capex','Capital cost of fleet', N+'*'+R.cost, r.capex, fM0);
+    memo('pre','Less customer prepayments', '-'+prepayF, -r.prepayAmt, fM0);
+    memo('net','Net capital funded', 'B'+at.capex+'+B'+at.pre, r.netCap, fM0);
+    memo('mw','Fleet power (MW)', N+'*'+R.kw+'/1000', r.mw, '#,##0.0');
+    memo('rpm','Revenue per MW', 'B'+at.rev+'/B'+at.mw, r.rev/r.mw, fM0);
+    memo('epm','EBITDA per MW', 'B'+at.ebitda+'/B'+at.mw, r.ebitda/r.mw, fM0);
+    memo('margin','EBITDA margin', 'IF(B'+at.rev+'>0,B'+at.ebitda+'/B'+at.rev+',0)', r.margin, fPct);
+    memo('cash','Annual cash after interest and prepayment release', 'B'+at.ebitda+'+B'+at.int+'-IF('+c+'>0,'+prepayF+'/'+R.term+',0)', r.cash, fM0);
+    memo('pay','Payback (years)', 'IF(B'+at.cash+'>0,B'+at.net+'/B'+at.cash+',"Never")', isFinite(r.payback) ? r.payback : 'Never', '0.0');
+    memo('cush','Price cushion (profit / revenue)', 'IF(B'+at.rev+'>0,B'+at.pbt+'/B'+at.rev+',0)', r.cushion, fPct);
+    memo('hrs','Billed GPU-hours', N+'*'+Hh+'*'+busy, r.billedHrs, '#,##0');
+    var costF = '-(B'+at.colo+'+B'+at.energy+'+B'+at.opex+'+B'+at.dep+'+B'+at.int+')';
+    memo('cpa','Cost per available GPU-hour', costF+'/('+N+'*'+Hh+')', r.totalCost/r.avail, fM2);
+    memo('cpb','Cost per billed GPU-hour', 'IF(B'+at.hrs+'>0,'+costF+'/B'+at.hrs+',0)', r.billedHrs>0 ? r.totalCost/r.billedHrs : 0, fM2);
+
+    // ---------- Sensitivity (values, shaded) ----------
+    var wsn = wb.addWorksheet('Sensitivity', {views:[{showGridLines:false, state:'frozen', ySplit:4}]});
+    wsn.columns = [{width:36},{width:16},{width:20},{width:20}];
+    title(wsn, 'Sensitivity of profit before tax', 'Change in annual profit if each input is 10% lower or higher, all else unchanged. Values at time of export; darker shading means a bigger effect.', 4);
+    header(wsn, 4, ['Input','Base value','10% lower','10% higher']);
+    var maxAbs = s.reduce(function(m,x){ return Math.max(m,Math.abs(x.lo),Math.abs(x.hi)); }, 0) || 1;
+    var GREEN='#63BE7B', RED='#F8696B';
+    s.forEach(function(x, i){
+      var row = wsn.getRow(5+i), d = defs.filter(function(dd){ return dd[0]===x.id; })[0];
+      row.getCell(1).value = x.name; body(row.getCell(1));
+      var bv = row.getCell(2); bv.value = d[3]==='pct' ? x.base/100 : x.base;
+      body(bv, {pct:'0.0#%', money0:'"'+C+'"#,##0', money2:'"'+C+'"#,##0.00', int:'#,##0', num:'0.0', num2:'0.00'}[d[3]]);
+      [[3,x.lo,x.loCap],[4,x.hi,x.hiCap]].forEach(function(z){
+        var cc = row.getCell(z[0]);
+        if (z[2]){ cc.value = 'At limit'; body(cc); cc.alignment = {horizontal:'right'}; cc.font = {name:font,size:10,italic:true,color:{argb:SOFT}}; return; }
+        cc.value = z[1]; body(cc, '"'+C+'"#,##0_);("'+C+'"#,##0)');
+        var t = 0.12 + 0.88*Math.abs(z[1])/maxAbs;
+        cc.fill = {type:'pattern',pattern:'solid',fgColor:{argb: mixHex('#FFFFFF', z[1]>=0?GREEN:RED, t)}};
+      });
+    });
+
+    // ---------- Scenarios ----------
+    var saved = ['A','B'].filter(function(k){ return scenarios[k]; });
+    if (saved.length){
+      var wc = wb.addWorksheet('Scenarios', {views:[{showGridLines:false}]});
+      var cols = saved.map(function(k){ return ['Scenario '+k+': '+scenarios[k].label, rehydrate(scenarios[k])]; });
+      cols.push(['Current', {p:last.p, r:last.r}]);
+      wc.columns = [{width:32}].concat(cols.map(function(){ return {width:36}; }));
+      title(wc, 'Scenario comparison', 'Saved scenarios against the current inputs. Values at time of export.', cols.length+1);
+      header(wc, 4, ['Metric'].concat(cols.map(function(c){ return c[0]; })));
+      var xm = [
+        ['Number of GPUs','#,##0',function(z){return z.p.gpus;}],
+        ['Share under contract','0.0%',function(z){return z.p.contracted/100;}],
+        ['Contract price per GPU-hour',fM2,function(z){return z.p.pc;}],
+        ['Capital cost per GPU',fM0,function(z){return z.p.cost;}],
+        ['Revenue',fM0,function(z){return z.r.rev;}],
+        ['EBITDA',fM0,function(z){return z.r.ebitda;}],
+        ['EBITDA margin',fPct,function(z){return z.r.margin;}],
+        ['Profit before tax',fM0,function(z){return z.r.pbt;}],
+        ['Payback (years)','0.0',function(z){return isFinite(z.r.payback)?z.r.payback:'Never';}],
+        ['Price cushion',fPct,function(z){return z.r.cushion;}],
+        ['Revenue per MW',fM0,function(z){return z.r.rev/z.r.mw;}]
+      ];
+      xm.forEach(function(m, i){
+        var row = wc.getRow(5+i); row.getCell(1).value = m[0]; body(row.getCell(1));
+        cols.forEach(function(c, j){ var cc = row.getCell(j+2); cc.value = m[2](c[1]); body(cc, m[1]); cc.alignment = {horizontal:'right'}; });
+      });
+    }
+
+    // ---------- Summary (first tab) ----------
+    wsum.columns = [{width:34},{width:22},{width:24},{width:24}];
+    title(wsum, 'GPU fleet economics', 'Steady-state year. Scenario: '+(activePreset ? presetLabels[activePreset] : 'Custom')+'. Currency: '+C+'. Exported '+new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'})+'.', 4);
+    header(wsum, 4, ['Headline','Value','','']);
+    var link = function(k){ return "'P&L'!B"+at[k]; };
+    var heads = [
+      ['Revenue', link('rev'), r.rev, fM0],
+      ['EBITDA', link('ebitda'), r.ebitda, fM0],
+      ['EBITDA margin', link('margin'), r.margin, fPct],
+      ['Profit before tax', link('pbt'), r.pbt, fM0],
+      ['Payback (years)', link('pay'), isFinite(r.payback)?r.payback:'Never', '0.0'],
+      ['Price cushion', link('cush'), r.cushion, fPct],
+      ['Revenue per MW', link('rpm'), r.rev/r.mw, fM0],
+      ['Fleet power (MW)', link('mw'), r.mw, '#,##0.0']
+    ];
+    heads.forEach(function(hd, i){
+      var row = wsum.getRow(5+i); row.getCell(1).value = hd[0]; body(row.getCell(1));
+      var v = row.getCell(2); v.value = {formula: hd[1], result: hd[2]}; body(v, hd[3], true);
+      body(row.getCell(3)); body(row.getCell(4));
+    });
+    var sr = 5 + heads.length + 1;
+    var st = wsum.getCell(sr,1); st.value = 'Overview'; st.font = {name:font,size:12,bold:true,color:{argb:NAVY}}; sr++;
+    last.summary.forEach(function(t){
+      wsum.mergeCells(sr,1,sr,4); var cc = wsum.getCell(sr,1); cc.value = t;
+      cc.font = {name:font,size:10,color:{argb:NAVY}}; cc.alignment = {wrapText:true, vertical:'top'};
+      wsum.getRow(sr).height = Math.max(16, Math.ceil(t.length/105)*14 + 4); sr++;
+    });
+    sr++;
+    wsum.mergeCells(sr,1,sr,4);
+    var fn = wsum.getCell(sr,1); fn.value = 'Illustrative estimates, not financial advice. The P&L sheet recalculates from the Assumptions sheet; the Sensitivity and Scenario sheets show values at time of export.';
+    fn.font = {name:font,size:9,italic:true,color:{argb:SOFT}}; fn.alignment = {wrapText:true}; wsum.getRow(sr).height = 28;
+
+    [wsum, wa, wp, wsn].forEach(function(w){ w.pageSetup = {orientation:'portrait', fitToPage:true, fitToWidth:1, fitToHeight:0}; });
+    var wu = wb.addWorksheet('Units', {views:[{showGridLines:false}]});
+    wu.columns = [{width:20},{width:30},{width:22},{width:70}];
+    title(wu, 'What unit should GPU costs be measured in?', 'The GPU-hour: one GPU working for one hour. Express revenue and every cost per available GPU-hour, and track capacity in MW alongside it.', 4);
+    header(wu, 4, ['Level','Unit','Used by','Why it matters'], ['left','left','left','left']);
+    UNITS.forEach(function(u, i){
+      var row = wu.getRow(5+i);
+      u.forEach(function(v, j){ var cc = row.getCell(j+1); cc.value = v; body(cc, null, j===1); cc.alignment = {wrapText:true, vertical:'top'}; });
+      row.height = Math.max(16, Math.ceil(u[3].length/72)*14 + 4);
+    });
+    var ur = 5 + UNITS.length + 1;
+    var uh = wu.getCell(ur,1); uh.value = 'Why not tokens or energy?'; uh.font = {name:font,size:12,bold:true,color:{argb:NAVY}}; ur++;
+    [ 'Tokens are one layer further from the hardware. A company running AI models on rented GPUs may charge its own users per token, but the GPU provider sells GPU time.',
+      'Energy is a real cost but not the main one. ' + last.unitsEnergy ].forEach(function(t){
+      wu.mergeCells(ur,1,ur,4); var cc = wu.getCell(ur,1); cc.value = t; cc.font = {name:font,size:10,color:{argb:NAVY}}; cc.alignment = {wrapText:true,vertical:'top'};
+      wu.getRow(ur).height = Math.max(16, Math.ceil(t.length/130)*14 + 4); ur++;
+    });
+    ur++;
+    var sh = wu.getCell(ur,1); sh.value = 'How to standardise GPU costs'; sh.font = {name:font,size:12,bold:true,color:{argb:NAVY}}; ur++;
+    STEPS.forEach(function(x, i){
+      var row = wu.getRow(ur);
+      row.getCell(1).value = (i+1)+'. '+x[0]; body(row.getCell(1), null, true); row.getCell(1).alignment = {wrapText:true,vertical:'top'};
+      wu.mergeCells(ur,2,ur,4); var cc = row.getCell(2); cc.value = x[1]; body(cc); cc.alignment = {wrapText:true,vertical:'top'};
+      row.height = Math.max(28, Math.ceil(x[1].length/110)*14 + 4); ur++;
+    });
+
+    var wt = wb.addWorksheet('Terms', {views:[{showGridLines:false}]});
+    wt.columns = [{width:28},{width:90}];
+    title(wt, 'Terms used', 'Definitions of the terms used in this workbook.', 2);
+    header(wt, 4, ['Term','Meaning'], ['left','left']);
+    TERMS.forEach(function(t, i){
+      var row = wt.getRow(5+i); row.getCell(1).value = t[0]; body(row.getCell(1), null, true);
+      var m = row.getCell(2); m.value = t[1]; body(m); m.alignment = {wrapText:true, vertical:'top'};
+      row.getCell(1).alignment = {vertical:'top'};
+      row.height = Math.max(16, Math.ceil(t[1].length/95)*14 + 4);
+    });
+    wb.calcProperties = {fullCalcOnLoad:true};
+    return wb;
+  }
+
+  function exportXlsx(){
+    var note = $('xlsxNote'); note.textContent = 'Preparing workbook…';
+    loadExcelJS().then(function(ExcelJS){
+      var wb = buildWorkbook(ExcelJS);
+      return wb.xlsx.writeBuffer();
+    }).then(function(buf){
+      var blob = new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'gpu-fleet-economics.xlsx';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1500);
+      note.textContent = 'Workbook downloaded.';
+    }).catch(function(){
+      note.textContent = 'The Excel library could not load. Check your connection and try again.';
+    });
+  }
+
+  // ---- Wiring ----
+  function markCustom(){ activePreset = null; root.querySelectorAll('[data-preset]').forEach(function(b){ b.setAttribute('aria-pressed','false'); }); }
+  function applyPreset(name){
+    var pr = presets[name]; activePreset = name;
+    ids.forEach(function(id){ $(id).value = pr[id]; });
+    root.querySelectorAll('[data-preset]').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.preset===name?'true':'false'); });
+    render();
+  }
+  root.querySelectorAll('[data-preset]').forEach(function(b){ b.addEventListener('click', function(){ applyPreset(b.dataset.preset); }); });
+  root.addEventListener('input', function(e){ if (ids.indexOf(e.target.id) > -1) markCustom(); render(); });
+  root.addEventListener('change', render);
+  $('convToggle').addEventListener('click', function(){
+    var open = $('conv').hidden; $('conv').hidden = !open; this.setAttribute('aria-expanded', open?'true':'false');
+  });
+  $('cvUse').addEventListener('click', function(){ $('pc').value = (Math.round(last.cvPrice*100)/100).toFixed(2); markCustom(); render(); });
+  root.querySelectorAll('[data-save]').forEach(function(b){ b.addEventListener('click', function(){ scenarios[b.dataset.save] = snapshot(); persist(); renderCompare(); }); });
+  $('clearSc').addEventListener('click', function(){ scenarios = {A:null,B:null}; persist(); renderCompare(); });
+  $('xlsx').addEventListener('click', exportXlsx);
+  applyPreset('anchor');
+})();
+</script>
+<script>
+(function () {
+  var btn = document.querySelector('.nav-toggle'), links = document.getElementById('nav-links');
+  if (!btn) return;
+  btn.addEventListener('click', function () {
+    var open = links.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open);
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+})();
+</script>
+</body>
+</html>

@@ -309,6 +309,19 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
 .calc:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--mint-2); }
 .calc .tile-icon { width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0; }
 .calc .tile-icon svg { width: 22px; height: 22px; }
+.calc.feature {
+  grid-column: 1 / -1; padding: 26px 28px; gap: 22px;
+  background: var(--evergreen); border-color: var(--evergreen); color: #fff;
+  box-shadow: 0 6px 0 #0A2B20, 0 18px 30px -16px rgba(6,33,26,.55);
+}
+.calc.feature:hover { background: #134A37; }
+.calc.feature:active { box-shadow: 0 1px 0 #0A2B20; }
+.calc.feature .tile-icon { width: 56px; height: 56px; border-radius: 16px; background: rgba(168,221,185,.16); color: var(--sage); box-shadow: 0 4px 0 rgba(0,0,0,.25); }
+.calc.feature .tile-icon svg { width: 28px; height: 28px; }
+.calc.feature strong { font-family: var(--font-display); font-size: 1.45rem; font-weight: 700; letter-spacing: -.02em; }
+.calc.feature small { color: #BFDCCB; font-size: .98rem; display: block; margin-top: 4px; max-width: 70ch; }
+.calc.feature .pill-new { margin-left: auto; flex-shrink: 0; align-self: center; }
+@media (max-width: 640px) { .calc.feature { flex-wrap: wrap; padding: 22px; gap: 16px; } .calc.feature > span:nth-child(2) { order: 2; flex-basis: 100%; } }
 .calc strong { display: block; font-weight: 600; font-size: 1.02rem; }
 .calc small { color: var(--ink-2); font-size: .9rem; }
 .center { text-align: center; margin-top: 40px; }
@@ -427,7 +440,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
 
 <div class="facts wrap">
   <div class="slab">
-    <div class="fact"><b>16 calculators</b>, from compound interest to Black-Scholes and the Kelly criterion.</div>
+    <div class="fact"><b>17 calculators</b>, from compound interest to Black-Scholes and GPU fleet economics.</div>
     <div class="fact"><b>A full DCF builder</b> with scenarios, sensitivity tables and Excel export.</div>
     <div class="fact"><b>No sign-up, no paywall.</b> Everything runs in your browser.</div>
   </div>
@@ -452,8 +465,8 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     <a href="calculators.html" class="tile slab tilt">
       <span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8 7h8M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01"/></svg></span>
       <h3>Calculators</h3>
-      <p>16 interactive tools covering personal finance, valuation and risk.</p>
-      <span class="go">See all 16</span>
+      <p>17 interactive tools covering personal finance, valuation, risk and AI infrastructure.</p>
+      <span class="go">See all 17</span>
     </a>
     <a href="articles.html" class="tile slab tilt">
       <span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H18a2 2 0 0 1 2 2v12.5a1.5 1.5 0 0 1-1.5 1.5H6a2 2 0 0 1-2-2z"/><path d="M8 8.5h8M8 12h8M8 15.5h5"/></svg></span>
@@ -500,6 +513,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     <p>From everyday money questions to the models analysts use.</p>
   </div>
   <div class="calc-grid">
+    <a href="calc-17-gpu-fleet-economics.html" class="calc feature"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></svg></span><span><strong>GPU fleet economics</strong><small>For finance teams at GPU cloud providers: a steady-state P&amp;L, the cost of each GPU-hour, and which assumptions matter most.</small></span><span class="pill-new">New</span></a>
     <a href="calc-01-compound-interest.html" class="calc"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M5 16c5 0 9-3 14-11"/><path d="M15 5h4v4"/></svg></span><span><strong>Compound interest</strong><small>See time do the work</small></span></a>
     <a href="calc-02-emi-loan.html" class="calc"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4l9 6"/><path d="M5 10v9h14v-9"/><path d="M10 19v-5h4v5"/></svg></span><span><strong>EMI and loans</strong><small>Monthly repayments, made clear</small></span></a>
     <a href="calc-03-sip.html" class="calc"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="7" rx="7" ry="3"/><path d="M5 7v5c0 1.7 3.1 3 7 3s7-1.3 7-3V7"/><path d="M5 12v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/></svg></span><span><strong>SIP planner</strong><small>Regular investing over time</small></span></a>
@@ -507,7 +521,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     <a href="calc-16-dcf.html" class="calc"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V6M16 20v-8M22 20H2"/></svg></span><span><strong>DCF valuation</strong><small>Intrinsic value, quickly</small></span></a>
     <a href="calc-11-black-scholes.html" class="calc"><span class="tile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18c3 0 4-12 9-12s6 12 9 12"/><path d="M3 21h18"/></svg></span><span><strong>Black-Scholes</strong><small>Option prices and the Greeks</small></span></a>
   </div>
-  <div class="center"><a href="calculators.html" class="btn btn-soft">View all 16 calculators</a></div>
+  <div class="center"><a href="calculators.html" class="btn btn-soft">View all 17 calculators</a></div>
 </section>
 
 <section class="block wrap" aria-labelledby="art-h">
@@ -578,6 +592,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
           <li><a href="calc-11-black-scholes.html">Black-Scholes</a></li>
           <li><a href="calc-15-kelly-criterion.html">Kelly criterion</a></li>
           <li><a href="calc-16-dcf.html">DCF valuation</a></li>
+          <li><a href="calc-17-gpu-fleet-economics.html">GPU fleet economics</a></li>
           <li><a href="settlement_calc.html">Settlement cost analyser</a></li>
           <li><a href="rwa_monitor.html">Tokenised asset monitor</a></li>
         </ul>
