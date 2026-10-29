@@ -1,0 +1,1749 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A working procurement hub for an AI cloud provider: purchase requests, approvals, orders, suppliers, contracts and invoices, plus a deployment supply planner that works back from customer go-live and prices every week of delay.">
+<title>Procurement Hub and Deployment Planner | Finingale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Finingale site theme */
+/* ==========================================================================
+   Finingale shared theme
+   Link this file from any page:
+     <link rel="stylesheet" href="finingale-theme.css"/>
+   Change the colours or the page background here and every page that
+   links this file updates at once.
+   ========================================================================== */
+
+
+:root {
+  /* Palette */
+  --paper:     #FAFDFB;   /* page background (white with a hint of green) */
+  --white:     #FFFFFF;
+  --mint:      #E3F4E8;   /* light green bands and panels */
+  --mint-2:    #D2ECDA;   /* extrusion edge on light surfaces */
+  --sage:      #A8DDB9;   /* light green highlight */
+  --leaf:      #3FA36B;   /* mid green */
+  --fern:      #1E7A4C;   /* primary actions and links */
+  --fern-deep: #145C38;   /* extrusion edge on green buttons */
+  --evergreen: #0F3D2E;   /* headings and main text */
+  --ink-2:     #4A6358;   /* secondary text */
+  --line:      #CFE5D6;   /* hairlines and borders */
+  --marigold:  #F3B61F;   /* small warm accent, used sparingly */
+
+  /* Page background: edit this one value to change it site-wide */
+  --page-bg:
+    radial-gradient(1200px 600px at 85% -10%, #E3F4E8 0%, transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, #EEF8F1 0%, transparent 55%),
+    var(--paper);
+
+  /* Type */
+  --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
+
+  /* Depth */
+  --lift: 0 1px 2px rgba(15,61,46,.06), 0 12px 28px -12px rgba(15,61,46,.18);
+  --radius-lg: 22px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --max: 1200px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--evergreen);
+  background: var(--page-bg);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; }
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; line-height: 1.08; }
+:focus-visible { outline: 3px solid var(--marigold); outline-offset: 3px; border-radius: 4px; }
+
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+
+/* ---------- Nav ---------- */
+.site-nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(250,253,251,.82);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.site-nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 72px; gap: 24px; }
+.brand {
+  font-family: var(--font-display); font-weight: 800; font-size: 1.6rem;
+  letter-spacing: -0.03em; text-decoration: none; color: var(--evergreen);
+  display: flex; align-items: center; gap: 10px;
+}
+.brand-mark {
+  width: 30px; height: 30px; border-radius: 9px; background: var(--fern);
+  box-shadow: 0 4px 0 var(--fern-deep); position: relative; top: -2px;
+  display: grid; place-items: center;
+}
+.brand-mark::after { content: ''; width: 11px; height: 11px; border-radius: 50%; background: var(--marigold); }
+.nav-links { display: flex; align-items: center; gap: 6px; list-style: none; }
+.nav-links a {
+  text-decoration: none; font-size: .95rem; font-weight: 500; color: var(--ink-2);
+  padding: 8px 14px; border-radius: 999px; transition: background .2s, color .2s;
+}
+.nav-links a:hover { background: var(--mint); color: var(--evergreen); }
+.nav-links a[aria-current="page"] { color: var(--evergreen); background: var(--mint); }
+.nav-toggle {
+  display: none; background: var(--white); border: 1px solid var(--line); border-radius: 12px;
+  width: 44px; height: 44px; cursor: pointer; box-shadow: 0 3px 0 var(--mint-2);
+}
+.nav-toggle span { display: block; width: 18px; height: 2px; background: var(--evergreen); margin: 4px auto; border-radius: 2px; transition: transform .25s, opacity .25s; }
+.nav-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.nav-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+/* ---------- Buttons (extruded, press down on click) ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-body); font-weight: 600; font-size: 1rem;
+  text-decoration: none; border-radius: 14px; padding: 14px 24px;
+  border: 0; cursor: pointer; position: relative;
+  transition: transform .12s ease, box-shadow .12s ease, background .2s;
+}
+.btn-primary { background: var(--fern); color: var(--white); box-shadow: 0 5px 0 var(--fern-deep), 0 14px 24px -10px rgba(20,92,56,.55); }
+.btn-primary:hover { background: #22875A; }
+.btn-primary:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--fern-deep), 0 6px 12px -8px rgba(20,92,56,.5); }
+.btn-soft { background: var(--white); color: var(--evergreen); box-shadow: inset 0 0 0 1px var(--line), 0 5px 0 var(--mint-2); }
+.btn-soft:hover { background: var(--mint); }
+.btn-soft:active { transform: translateY(4px); box-shadow: inset 0 0 0 1px var(--line), 0 1px 0 var(--mint-2); }
+.btn-sm { padding: 10px 18px; font-size: .92rem; border-radius: 12px; }
+
+/* ---------- Extruded surface (the 3D card language) ---------- */
+.slab {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 0 var(--mint-2), var(--lift);
+}
+
+/* ---------- Footer ---------- */
+.site-footer { background: var(--evergreen); color: #CFE5D6; margin-top: 120px; }
+.site-footer .wrap { padding-top: 72px; padding-bottom: 40px; }
+.footer-top { display: grid; grid-template-columns: 1.3fr repeat(3, 1fr); gap: 40px; padding-bottom: 48px; border-bottom: 1px solid rgba(207,229,214,.18); }
+.footer-brand { font-family: var(--font-display); font-weight: 800; font-size: 1.9rem; color: var(--white); letter-spacing: -0.03em; }
+.footer-tag { margin-top: 10px; font-size: .95rem; color: #A9C9B6; max-width: 280px; }
+.footer-col h4 { font-family: var(--font-body); font-size: .95rem; font-weight: 600; color: var(--sage); margin-bottom: 14px; letter-spacing: 0; }
+.footer-col ul { list-style: none; display: grid; gap: 9px; }
+.footer-col a { text-decoration: none; font-size: .95rem; color: #CFE5D6; }
+.footer-col a:hover { color: var(--white); text-decoration: underline; text-underline-offset: 3px; }
+.footer-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 28px; font-size: .88rem; color: #A9C9B6; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .wrap { padding: 0 20px; }
+  .nav-toggle { display: block; }
+  .nav-links {
+    position: absolute; top: 72px; left: 0; right: 0;
+    flex-direction: column; align-items: stretch; gap: 2px;
+    background: var(--paper); border-bottom: 1px solid var(--line);
+    padding: 10px 16px 18px; display: none;
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a { padding: 12px 14px; font-size: 1.05rem; }
+  .nav-cta-desktop { display: none; }
+  .footer-top { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) { .footer-top { grid-template-columns: 1fr; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
+</style>
+<style>
+.crumb{max-width:var(--max);margin:0 auto;padding:28px 32px 0;font-size:.95rem;color:#4A6358}
+.crumb a{color:#1E7A4C;text-underline-offset:3px}
+@media (max-width:900px){.crumb{padding:24px 20px 0}}
+
+/* Everything scoped under .ph so it can sit inside another page */
+.ph{
+  --ink:#0F3D2E; --ink-soft:#4A6358; --muted:#5F7A6D; --line:#CFE5D6; --paper:#FFFFFF; --wash:#F2FAF5;
+  --steel:#1E7A4C; --steel-soft:#E3F4E8; --neutral:#5F7A6D; --edge:#D2ECDA;
+  --good:#1E7A4C; --good-bg:#E3F4E8; --warn:#8A5F0E; --warn-bg:#FDF3D8; --bad:#B3412E; --bad-bg:#FBEDEA;
+  font-family:var(--font-body); color:var(--ink); background:transparent; font-size:15px; line-height:1.5; padding:40px 0 24px;
+}
+.ph *,.ph *::before,.ph *::after{box-sizing:border-box}
+.ph button,.ph input,.ph select,.ph textarea{font:inherit;color:inherit}
+.ph h1,.ph h2,.ph h3{font-family:var(--font-display);font-weight:700;letter-spacing:-.02em;margin:0}
+.ph h1.pagetitle{font-weight:800;font-size:clamp(2.4rem,5vw,3.8rem);line-height:1;margin:0 0 1rem;letter-spacing:-.035em}
+.ph .lede{color:var(--ink-soft);font-size:1.12rem;max-width:66ch;margin-bottom:28px}
+.ph .app{background:var(--paper);border:1px solid var(--line);border-radius:22px;box-shadow:0 8px 0 var(--edge),var(--lift);overflow:hidden}
+.ph .fine{font-size:.82rem;color:var(--ink-soft);margin-top:28px}
+.ph h2{font-size:1.5rem;margin-bottom:4px}
+.ph h3{font-size:1.05rem;margin-bottom:10px}
+.ph p{margin:0 0 8px}
+.ph .num{font-variant-numeric:tabular-nums}
+
+/* Shell */
+.ph .top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 20px;background:var(--wash);border-bottom:1px solid var(--line)}
+.ph .co{display:flex;flex-direction:column;line-height:1.25}
+.ph .co b{font-family:var(--font-display);font-size:1.05rem}
+.ph .co small{color:var(--muted);font-size:.78rem}
+.ph .top .spacer{flex:1}
+.ph .top label{font-size:.84rem;color:var(--ink-soft);display:flex;align-items:center;gap:8px}
+.ph .top select{background:#fff;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 12px}
+
+.ph .layout{display:grid;grid-template-columns:210px minmax(0,1fr);min-height:640px}
+.ph nav{background:#F7FBF8;border-right:1px solid var(--line);padding:16px 10px;display:flex;flex-direction:column;gap:2px}
+.ph nav button{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;background:none;border:0;border-radius:999px;padding:9px 14px;font-weight:500;cursor:pointer;color:var(--ink-soft)}
+.ph nav button:hover{background:var(--steel-soft)}
+.ph nav button[aria-current=page]{background:var(--steel-soft);color:var(--ink);font-weight:600;box-shadow:inset 0 0 0 1px var(--edge)}
+.ph nav .count{font-size:.75rem;background:var(--bad);color:#fff;border-radius:10px;padding:0 7px;min-width:20px;text-align:center}
+.ph main{padding:24px;min-width:0}
+.ph .viewhead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.ph .viewhead p{color:var(--ink-soft);margin:0;max-width:70ch}
+@media (max-width:820px){
+  .ph .top{padding:12px 16px}
+  .ph .layout{grid-template-columns:minmax(0,1fr)}
+  .ph nav{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:8px}
+  .ph nav button{width:auto;white-space:nowrap;gap:8px}
+  .ph main{padding:16px}
+}
+
+/* Pieces */
+.ph .panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 4px 0 var(--edge)}
+.ph .grid2{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px;margin-top:18px}
+@media (max-width:1100px){.ph .grid2{grid-template-columns:minmax(0,1fr)}}
+.ph .kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 4px 0 var(--edge)}
+@media (max-width:1100px){.ph .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.ph .kpis>div:last-child{grid-column:span 2}}
+@media (max-width:560px){.ph .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ph .kpis>div:last-child{grid-column:1 / -1}}
+.ph .kpis>div{background:var(--paper);padding:14px 16px}
+.ph .kpis .k{font-size:.8rem;color:var(--muted)}
+.ph .kpis .v{font-family:var(--font-display);font-size:1.5rem;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.3}
+.ph .kpis .n{font-size:.76rem;color:var(--muted)}
+.ph .bad-t{color:var(--bad)} .ph .good-t{color:var(--good)} .ph .warn-t{color:var(--warn)}
+
+.ph button.btn{display:inline-block;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:7px 14px;cursor:pointer;font-size:.86rem;font-weight:500;box-shadow:0 3px 0 var(--edge);transition:transform .1s,box-shadow .1s,background .2s}
+.ph button.btn:active{transform:translateY(3px);box-shadow:0 0 0 var(--edge)}
+.ph button.btn:hover{background:var(--wash)}
+.ph button.primary{background:var(--steel);border-color:var(--steel);color:#fff;font-weight:600;box-shadow:0 3px 0 #145C38}
+.ph button.primary:hover{background:#22875A}
+.ph button.btn:disabled{opacity:.45;cursor:not-allowed}
+.ph button.link{background:none;border:0;padding:0;color:var(--steel);text-decoration:underline;cursor:pointer;font-size:inherit}
+.ph :focus-visible{outline:3px solid #F3B61F;outline-offset:2px}
+
+.ph .tablewrap{overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:14px}
+.ph table{width:100%;border-collapse:collapse;font-size:.88rem}
+.ph th,.ph td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle;white-space:nowrap}
+.ph td.wrap{white-space:normal;min-width:200px}
+.ph th{font-size:.76rem;font-weight:600;color:var(--muted);background:var(--wash)}
+.ph tr:last-child td{border-bottom:0}
+.ph td.r,.ph th.r{text-align:right;font-variant-numeric:tabular-nums}
+.ph tbody tr.click{cursor:pointer}
+.ph tbody tr.click:hover{background:#F7FBF8}
+.ph .sub{display:block;font-size:.78rem;color:var(--muted)}
+
+.ph .tag{display:inline-block;font-size:.76rem;font-weight:500;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.ph .tag.good{background:var(--good-bg);color:var(--good)}
+.ph .tag.warn{background:var(--warn-bg);color:var(--warn)}
+.ph .tag.bad{background:var(--bad-bg);color:var(--bad)}
+.ph .tag.info{background:var(--steel-soft);color:var(--steel)}
+.ph .tag.plain{background:var(--wash);color:var(--ink-soft)}
+
+.ph .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.ph .filters button{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:.84rem}
+.ph .filters button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* Stage bar */
+.ph .stages{display:flex;gap:3px;width:150px}
+.ph .stages i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.ph .stages i.on{background:var(--steel)}
+.ph .stages.late i.on{background:var(--bad)}
+
+/* Readiness rows */
+.ph .ready{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.ph .ready:last-child{border-bottom:0}
+.ph .ready .track{grid-column:1 / -1;position:relative;height:10px;background:var(--wash);border-radius:5px}
+.ph .ready .fill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--steel)}
+.ph .ready .golive{position:absolute;top:-4px;bottom:-4px;border-left:2px solid var(--ink)}
+.ph .ready .meta{grid-column:1 / -1;font-size:.8rem;color:var(--muted)}
+
+.ph .attn{list-style:none;margin:0;padding:0}
+.ph .attn li{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.ph .attn li:last-child{border-bottom:0}
+.ph .attn .dot{width:8px;height:8px;border-radius:50%;margin-top:7px;flex:none}
+.ph .attn .txt{flex:1;font-size:.88rem}
+
+/* Drawer */
+.ph .scrim{position:fixed;inset:0;background:rgba(15,61,46,.35);z-index:60}
+.ph .drawer{position:fixed;top:0;right:0;bottom:0;width:min(520px,100vw);background:var(--paper);z-index:61;overflow-y:auto;box-shadow:-8px 0 24px rgba(15,61,46,.15);padding:22px;border-radius:22px 0 0 22px}
+.ph .drawer .close{position:absolute;top:14px;right:14px}
+.ph .drawer h3#odT{padding-right:70px}
+.ph .drawer.still{animation:none!important}
+.ph dl{display:grid;grid-template-columns:140px minmax(0,1fr);gap:6px 12px;margin:14px 0;font-size:.88rem}
+.ph dt{color:var(--muted)} .ph dd{margin:0}
+.ph .timeline{list-style:none;margin:8px 0 16px;padding:0}
+.ph .timeline li{display:flex;gap:10px;align-items:center;padding:5px 0;font-size:.88rem;color:var(--muted)}
+.ph .timeline li .mk{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);flex:none}
+.ph .timeline li.done{color:var(--ink)}
+.ph .timeline li.done .mk{background:var(--steel);border-color:var(--steel)}
+.ph .timeline li.cur{color:var(--ink);font-weight:600}
+.ph .timeline li.cur .mk{border-color:var(--steel)}
+.ph .timeline .when{margin-left:auto;font-size:.8rem;font-variant-numeric:tabular-nums}
+.ph .thread{border-top:1px solid var(--line);margin-top:16px;padding-top:14px}
+.ph .msg{background:var(--wash);border-radius:12px;padding:8px 10px;margin-bottom:8px;font-size:.88rem}
+.ph .msg b{font-weight:600} .ph .msg .when{color:var(--muted);font-size:.76rem;margin-left:6px}
+.ph textarea,.ph input[type=text],.ph input[type=number],.ph input[type=date],.ph select.field{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--wash);color:var(--ink)}
+.ph textarea:focus,.ph input:focus,.ph select.field:focus{background:#fff;border-color:var(--steel);box-shadow:0 0 0 3px rgba(30,122,76,.16)}
+.ph .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+
+/* Form modal */
+.ph .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow-y:auto;background:var(--paper);z-index:61;border-radius:22px;padding:24px;box-shadow:0 8px 0 var(--edge),0 16px 40px rgba(15,61,46,.25)}
+.ph .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ph .form label{display:flex;flex-direction:column;gap:4px;font-size:.84rem;color:var(--ink-soft)}
+.ph .form .full{grid-column:1 / -1}
+@media (max-width:520px){.ph .form{grid-template-columns:1fr}}
+.ph .route{background:var(--wash);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.86rem}
+.ph .route b{color:var(--ink)}
+
+.ph .checks{display:flex;gap:6px;flex-wrap:wrap}
+.ph .chk{font-size:.74rem;border-radius:4px;padding:1px 6px;border:1px solid var(--line);color:var(--muted)}
+.ph .chk.pass{background:var(--good-bg);border-color:transparent;color:var(--good)}
+.ph .chk.fail{background:var(--bad-bg);border-color:transparent;color:var(--bad)}
+
+.ph .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;font-size:.88rem;z-index:80;box-shadow:0 4px 0 #0A2B20}
+.ph .note{font-size:.8rem;color:var(--muted);margin-top:12px}
+.ph .empty{color:var(--muted);padding:16px 0}
+.ph .appfoot{padding:14px 20px;font-size:.78rem;color:var(--muted);border-top:1px solid var(--line);background:#F7FBF8}
+
+/* ---------- Deployment planner ---------- */
+.ph .verdict{border-radius:18px;padding:18px 22px;margin-bottom:16px;border:1px solid var(--line);border-left:6px solid var(--good);background:linear-gradient(110deg,#fff 55%,#EAF7EF);box-shadow:0 5px 0 var(--edge)}
+.ph .verdict.bad{border-left-color:var(--bad);background:linear-gradient(110deg,#fff 55%,#FBEDEA)}
+.ph .verdict .vk{font-size:.8rem;color:var(--muted)}
+.ph .verdict .vt{font-family:var(--font-display);font-size:1.3rem;font-weight:700;letter-spacing:-.02em;margin:2px 0}
+.ph .verdict .vs{font-size:.9rem;color:var(--ink-soft)}
+.ph .subtabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+.ph .subtabs button{background:none;border:0;border-bottom:2px solid transparent;padding:8px 14px;cursor:pointer;color:var(--ink-soft);white-space:nowrap}
+.ph .subtabs button[aria-selected=true]{border-bottom-color:var(--steel);color:var(--ink);font-weight:600}
+.ph .form.f3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:900px){.ph .form.f3{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.ph .form.f3{grid-template-columns:1fr}}
+.ph .gwrap{overflow-x:auto}
+.ph .gantt{min-width:720px}
+.ph .grow{display:grid;grid-template-columns:250px minmax(0,1fr);align-items:center;min-height:34px;border-bottom:1px solid var(--wash)}
+.ph .grow.ghead{min-height:24px;border-bottom:1px solid var(--line)}
+.ph .glabel{background:none;border:0;text-align:left;cursor:pointer;padding:4px 10px 4px 0;font-size:.84rem;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.ph .glabel:hover{color:var(--steel)}
+.ph .glabel .tag{font-size:.7rem;padding:0 7px}
+.ph .gtrack{position:relative;height:34px}
+.ph .gtrack.axis{height:24px}
+.ph .gtick{position:absolute;top:4px;font-size:.72rem;color:var(--muted);transform:translateX(2px);border-left:1px solid var(--line);padding-left:3px;white-space:nowrap}
+.ph .gbar{position:absolute;top:11px;height:12px;border-radius:6px;background:var(--neutral)}
+.ph .gbar.plain{background:var(--neutral)} .ph .gbar.good{background:var(--good)} .ph .gbar.warn{background:#D49A1A} .ph .gbar.bad{background:var(--neutral)}
+.ph .gbar.over{background:repeating-linear-gradient(135deg,var(--bad) 0 4px,#D9796A 4px 7px)}
+.ph .gneed{position:absolute;top:7px;height:20px;border-left:2px solid var(--ink)}
+.ph .gv{position:absolute;top:0;bottom:0;border-left:1px solid var(--ink-soft)}
+.ph .gv.today{border-left:2px solid var(--ink)}
+.ph .gv.golive{border-left:2px dashed var(--good)}
+.ph .gv.proj{border-left:2px dashed var(--bad)}
+.ph .gv.ms{border-left:1px dotted var(--muted)}
+.ph .gv.ms i{display:none}
+.ph .grow:nth-child(2) .gv.ms i{display:block;position:absolute;top:-2px;left:2px;font-style:normal;font-size:.66rem;color:var(--muted)}
+.ph .glegend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;color:var(--ink-soft);margin-top:10px}
+.ph .glegend span{display:flex;align-items:center;gap:6px}
+.ph .lg{display:inline-block;width:16px;height:10px;border-radius:2px}
+.ph .lg.bar{background:var(--neutral)} .ph .lg.over{background:repeating-linear-gradient(135deg,var(--bad) 0 4px,#D9796A 4px 7px)}
+.ph .lg.need{width:2px;height:14px;background:var(--ink);border-radius:0} .ph .lg.today{width:2px;height:14px;background:var(--ink);border-radius:0}
+.ph .lg.golive{width:0;height:14px;border-left:2px dashed var(--good);border-radius:0} .ph .lg.proj{width:0;height:14px;border-left:2px dashed var(--bad);border-radius:0}
+.ph .lg.dot{width:10px;height:10px;border-radius:50%}
+.ph .lg.proj2{height:2px;background:var(--steel)} .ph .lg.plan2{height:0;border-top:2px dashed var(--muted)}
+.ph .mslist{margin:10px 0 0;padding-left:20px;font-size:.78rem;color:var(--muted)}
+.ph .rmap{width:100%;height:auto;max-height:440px;display:block}
+.ph .rmap .q.hot{fill:var(--bad-bg);opacity:.55} .ph .rmap .q.warm{fill:var(--warn-bg);opacity:.6}
+.ph .rmap .grid,.ph .cash .grid{stroke:var(--line);stroke-width:1}
+.ph .cash .grid.zero{stroke:var(--ink-soft)}
+.ph .rmap .qline{stroke:var(--ink-soft);stroke-dasharray:4 3}
+.ph .rmap .ax,.ph .cash .ax{font-size:11px;fill:var(--muted)}
+.ph .rmap .ql{font-size:12px;font-weight:600;fill:var(--ink-soft)}
+.ph .rmap .pn{font-size:10px;font-weight:600;fill:#fff;pointer-events:none}
+.ph .rmap .pt{cursor:pointer} .ph .rmap .pt:focus-visible circle:nth-of-type(2){stroke:var(--ink);stroke-width:3}
+.ph .cash{width:100%;height:auto;display:block}
+.ph .cash .ln{fill:none;stroke-width:2} .ph .cash .ln.proj{stroke:var(--steel)} .ph .cash .ln.plan{stroke:var(--muted);stroke-dasharray:5 4}
+.ph .cash .dl{font-size:11px;fill:var(--ink)} .ph .cash .dl.muted{fill:var(--muted)}
+.ph .cbar{padding:8px 0;border-bottom:1px solid var(--wash)}
+.ph .cbar .cl{display:flex;justify-content:space-between;gap:10px;font-size:.88rem}
+.ph .cbar .ct{height:8px;background:var(--wash);border-radius:4px;margin:5px 0 3px}
+.ph .cbar .ct i{display:block;height:100%;background:var(--steel);border-radius:4px}
+.ph .cbar.total{border-bottom:0;font-weight:600}
+.ph .phase{display:flex;flex-direction:column;gap:6px;margin-top:14px;font-size:.88rem}
+.ph .phase input{width:100%}
+.ph .sigs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:900px){.ph .sigs{grid-template-columns:minmax(0,1fr)}}
+.ph .sig ul{margin:0 0 8px;padding-left:18px;font-size:.86rem}
+.ph .sig li{margin-bottom:6px}
+.ph .sig .impl{font-size:.86rem;background:var(--wash);border-radius:10px;padding:8px 10px;margin:0}
+.ph details.panel summary{cursor:pointer}
+.ph .aisum{background:var(--wash);border:1px solid var(--line);border-left:4px solid var(--steel);border-radius:12px;padding:12px 14px;margin:14px 0 18px;font-size:.92rem;line-height:1.55}
+.ph ul.why{list-style:none;margin:0 0 16px;padding:0;font-size:.88rem}
+.ph ul.why li{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line)}
+.ph ul.why li b{color:var(--bad);font-variant-numeric:tabular-nums}
+.ph details.fw{margin:16px 0 8px;font-size:.86rem}
+.ph details.fw summary{cursor:pointer;font-weight:600}
+.ph details.fw table{margin-top:8px}
+.ph fieldset.rq{border:1px solid var(--line);border-radius:12px;padding:10px 12px 12px;margin:0;display:grid;gap:8px}
+.ph fieldset.rq legend{font-size:.84rem;font-weight:600;padding:0 4px}
+.ph .form label.ck{flex-direction:row;align-items:center;gap:8px}
+.ph .dmeta{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);margin-top:4px}
+.ph .dmeta b{color:var(--ink)}
+@media (prefers-reduced-motion:no-preference){.ph .drawer{animation:phin .18s ease-out}@keyframes phin{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}}
+
+.ph details.adv summary{font-family:var(--font-display)}
+@media (max-width:560px){.ph{padding-top:24px} .ph .kpis .v{font-size:1.15rem} .ph .kpis>div{padding:12px} .ph .verdict .vt{font-size:1.12rem}}
+</style>
+</head>
+<body style="margin:0">
+<header class="site-nav">
+  <div class="wrap">
+    <a href="index.html" class="brand" aria-label="Finingale home"><span class="brand-mark" aria-hidden="true"></span>Finingale</a>
+    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links"><span></span><span></span><span></span></button>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="articles.html">Articles</a></li>
+      <li><a href="calculators.html">Calculators</a></li>
+      <li><a href="dcf-model-builder.html">DCF model</a></li>
+      <li><a href="index.html#digital-assets">Digital assets</a></li>
+      <li><a href="finingale-letstalk.html">Let's talk</a></li>
+    </ul>
+  </div>
+</header>
+<nav class="crumb" aria-label="Breadcrumb"><a href="index.html">Home</a> / Procurement hub</nav>
+<div class="ph" id="ph">
+ <div class="wrap">
+ <h1 class="pagetitle">Procurement hub</h1>
+ <p class="lede">How an AI cloud provider could run purchasing from one place: requests and approvals, orders tracked against customer go-live dates, supplier onboarding, contract renewals and invoice matching. The <b>Deployment plan</b> tab works backwards from a go-live date to show what to order, when, and what each week of delay costs.</p>
+
+ <div class="app">
+ <header class="top">
+  <div class="co"><b>Halcyon Compute</b><small>Fictional AI cloud company · demo data</small></div>
+  <div class="spacer"></div>
+  <label>Viewing as
+   <select id="role" aria-label="Viewing as">
+    <option>Requester</option><option selected>Procurement</option><option>Finance</option><option>CFO</option>
+   </select>
+  </label>
+  <button class="btn" id="reset" type="button">Reset demo</button>
+ </header>
+ <div class="layout">
+  <nav aria-label="Sections" id="nav"></nav>
+  <main id="view" tabindex="-1"></main>
+ </div>
+ <div class="appfoot">Illustrative model, not advice. Company, customers, suppliers and figures are fictional. Your changes are saved in this browser; Reset demo restores the example.</div>
+ </div>
+ <div id="overlay"></div>
+ <div id="toastHost" aria-live="polite"></div>
+ </div>
+</div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand">Finingale</div>
+        <p class="footer-tag">Financial engineering meets data mastery. Built by Rohan Tainwala.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Pages</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="articles.html">Articles</a></li>
+          <li><a href="calculators.html">Calculators</a></li>
+          <li><a href="dcf-model-builder.html">DCF model</a></li>
+          <li><a href="index.html#digital-assets">Digital assets</a></li>
+          <li><a href="finingale-letstalk.html">Let's talk</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Popular tools</h4>
+        <ul>
+          <li><a href="calc-01-compound-interest.html">Compound interest</a></li>
+          <li><a href="calc-11-black-scholes.html">Black-Scholes</a></li>
+          <li><a href="calc-15-kelly-criterion.html">Kelly criterion</a></li>
+          <li><a href="calc-16-dcf.html">DCF valuation</a></li>
+          <li><a href="settlement_calc.html">Settlement cost analyser</a></li>
+          <li><a href="rwa_monitor.html">Tokenised asset monitor</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Articles</h4>
+        <ul>
+          <li><a href="article-01-the-investor-nobody-talks-about.html">The investor nobody talks about</a></li>
+          <li><a href="article-02-kelly-criterion.html">The Kelly criterion</a></li>
+          <li><a href="article-03-esg.html">Science and finance</a></li>
+          <li><a href="article-04-risk-free-rate.html">Risk-free, is it though?</a></li>
+          <li><a href="article-05-us-markets.html">The architecture of US markets</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Finingale, Rohan Tainwala</span>
+      <span>For educational purposes only. Not financial advice.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var root = document.getElementById('ph');
+  var $ = function(s){ return root.querySelector(s); };
+  var DAY = 86400000;
+  var STORE = 'finingale-procurement-hub-v3';
+  var STAGES = ['Ordered','In production','Shipped','Customs','Delivered','Installed','Accepted'];
+  var INSTALL_DAYS = 14;                                   // delivery to go-live
+  var CATEGORIES = ['Hardware','Networking','Cooling','Data centre','Software','Services'];
+  var LEAD_DAYS = {Hardware:70,Networking:120,Cooling:56,'Data centre':14,Software:5,Services:21};
+  var CHECKS = [['abn','ABN'],['bank','Bank'],['sanctions','Sanctions'],['insurance','Insurance'],['security','Security']];
+
+  // ---------- dates and formatting ----------
+  var today = new Date(); today.setHours(0,0,0,0);
+  function iso(dt){ var y=dt.getFullYear(), m=('0'+(dt.getMonth()+1)).slice(-2), d=('0'+dt.getDate()).slice(-2); return y+'-'+m+'-'+d; }
+  function off(n){ var d = new Date(today); d.setDate(d.getDate()+n); return iso(d); }
+  function parse(s){ var p=s.split('-'); return new Date(+p[0],+p[1]-1,+p[2]); }
+  function daysBetween(a,b){ return Math.round((parse(b)-parse(a))/DAY); }
+  function addDays(s,n){ var d = parse(s); d.setDate(d.getDate()+n); return iso(d); }
+  function fmtDate(s){ return parse(s).toLocaleDateString('en-AU',{day:'numeric',month:'short'}); }
+  function money(x){
+    var a=Math.abs(x), s;
+    if (a>=1e9) s=(a/1e9).toFixed(2)+'B'; else if (a>=1e6) s=(a/1e6).toFixed(1)+'M'; else if (a>=1e3) s=(a/1e3).toFixed(0)+'k'; else s=a.toFixed(0);
+    return (x<0?'−':'')+'US$'+s;
+  }
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+  // ---------- seed data (fictional) ----------
+  function seed(){
+    return {
+      budget: 750e6,
+      customers: [
+        {id:'C-101',name:'Atlas AI Lab',term:'6-year take-or-pay',gpus:4608,monthly:9.8e6,goLive:off(40)},
+        {id:'C-102',name:'Harbour Bank',term:'5-year take-or-pay',gpus:1152,monthly:2.9e6,goLive:off(75)},
+        {id:'C-103',name:'Meridian Platform',term:'5-year take-or-pay',gpus:2048,monthly:6.2e6,goLive:off(24)}
+      ],
+      suppliers: [
+        {id:'S-01',name:'Apex Systems Integration',category:'Hardware',status:'Active',risk:'High',onTime:88,started:off(-400),activated:off(-386),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'}},
+        {id:'S-02',name:'Lumen Optics',category:'Networking',status:'Active',risk:'Medium',onTime:71,started:off(-300),activated:off(-291),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'}},
+        {id:'S-03',name:'Coolflow Liquid Systems',category:'Cooling',status:'Active',risk:'Medium',onTime:96,started:off(-210),activated:off(-204),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'}},
+        {id:'S-04',name:'Northstar Storage',category:'Hardware',status:'Active',risk:'Medium',onTime:100,started:off(-260),activated:off(-252),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'}},
+        {id:'S-05',name:'Metro Colocation',category:'Data centre',status:'Active',risk:'High',onTime:98,started:off(-500),activated:off(-488),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'}},
+        {id:'S-06',name:'Kestrel Cabling',category:'Services',status:'Onboarding',risk:'Medium',onTime:null,started:off(-6),activated:null,checks:{abn:'pass',bank:'pending',sanctions:'pass',insurance:'fail',security:'pending'}},
+        {id:'S-07',name:'Signal Observability',category:'Software',status:'Onboarding',risk:'Low',onTime:null,started:off(-2),activated:null,checks:{abn:'pending',bank:'pending',sanctions:'pending',insurance:'pending',security:'pending'}}
+      ],
+      orders: [
+        {id:'PO-2039',item:'All-flash storage, 20 PB',supplier:'S-04',customer:'C-101',value:24e6,gpus:0,stage:6,promised:off(-20),eta:off(-22),stageDates:{0:off(-110),1:off(-90),2:off(-50),3:off(-40),4:off(-22),5:off(-15),6:off(-9)},thread:[]},
+        {id:'PO-2041',item:'GB300 NVL72 racks × 32',supplier:'S-01',customer:'C-101',value:182.4e6,gpus:2304,stage:2,promised:off(18),eta:off(31),stageDates:{0:off(-80),1:off(-62),2:off(-6)},
+          thread:[{who:'Procurement',when:off(-3),text:'Integrator says 8 of 32 racks slipped a week at the factory; new ETA confirmed in writing.'},{who:'Finance',when:off(-2),text:'Atlas go-live is fixed in the contract. Can we split the shipment so the first 24 racks arrive on the original date?'}]},
+        {id:'PO-2042',item:'GB300 NVL72 racks × 32',supplier:'S-01',customer:'C-101',value:182.4e6,gpus:2304,stage:1,promised:off(24),eta:off(24),stageDates:{0:off(-80),1:off(-40)},thread:[]},
+        {id:'PO-2043',item:'800G optical transceivers × 9,200',supplier:'S-02',customer:'C-101',value:6.4e6,gpus:4608,stage:0,promised:off(20),eta:off(48),stageDates:{0:off(-150)},
+          thread:[{who:'Procurement',when:off(-5),text:'Optics supplier pushed 60% of the order by four weeks. Every rack in the Atlas cluster needs these, so this gates the whole go-live.'}]},
+        {id:'PO-2044',item:'HGX B300 nodes × 256',supplier:'S-01',customer:'C-103',value:115e6,gpus:2048,stage:3,promised:off(6),eta:off(12),stageDates:{0:off(-75),1:off(-55),2:off(-14),3:off(-2)},
+          thread:[{who:'Procurement',when:off(-1),text:'Held at customs pending paperwork on the cooling assemblies. Broker expects release within a week.'}]},
+        {id:'PO-2045',item:'Coolant distribution units × 16',supplier:'S-03',customer:'C-102',value:3.2e6,gpus:0,stage:5,promised:off(-4),eta:off(-6),stageDates:{0:off(-70),1:off(-50),2:off(-20),3:off(-12),4:off(-6),5:off(-1)},thread:[]},
+        {id:'PO-2046',item:'GB300 NVL72 racks × 16',supplier:'S-01',customer:'C-102',value:91.2e6,gpus:1152,stage:0,promised:off(55),eta:off(55),stageDates:{0:off(-12)},thread:[]},
+        {id:'PO-2047',item:'GB300 NVL72 racks × 32 (Northwind Research)',supplier:'S-01',customer:'C-104',value:124.8e6,gpus:2304,stage:1,promised:off(161),eta:off(161),stageDates:{0:off(-21),1:off(-5)},
+          thread:[{who:'Procurement',when:off(-21),text:'Ordered under the integrator allocation from the deployment plan, ahead of the February 2027 price increase.'}]}
+      ],
+      requests: [
+        {id:'R-317',title:'Liquid-cooling technician training',category:'Services',amount:45000,supplier:'S-03',customer:'',requester:'Ops',needBy:off(30),why:'Certify six technicians on wet-mate procedures before the Harbour Bank racks arrive.',risk:{data:'None',site:true,exportCtl:false,ai:false},approvals:['Procurement'],status:'Approved',po:null,created:off(-9)},
+        {id:'R-318',title:'Spare GPU trays for the in-country spares pool',category:'Hardware',amount:2.4e6,supplier:'S-01',customer:'',requester:'Ops',needBy:off(45),why:'A tray held at customs turns a four-hour fix into a two-week outage. Keep 2% spares onshore.',risk:{data:'None',site:false,exportCtl:true,ai:false},approvals:['Procurement','Finance'],status:'Pending',po:null,created:off(-6)},
+        {id:'R-319',title:'12 cross-connects in Sydney data centre',category:'Data centre',amount:18000,supplier:'S-05',customer:'C-103',requester:'Network',needBy:off(14),why:'Customer links for the Meridian cluster.',risk:{data:'None',site:true,exportCtl:false,ai:false},approvals:[],status:'Pending',po:null,created:off(-3)},
+        {id:'R-320',title:'Observability software, 12-month licence',category:'Software',amount:96000,supplier:'S-07',customer:'',requester:'Platform',needBy:off(21),why:'GPU health monitoring across all clusters. The agent reads node telemetry and job metadata from customer clusters.',risk:{data:'Customer',site:false,exportCtl:false,ai:true},approvals:[],status:'Pending',po:null,created:off(-1)}
+      ],
+      agreements: [
+        {id:'A-11',name:'Master supply agreement',supplier:'S-01',value:1.2e9,renewal:off(70),notice:60,terms:'Named ship dates per order; 2% credit per week late'},
+        {id:'A-12',name:'Colocation, Sydney',supplier:'S-05',value:38e6,renewal:off(40),notice:90,terms:'US$180 per kW per month; 99.99% power uptime'},
+        {id:'A-13',name:'Optics framework agreement',supplier:'S-02',value:60e6,renewal:off(200),notice:60,terms:'Allocation guarantee for 800G optics'},
+        {id:'A-14',name:'Cooling service contract',supplier:'S-03',value:4.5e6,renewal:off(150),notice:30,terms:'4-hour on-site response'},
+        {id:'A-15',name:'Monitoring software trial',supplier:'S-07',value:12000,renewal:off(18),notice:14,terms:'Auto-renews to annual plan'}
+      ],
+      invoices: [
+        {id:'INV-7781',supplier:'S-04',po:'PO-2039',amount:24e6,expected:24e6,due:off(12),status:'Open'},
+        {id:'INV-552',supplier:'S-02',po:'PO-2043',amount:3.97e6,expected:3.84e6,due:off(20),status:'Open'},
+        {id:'INV-219',supplier:'S-03',po:'PO-2045',amount:3.31e6,expected:3.2e6,due:off(25),status:'Open'},
+        {id:'INV-7790',supplier:'S-01',po:'PO-2044',amount:57.5e6,expected:57.5e6,due:off(30),status:'Open'},
+        {id:'INV-7702',supplier:'S-05',po:'',amount:1.18e6,expected:1.18e6,due:off(5),status:'Open'}
+      ],
+      seq:{R:321,PO:2048,S:8}
+    };
+  }
+
+  var S;
+  function load(){ try { var raw = localStorage.getItem(STORE); if (raw) return JSON.parse(raw); } catch(e){} return seed(); }
+  function fresh(){ var x = seed(); S = x; x.plan = seedPlan(); syncCustomer(); return x; }
+  function save(){ try { localStorage.setItem(STORE, JSON.stringify(S)); } catch(e){} }
+  S = load();
+
+  // ---------- lookups and rules ----------
+  function sup(id){ return S.suppliers.filter(function(s){ return s.id===id; })[0] || {name:'Unknown'}; }
+  function cust(id){ return S.customers.filter(function(c){ return c.id===id; })[0]; }
+  function order(id){ return S.orders.filter(function(o){ return o.id===id; })[0]; }
+  function role(){ return $('#role').value; }
+
+  function lateDays(o){ return o.stage>=4 ? Math.max(0, daysBetween(o.promised, o.stageDates[4]||o.eta)) : Math.max(0, daysBetween(o.promised, o.eta)); }
+  // Revenue at risk: delivery + install pushes past the customer's go-live
+  function slipDays(o){
+    var c = cust(o.customer); if (!c || o.stage>=5) return 0;
+    return Math.max(0, daysBetween(c.goLive, addDays(o.eta, INSTALL_DAYS)));
+  }
+  function revAtRisk(o){
+    var c = cust(o.customer); if (!c || !o.gpus) return 0;
+    return c.monthly * Math.min(1, o.gpus/c.gpus) * slipDays(o)/30;
+  }
+  function steps(amount){ var s=['Procurement']; if (amount>=50000) s.push('Finance'); if (amount>=1e6) s.push('CFO'); return s; }
+  function nextStep(r){ var s=steps(r.amount); return r.status==='Pending' ? s[r.approvals.length] : null; }
+  function supplierReady(s){ return CHECKS.every(function(c){ return s.checks[c[0]]==='pass'; }); }
+  function invoiceMatch(inv){
+    if (!inv.po) return {code:'nopo', label:'No PO: check against contract', cls:'warn'};
+    var o = order(inv.po);
+    if (o && o.stage < 4) return {code:'receipt', label:'Awaiting receipt', cls:'warn'};
+    var v = (inv.amount - inv.expected)/inv.expected;
+    if (Math.abs(v) > 0.01) return {code:'variance', label:'Price variance '+(v>0?'+':'')+(v*100).toFixed(1)+'%', cls:'bad'};
+    return {code:'match', label:'3-way matched', cls:'good'};
+  }
+  function readiness(c){
+    var os = S.orders.filter(function(o){ return o.customer===c.id; });
+    var open = os.filter(function(o){ return o.stage<5; });
+    var latest = open.reduce(function(m,o){ var r = addDays(o.eta, INSTALL_DAYS); return !m || r>m ? r : m; }, null);
+    var slip = latest ? Math.max(0, daysBetween(c.goLive, latest)) : 0;
+    var done = os.reduce(function(a,o){ return a + o.stage; }, 0), total = os.length*6;
+    // Orders for one contract overlap (optics gate every rack), so take the worst order, not the sum
+    var risk = os.reduce(function(a,o){ return Math.max(a, revAtRisk(o)); }, 0);
+    return {orders:os, latest:latest, slip:slip, progress: total ? done/total : 1, risk:risk};
+  }
+
+  // ---------- toast ----------
+  var toastTimer;
+  function toast(msg){
+    $('#toastHost').innerHTML = '<div class="toast">'+esc(msg)+'</div>';
+    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ $('#toastHost').innerHTML=''; }, 2600);
+  }
+
+  // ---------- navigation ----------
+  var VIEWS = [['overview','Overview'],['plan','Deployment plan'],['requests','Requests'],['orders','Orders'],['suppliers','Suppliers'],['agreements','Contracts'],['invoices','Invoices']];
+  var current = 'overview', orderFilter = 'All';
+  function counts(){
+    var r = role();
+    return {
+      plan: planCounts(),
+      requests: S.requests.filter(function(q){ return nextStep(q)===r || (q.status==='Approved' && !q.po && r==='Procurement'); }).length,
+      orders: S.orders.filter(function(o){ return slipDays(o)>0; }).length,
+      suppliers: S.suppliers.filter(function(s){ return s.status==='Onboarding'; }).length,
+      agreements: S.agreements.filter(function(a){ return daysBetween(off(0), a.renewal) <= a.notice; }).length,
+      invoices: S.invoices.filter(function(i){ return i.status==='Open' && invoiceMatch(i).code!=='match'; }).length
+    };
+  }
+  function renderNav(){
+    var c = counts();
+    $('#nav').innerHTML = VIEWS.map(function(v){
+      var n = c[v[0]];
+      return '<button type="button" data-view="'+v[0]+'"'+(current===v[0]?' aria-current="page"':'')+'><span>'+v[1]+'</span>'+(n?'<span class="count" title="Needs attention">'+n+'</span>':'')+'</button>';
+    }).join('');
+  }
+  function go(v){ current = v; render(); $('#view').focus({preventScroll:true}); var top = $('.app').getBoundingClientRect().top + window.scrollY - 84; if (window.scrollY > top) window.scrollTo(0, top); }
+
+  function render(){
+    renderNav();
+    var fn = {overview:vOverview, plan:vPlan, requests:vRequests, orders:vOrders, suppliers:vSuppliers, agreements:vAgreements, invoices:vInvoices}[current];
+    $('#view').innerHTML = fn();
+  }
+
+  function head(title, sub, action){
+    return '<div class="viewhead"><div><h2>'+title+'</h2><p>'+sub+'</p></div>'+(action||'')+'</div>';
+  }
+
+  // ---------- Overview ----------
+  function vOverview(){
+    var open = S.orders.filter(function(o){ return o.stage<6; });
+    var committed = open.reduce(function(a,o){ return a+o.value; },0);
+    var late = S.orders.filter(function(o){ return slipDays(o)>0; });
+    var risk = S.customers.reduce(function(a,c){ return a+readiness(c).risk; },0);
+    var pending = S.requests.filter(function(r){ return r.status==='Pending'; }).length;
+    var hold = S.invoices.filter(function(i){ return i.status==='Open' && invoiceMatch(i).code!=='match'; });
+    var onb = S.suppliers.filter(function(s){ return s.status==='Onboarding'; });
+    var act = S.suppliers.filter(function(s){ return s.activated; });
+    var avgOnb = act.length ? Math.round(act.reduce(function(a,s){ return a+daysBetween(s.started,s.activated); },0)/act.length) : 0;
+
+    var h = head('Overview','Every purchase from request to go-live in one place. Revenue at risk counts customer billing pushed back when an order lands too late to install before the contract\'s go-live date.');
+    h += '<div class="kpis">'+
+      kpi('Open commitments', money(committed), Math.round(committed/S.budget*100)+'% of '+money(S.budget)+' budget')+
+      kpi('Orders threatening go-live', late.length, 'of '+S.orders.length+' orders', late.length?'bad-t':'')+
+      kpi('Revenue at risk', money(risk), 'billing pushed past go-live', risk>0?'bad-t':'')+
+      kpi('Requests in approval', pending, 'average onboarding: '+avgOnb+' days')+
+      kpi('Invoices on hold', hold.length, money(hold.reduce(function(a,i){return a+i.amount;},0))+' held', hold.length?'warn-t':'')+
+      '</div>';
+
+    h += '<div class="grid2"><div class="panel"><h3>Customer go-live readiness</h3>';
+    S.customers.forEach(function(c){
+      var r = readiness(c);
+      var span = Math.max(daysBetween(off(0), c.goLive), r.latest ? daysBetween(off(0), r.latest) : 0, 1);
+      var tag = r.slip>0 ? '<span class="tag bad">'+r.slip+' days late</span>' : (r.latest ? '<span class="tag good">On track</span>' : '<span class="tag good">Ready</span>');
+      var fillTo = r.latest ? Math.min(100, daysBetween(off(0), r.latest)/span*100) : 100;
+      h += '<div class="ready"><div><b>'+esc(c.name)+'</b> <span class="sub" style="display:inline">'+c.id+', '+c.gpus.toLocaleString('en-US')+' GPUs, '+money(c.monthly)+'/month</span></div><div>'+tag+'</div>'+
+        '<div class="track" role="img" aria-label="Ready by '+(r.latest?fmtDate(r.latest):'now')+', go-live '+fmtDate(c.goLive)+'"><div class="fill" style="width:'+fillTo+'%;background:'+(r.slip>0?'var(--bad)':'var(--steel)')+'"></div><div class="golive" style="left:'+(daysBetween(off(0),c.goLive)/span*100)+'%"></div></div>'+
+        '<div class="meta">Go-live '+fmtDate(c.goLive)+'. '+(r.latest?'Last order ready to bill '+fmtDate(r.latest)+'.':'All orders installed.')+(r.risk>0?' <span class="bad-t">'+money(r.risk)+' of billing at risk.</span>':'')+'</div></div>';
+    });
+    h += '<p class="note">Bar runs from today to the date the last open order is installed. The black line is the contracted go-live date.</p></div>';
+
+    // Needs attention
+    var items = [];
+    late.sort(function(a,b){ return revAtRisk(b)-revAtRisk(a); }).forEach(function(o){
+      items.push({c:'var(--bad)', t:'<b>'+o.id+'</b> '+esc(o.item)+' lands '+slipDays(o)+' days after '+esc(cust(o.customer).name)+'\'s go-live window. '+money(revAtRisk(o))+' of billing at risk.', v:'orders', id:o.id});
+    });
+    S.agreements.filter(function(a){ return daysBetween(off(0),a.renewal) <= a.notice; }).forEach(function(a){
+      items.push({c:'var(--warn)', t:'<b>'+esc(a.name)+'</b> with '+esc(sup(a.supplier).name)+' renews in '+daysBetween(off(0),a.renewal)+' days; notice period is '+a.notice+' days.', v:'agreements'});
+    });
+    var pr = planCalc(P()), pdue = planCounts();
+    if (pr.delay>0 || pdue) items.unshift({c:pr.delay>0?'var(--bad)':'var(--warn)', t:'<b>Deployment plan</b> for '+esc(P().custName)+': '+(pr.delay>0?'go-live projected '+pr.delay+' days late, costing '+money(pr.codEff)+' a week. ':'')+(pdue?pdue+' item'+(pdue>1?'s':'')+' to order this month.':''), v:'plan'});
+    S.requests.filter(function(q){ return q.status!=='Rejected' && !q.po && review(q).tier==='High'; }).forEach(function(q){ var v = review(q);
+      items.push({c:'var(--bad)', t:'<b>'+q.id+'</b> '+esc(q.title)+' is rated high risk'+(v.open.length?'; '+v.open.length+' review'+(v.open.length>1?'s':'')+' still open':'')+'.', v:'requests'}); });
+    hold.forEach(function(i){ items.push({c:'var(--warn)', t:'<b>'+i.id+'</b> from '+esc(sup(i.supplier).name)+': '+invoiceMatch(i).label+'.', v:'invoices'}); });
+    onb.forEach(function(s){
+      var blocked = CHECKS.filter(function(c){ return s.checks[c[0]]==='fail'; }).map(function(c){ return c[1]; });
+      items.push({c:'var(--steel)', t:'<b>'+esc(s.name)+'</b> onboarding, day '+daysBetween(s.started,off(0))+(blocked.length?': blocked on '+blocked.join(', ').toLowerCase():'')+'.', v:'suppliers'});
+    });
+    h += '<div class="panel"><h3>Needs attention</h3>'+(items.length ? '<ul class="attn">'+items.map(function(it){
+      return '<li><span class="dot" style="background:'+it.c+'"></span><span class="txt">'+it.t+'</span><button class="link" type="button" data-go="'+it.v+'"'+(it.id?' data-open="'+it.id+'"':'')+'>Open</button></li>';
+    }).join('')+'</ul>' : '<p class="empty">Nothing needs attention.</p>')+'</div></div>';
+    return h;
+  }
+  function kpi(k,v,n,cls){ return '<div><div class="k">'+k+'</div><div class="v '+(cls||'')+'">'+v+'</div><div class="n">'+n+'</div></div>'; }
+
+  // ---------- Automated review ----------
+  // Applies a written risk framework to each request, the way an AI review agent would:
+  // read the request, check it against the framework and the supplier's history, then draft the assessment.
+  var DATA_TXT = {None:'No access to company or customer data', Internal:'Access to internal company data', Customer:'Access to customer data or workloads'};
+  var FRAMEWORK = [
+    ['Customer data or workloads', 3, 'Security review (SOC 2 or ISO 27001 evidence) and a data processing agreement'],
+    ['Internal company data', 1, 'Security questionnaire'],
+    ['Physical data-centre access', 2, 'Site induction, background checks and on-site insurance'],
+    ['Export-controlled hardware (GPUs, high-end networking)', 3, 'Export compliance check: end-user statement and destination screening'],
+    ['Supplier uses AI on our data', 2, 'AI terms: no training on our or customer data, data stays in region'],
+    ['Supplier not yet onboarded, or a check failed', 1, 'Onboarding checks must pass (2 points if a check has failed)'],
+    ['Spend of US$1M or more (US$10M or more)', 1, 'CFO sighting (2 points above US$10M)'],
+    ['Delivery could miss a customer go-live', 2, 'Delivery plan agreed with Operations'],
+    ['Supplier on-time delivery below 80%, or open invoice disputes', 1, 'Supplier performance discussed before award']
+  ];
+  function riskOf(q){ return q.risk || {data:'None',site:false,exportCtl:false,ai:false}; }
+  function review(q){
+    var r = riskOf(q), sp = sup(q.supplier), pts = 0, why = [], need = [];
+    function add(n, text, rv){ pts += n; why.push([text, n]); if (rv) need.push(rv); }
+    if (r.data==='Customer') add(3, 'The supplier will have access to customer data or workloads.', ['Security review','Data processing agreement']);
+    else if (r.data==='Internal') add(1, 'The supplier will see internal company data.', ['Security questionnaire']);
+    if (r.site) add(2, 'Its people need physical access to the data centre.', ['Site access induction']);
+    if (r.exportCtl) add(3, 'The goods are export-controlled, so the end user and destination must be screened.', ['Export compliance check']);
+    if (r.ai) add(2, 'The supplier applies AI to our data.', ['AI use terms']);
+    if (sp.status!=='Active'){
+      var failed = sp.checks && CHECKS.filter(function(c){ return sp.checks[c[0]]==='fail'; }).map(function(c){ return c[1].toLowerCase(); });
+      add(failed && failed.length ? 2 : 1, esc(sp.name)+' is still onboarding'+(failed && failed.length ? ' and failed its '+failed.join(', ')+' check' : '')+'.', null);
+    }
+    if (q.amount>=10e6) add(2, 'Spend of '+money(q.amount)+' is above US$10M.', ['CFO sighting']);
+    else if (q.amount>=1e6) add(1, 'Spend of '+money(q.amount)+' is above US$1M.', ['CFO sighting']);
+    var c = cust(q.customer), late = false;
+    if (q.planLine){ var pl = planCalc(P()).lines.filter(function(x){ return x.id===q.planLine; })[0]; late = pl && pl.status==='Late'; }
+    else if (c){ var lead = LEAD_DAYS[q.category]||30; late = addDays(off(0), lead+7) > q.needBy || addDays(q.needBy, INSTALL_DAYS) > c.goLive; }
+    if (late && c) add(2, 'At the usual lead time it could arrive too late for '+esc(c.name)+'\'s go-live on '+fmtDate(c.goLive)+'.', ['Delivery plan agreed']);
+    var disputes = S.invoices.filter(function(i){ return i.supplier===q.supplier && i.status==='Open' && invoiceMatch(i).code==='variance'; }).length;
+    if ((sp.onTime!=null && sp.onTime<80) || disputes) add(1, esc(sp.name)+(sp.onTime!=null && sp.onTime<80 ? ' delivers on time '+sp.onTime+'% of the time' : '')+(disputes ? (sp.onTime<80?' and':'')+' has '+disputes+' invoice'+(disputes>1?'s':'')+' in dispute' : '')+'.', ['Supplier performance review']);
+    var flat = []; need.forEach(function(n){ n.forEach(function(x){ if (flat.indexOf(x)<0) flat.push(x); }); });
+    var tier = pts>=6 ? 'High' : pts>=3 ? 'Medium' : 'Low';
+    var done = q.reviews || {}, open = flat.filter(function(x){ return !done[x]; });
+    // supplier history and similar past requests
+    var pastReq = S.requests.filter(function(x){ return x.supplier===q.supplier && x.id!==q.id; });
+    var ords = S.orders.filter(function(o){ return o.supplier===q.supplier; });
+    var agr = S.agreements.filter(function(a){ return a.supplier===q.supplier; });
+    var similar = S.requests.filter(function(x){ return x.id!==q.id && x.category===q.category; }).slice(-3);
+    return {pts:pts, tier:tier, cls: tier==='High'?'bad':tier==='Medium'?'warn':'good', why:why, need:flat, open:open, sp:sp,
+      pastReq:pastReq, ords:ords, agr:agr, disputes:disputes, similar:similar};
+  }
+  function reviewSummary(q, v){
+    var c = cust(q.customer);
+    var lead = 'Halcyon is buying <b>'+esc(q.title.charAt(0).toLowerCase()+q.title.slice(1))+'</b> from '+esc(v.sp.name)+' for '+money(q.amount)+(c?' to support the '+esc(c.name)+' contract':'')+'. ';
+    var rate = 'Rated <b>'+v.tier.toLowerCase()+' risk</b> ('+v.pts+' point'+(v.pts===1?'':'s')+')'+(v.why.length ? ': '+v.why.map(function(w){ return w[0].replace(/\.$/,'').replace(/^(The|Its|At|Spend)\b/,function(m){ return m.toLowerCase(); }); }).join('; ')+'.' : ' with no risk triggers.');
+    var next = v.need.length ? ' Before a PO is raised: '+v.need.join(', ')+'.' : ' It can go straight to approval.';
+    return lead+rate+next;
+  }
+  function openReview(id, quiet){
+    var q = S.requests.filter(function(x){ return x.id===id; })[0]; if (!q) return;
+    var v = review(q), r = riskOf(q), isP = role()==='Procurement';
+    var h = '<div class="scrim" data-close></div><aside class="drawer'+(quiet?' still':'')+'" role="dialog" aria-modal="true" aria-labelledby="odT"><button class="btn close" type="button" data-close aria-label="Close">Close</button>'+
+      '<h3 id="odT">Automated review: '+q.id+'</h3><span class="tag '+v.cls+'">'+v.tier+' risk · '+v.pts+' pts</span> <span class="tag plain">Rules-based demo</span>'+
+      '<div class="aisum">'+reviewSummary(q, v)+'</div>';
+    h += '<h3>Why</h3>'+(v.why.length ? '<ul class="why">'+v.why.map(function(w){ return '<li><span>'+w[0]+'</span><b>+'+w[1]+'</b></li>'; }).join('')+'</ul>' : '<p class="empty" style="padding:0 0 8px">No triggers in the framework.</p>');
+    h += '<h3>Required before the PO</h3>'+(v.need.length ? '<ul class="attn">'+v.need.map(function(n){ var d = (q.reviews||{})[n];
+      return '<li><span class="dot" style="background:'+(d?'var(--good)':'var(--warn)')+'"></span><span class="txt">'+n+(d?' <span class="tag good">Done '+fmtDate(d)+'</span>':'')+'</span>'+(d?'':'<button class="btn" type="button" data-rdone="'+q.id+'|'+n+'"'+(isP?'':' disabled title="Switch to Procurement"')+'>Mark done</button>')+'</li>'; }).join('')+'</ul>' : '<p class="empty" style="padding:0 0 8px">Nothing extra; normal approvals apply.</p>');
+    var avgOt = v.sp.onTime==null ? 'no delivery history yet' : v.sp.onTime+'% on-time delivery';
+    h += '<h3>Supplier history: '+esc(v.sp.name)+'</h3><dl><dt>Status</dt><dd>'+v.sp.status+(v.sp.status==='Active'?'':' (checks still running)')+', '+v.sp.risk.toLowerCase()+' risk tier</dd>'+
+      '<dt>Orders</dt><dd>'+(v.ords.length ? v.ords.length+' worth '+money(v.ords.reduce(function(a,o){ return a+o.value; },0))+', '+avgOt : 'None yet')+'</dd>'+
+      '<dt>Past requests</dt><dd>'+(v.pastReq.length ? v.pastReq.map(function(x){ return x.id+' ('+(x.po?'PO '+x.po:x.status.toLowerCase())+')'; }).join(', ') : 'None')+'</dd>'+
+      '<dt>Contracts</dt><dd>'+(v.agr.length ? v.agr.map(function(a){ return esc(a.name)+', renews '+fmtDate(a.renewal); }).join('; ') : 'None on file')+'</dd>'+
+      '<dt>Invoice disputes</dt><dd>'+(v.disputes ? v.disputes+' open' : 'None')+'</dd></dl>';
+    if (v.similar.length) h += '<h3>Similar past requests</h3><ul class="attn">'+v.similar.map(function(x){ var vv = review(x); return '<li><span class="txt"><b>'+x.id+'</b> '+esc(x.title)+'<span class="sub">'+money(x.amount)+' · '+esc(sup(x.supplier).name)+' · rated '+vv.tier.toLowerCase()+' · '+(x.po?'PO '+x.po:x.status)+'</span></span></li>'; }).join('')+'</ul>';
+    h += '<details class="fw"><summary>Risk framework used</summary><table><thead><tr><th>Trigger</th><th class="r">Points</th><th>Required</th></tr></thead><tbody>'+FRAMEWORK.map(function(f){ return '<tr><td class="wrap">'+f[0]+'</td><td class="r">'+f[1]+'</td><td class="wrap">'+f[2]+'</td></tr>'; }).join('')+
+      '</tbody></table><p class="note">0–2 points low, 3–5 medium, 6 or more high. This demo applies the framework with fixed rules. In production an AI agent drafts the same assessment from the request, this framework and the supplier record, and a person signs it off.</p></details>';
+    h += '<p class="note">Answers on the request: '+DATA_TXT[r.data]+'; '+(r.site?'needs':'no')+' site access; '+(r.exportCtl?'':'not ')+'export-controlled; '+(r.ai?'uses':'no')+' AI on our data.</p></aside>';
+    $('#overlay').innerHTML = h; if (!quiet) $('.drawer .close').focus();
+  }
+  function riskFromLine(l){ return {data: l.sig==='software' ? 'Internal' : 'None', site: l.sig==='services' || l.sig==='colo' || l.sig==='cooling' || l.sig==='electrical', exportCtl: l.sig==='gpu' || l.sig==='optics' || l.sig==='network', ai:false}; }
+
+  // ---------- Requests ----------
+  function vRequests(){
+    var r = role();
+    var h = head('Requests','One front door for every purchase. Each request gets an automated risk review that lists the checks needed before a PO; approvals route by amount: Procurement always, Finance from US$50k, CFO from US$1M.',
+      '<button class="btn primary" type="button" id="newReq">New request</button>');
+    var rows = S.requests.slice().sort(function(a,b){ return b.created<a.created?-1:1; }).map(function(q){
+      var st = steps(q.amount), nx = nextStep(q);
+      var route = st.map(function(s){ var done = q.approvals.indexOf(s)>-1; return '<span class="tag '+(done?'good':(s===nx?'info':'plain'))+'">'+s+'</span>'; }).join(' ');
+      var status;
+      if (q.status==='Rejected') status = '<span class="tag bad">Rejected</span>';
+      else if (q.po) status = '<span class="tag good">PO '+q.po+'</span>';
+      else if (q.status==='Approved') status = '<span class="tag good">Approved</span>';
+      else status = '<span class="tag info">Waiting on '+nx+'</span>';
+      var v = review(q), rv = '<button class="link" type="button" data-review="'+q.id+'"><span class="tag '+v.cls+'">'+v.tier+'</span></button>'+(v.open.length && q.status!=='Rejected' && !q.po ? '<span class="sub">'+v.open.length+' review'+(v.open.length>1?'s':'')+' open</span>' : (v.need.length?'<span class="sub">Reviews done</span>':''));
+      var actions = '';
+      if (nx && nx===r) actions = '<button class="btn primary" type="button" data-approve="'+q.id+'">Approve</button> <button class="btn" type="button" data-reject="'+q.id+'">Reject</button>';
+      else if (q.status==='Approved' && !q.po) actions = '<button class="btn primary" type="button" data-po="'+q.id+'"'+(r!=='Procurement'?' disabled title="Procurement raises POs"':'')+'>Raise PO</button>';
+      else if (nx) actions = '<span class="sub">Switch role to '+nx+' to act</span>';
+      return '<tr><td><b>'+q.id+'</b><span class="sub">'+fmtDate(q.created)+'</span></td><td class="wrap">'+esc(q.title)+'<span class="sub">'+esc(q.why)+'</span></td><td>'+q.category+'<span class="sub">'+esc(sup(q.supplier).name)+'</span></td><td class="r">'+money(q.amount)+'</td><td>'+rv+'</td><td>'+route+'</td><td>'+status+'</td><td>'+actions+'</td></tr>';
+    }).join('');
+    h += '<div class="tablewrap"><table><thead><tr><th>Request</th><th>What and why</th><th>Category</th><th class="r">Amount</th><th>Automated review</th><th>Approval route</th><th>Status</th><th>Action</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    return h;
+  }
+
+  function openRequestForm(){
+    var opts = S.suppliers.map(function(s){ return '<option value="'+s.id+'">'+esc(s.name)+(s.status!=='Active'?' (onboarding)':'')+'</option>'; }).join('');
+    var custOpts = '<option value="">None</option>'+S.customers.map(function(c){ return '<option value="'+c.id+'">'+esc(c.name)+'</option>'; }).join('');
+    $('#overlay').innerHTML = '<div class="scrim" data-close></div><div class="modal" role="dialog" aria-modal="true" aria-labelledby="rqT"><h3 id="rqT">New purchase request</h3>'+
+      '<form class="form" id="rqForm">'+
+      '<label class="full">What do you need?<input type="text" name="title" required placeholder="e.g. Spare 800G optics for Melbourne"></label>'+
+      '<label>Category<select class="field" name="category">'+CATEGORIES.map(function(c){ return '<option>'+c+'</option>'; }).join('')+'</select></label>'+
+      '<label>Estimated amount (US$)<input type="number" name="amount" min="1" step="1" required value="25000"></label>'+
+      '<label>Supplier<select class="field" name="supplier">'+opts+'</select></label>'+
+      '<label>For customer contract<select class="field" name="customer">'+custOpts+'</select></label>'+
+      '<label>Needed by<input type="date" name="needBy" value="'+off(30)+'"></label>'+
+      '<label>Requested by<select class="field" name="requester"><option>Ops</option><option>Network</option><option>Platform</option><option>Sales</option><option>Finance</option></select></label>'+
+      '<label class="full">Why is it needed?<textarea name="why" rows="2" placeholder="One or two sentences"></textarea></label>'+
+      '<fieldset class="full rq"><legend>Risk questions</legend>'+
+      '<label>What data will the supplier access?<select class="field" name="rdata"><option value="None">None</option><option value="Internal">Internal company data</option><option value="Customer">Customer data or workloads</option></select></label>'+
+      '<label class="ck"><input type="checkbox" name="rsite"> Needs physical access to a data centre</label>'+
+      '<label class="ck"><input type="checkbox" name="rexp"> Export-controlled hardware (GPUs, high-end networking)</label>'+
+      '<label class="ck"><input type="checkbox" name="rai"> Supplier uses AI on our data</label></fieldset>'+
+      '<div class="full route" id="routePrev"></div>'+
+      '<div class="full row" style="justify-content:flex-end"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="submit">Submit request</button></div>'+
+      '</form></div>';
+    updateRoute();
+    $('#rqForm [name=title]').focus();
+  }
+  function updateRoute(){
+    var f = $('#rqForm'); if (!f) return;
+    var amt = +f.amount.value || 0, cat = f.category.value, s = sup(f.supplier.value);
+    var lead = LEAD_DAYS[cat];
+    var due = addDays(off(0), lead + 7);
+    var late = f.needBy.value && f.needBy.value < due;
+    var tmp = {id:'new', title:f.title.value||'This request', category:cat, amount:amt, supplier:f.supplier.value, customer:f.customer.value, needBy:f.needBy.value||off(30), status:'Pending', risk:{data:f.rdata.value, site:f.rsite.checked, exportCtl:f.rexp.checked, ai:f.rai.checked}};
+    var tv = review(tmp);
+    $('#routePrev').innerHTML = 'Automated review: <span class="tag '+tv.cls+'">'+tv.tier+' risk</span>'+(tv.need.length?' needs '+tv.need.join(', ')+'.':' no extra checks.')+'<br>Approval route: <b>'+steps(amt).join(' → ')+'</b>. Typical lead time for '+cat.toLowerCase()+' is about '+lead+' days, so earliest arrival is around <b>'+fmtDate(due)+'</b>'+
+      (late?'<span class="bad-t">, after the needed-by date.</span>':'.')+(s.status!=='Active'?' <span class="warn-t">Supplier is still onboarding; a PO can\'t be raised until checks pass.</span>':'');
+  }
+  function submitRequest(f){
+    var q = {id:'R-'+(S.seq.R++), title:f.title.value.trim(), category:f.category.value, amount:+f.amount.value, supplier:f.supplier.value, customer:f.customer.value,
+      requester:f.requester.value, needBy:f.needBy.value || off(30), why:f.why.value.trim() || 'No reason given.', risk:{data:f.rdata.value, site:f.rsite.checked, exportCtl:f.rexp.checked, ai:f.rai.checked}, approvals:[], status:'Pending', po:null, created:off(0)};
+    S.requests.push(q); save(); closeOverlay(); current='requests'; render(); var rv0 = review(q); toast(q.id+' submitted: '+rv0.tier.toLowerCase()+' risk'+(rv0.need.length?', '+rv0.need.length+' review'+(rv0.need.length>1?'s':'')+' required':'')+'. Waiting on '+nextStep(q)+'.');
+  }
+
+  // ---------- Orders ----------
+  function vOrders(){
+    var h = head('Orders','Each order tracked from purchase order to customer acceptance and tied to the contract it serves. Select an order for its timeline and discussion.');
+    var f = ['All','Threatening go-live','In transit','Installed or accepted'];
+    h += '<div class="filters" role="group" aria-label="Filter orders">'+f.map(function(x){ return '<button type="button" data-of="'+x+'" aria-pressed="'+(orderFilter===x)+'">'+x+'</button>'; }).join('')+'</div>';
+    var list = S.orders.filter(function(o){
+      if (orderFilter==='Threatening go-live') return slipDays(o)>0;
+      if (orderFilter==='In transit') return o.stage>=2 && o.stage<=3;
+      if (orderFilter==='Installed or accepted') return o.stage>=5;
+      return true;
+    }).sort(function(a,b){ return revAtRisk(b)-revAtRisk(a) || (a.eta<b.eta?-1:1); });
+    var rows = list.map(function(o){
+      var ld = lateDays(o), sd = slipDays(o), risk = revAtRisk(o);
+      var bar = '<div class="stages'+(sd>0?' late':'')+'" aria-label="'+STAGES[o.stage]+'">'+STAGES.map(function(_,i){ return '<i class="'+(i<=o.stage?'on':'')+'"></i>'; }).join('')+'</div>';
+      return '<tr class="click" data-order="'+o.id+'" tabindex="0"><td><b>'+o.id+'</b></td><td class="wrap">'+esc(o.item)+'<span class="sub">'+esc(sup(o.supplier).name)+'</span></td><td>'+(cust(o.customer)?esc(cust(o.customer).name):'—')+'</td><td class="r">'+money(o.value)+'</td><td>'+bar+'<span class="sub">'+STAGES[o.stage]+'</span></td><td class="r">'+fmtDate(o.promised)+'</td><td class="r">'+(o.stage>=4?fmtDate(o.stageDates[4]):fmtDate(o.eta))+(ld>0?'<span class="sub bad-t">'+ld+' days late</span>':'')+'</td><td class="r '+(risk>0?'bad-t':'')+'">'+(risk>0?money(risk):'—')+'</td></tr>';
+    }).join('');
+    h += '<div class="tablewrap"><table><thead><tr><th>PO</th><th>Item and supplier</th><th>Customer</th><th class="r">Value</th><th>Stage</th><th class="r">Promised</th><th class="r">ETA</th><th class="r">Revenue at risk</th></tr></thead><tbody>'+(rows||'<tr><td colspan="8" class="empty">No orders match.</td></tr>')+'</tbody></table></div>';
+    return h;
+  }
+
+  function openOrder(id, quiet){
+    var o = order(id); if (!o) return;
+    var c = cust(o.customer), r = role();
+    var tl = STAGES.map(function(s,i){
+      var cls = i<o.stage ? 'done' : (i===o.stage ? 'done cur' : '');
+      if (i===o.stage && o.stage<6) cls = 'done cur';
+      var when = o.stageDates[i] ? fmtDate(o.stageDates[i]) : (i===4 ? 'ETA '+fmtDate(o.eta) : '');
+      return '<li class="'+cls+'"><span class="mk"></span>'+s+'<span class="when">'+when+'</span></li>';
+    }).join('');
+    var sd = slipDays(o);
+    var canAct = r==='Procurement';
+    $('#overlay').innerHTML = '<div class="scrim" data-close></div><aside class="drawer'+(quiet?' still':'')+'" role="dialog" aria-modal="true" aria-labelledby="odT">'+
+      '<button class="btn close" type="button" data-close aria-label="Close">Close</button>'+
+      '<h3 id="odT">'+o.id+': '+esc(o.item)+'</h3>'+
+      (sd>0?'<span class="tag bad">Lands '+sd+' days after the go-live window; '+money(revAtRisk(o))+' of billing at risk</span>':'<span class="tag good">'+(o.stage>=5?'Installed':'On track for go-live')+'</span>')+
+      '<dl><dt>Supplier</dt><dd>'+esc(sup(o.supplier).name)+'</dd><dt>Customer contract</dt><dd>'+(c?esc(c.name)+' ('+c.id+'), go-live '+fmtDate(c.goLive):'None')+'</dd>'+
+      '<dt>Value</dt><dd>'+money(o.value)+'</dd><dt>GPUs covered</dt><dd>'+(o.gpus?o.gpus.toLocaleString('en-US')+(c&&o.gpus>=c.gpus&&/optic/i.test(o.item)?' (gates the whole cluster)':''):'Supporting equipment')+'</dd>'+
+      '<dt>Promised delivery</dt><dd>'+fmtDate(o.promised)+'</dd></dl>'+
+      '<h3>Timeline</h3><ol class="timeline">'+tl+'</ol>'+
+      (o.stage<6 ? '<div class="row"><button class="btn primary" type="button" data-advance="'+o.id+'"'+(canAct?'':' disabled title="Switch to Procurement"')+'>Mark '+STAGES[o.stage+1].toLowerCase()+'</button>'+
+        (o.stage<4 ? '<label class="row" style="margin:0;font-size:.84rem">New ETA <input type="date" id="etaIn" value="'+o.eta+'" style="width:auto"'+(canAct?'':' disabled')+'></label><button class="btn" type="button" data-eta="'+o.id+'"'+(canAct?'':' disabled')+'>Update ETA</button>' : '')+'</div>' : '')+
+      '<div class="thread"><h3>Discussion</h3>'+(o.thread.length ? o.thread.map(function(m){ return '<div class="msg"><b>'+esc(m.who)+'</b><span class="when">'+fmtDate(m.when)+'</span><div>'+esc(m.text)+'</div></div>'; }).join('') : '<p class="empty" style="padding:0 0 8px">No messages yet. Keep the conversation here instead of email.</p>')+
+      '<textarea id="msgIn" rows="2" placeholder="Write an update as '+r+'"></textarea><div class="row" style="justify-content:flex-end"><button class="btn primary" type="button" data-msg="'+o.id+'">Post</button></div></div>'+
+      '</aside>';
+    $('.drawer .close').focus();
+  }
+
+  // ---------- Suppliers ----------
+  function vSuppliers(){
+    var h = head('Suppliers','Suppliers onboard themselves through a portal; checks run automatically and only failures need a person. A PO can be raised only once every check passes.',
+      '<button class="btn primary" type="button" id="invite">Invite supplier</button>');
+    var rows = S.suppliers.map(function(s){
+      var spend = S.orders.filter(function(o){ return o.supplier===s.id; }).reduce(function(a,o){ return a+o.value; },0);
+      var checks = '<div class="checks">'+CHECKS.map(function(c){ var st = s.checks[c[0]]; return '<span class="chk '+(st==='pass'?'pass':st==='fail'?'fail':'')+'" title="'+c[1]+': '+st+'">'+c[1]+'</span>'; }).join('')+'</div>';
+      var status = s.status==='Active' ? '<span class="tag good">Active</span><span class="sub">Onboarded in '+daysBetween(s.started,s.activated)+' days</span>' : '<span class="tag info">Onboarding</span><span class="sub">Day '+daysBetween(s.started,off(0))+'</span>';
+      var act = '';
+      if (s.status==='Onboarding'){
+        var r = role()==='Procurement';
+        if (CHECKS.some(function(c){ return s.checks[c[0]]==='pending'; })) act = '<button class="btn" type="button" data-check="'+s.id+'"'+(r?'':' disabled')+'>Run checks</button>';
+        else if (s.checks.insurance==='fail') act = '<button class="btn" type="button" data-ins="'+s.id+'"'+(r?'':' disabled')+'>Certificate received</button>';
+        else if (supplierReady(s)) act = '<button class="btn primary" type="button" data-activate="'+s.id+'"'+(r?'':' disabled')+'>Activate</button>';
+        else act = '<span class="sub">Blocked</span>';
+      }
+      var ot = s.onTime==null ? '—' : '<span class="'+(s.onTime<80?'bad-t':s.onTime<90?'warn-t':'good-t')+'">'+s.onTime+'%</span>';
+      return '<tr><td><b>'+esc(s.name)+'</b><span class="sub">'+s.id+', '+s.category+'</span></td><td>'+status+'</td><td>'+checks+'</td><td>'+s.risk+'</td><td class="r">'+ot+'</td><td class="r">'+(spend?money(spend):'—')+'</td><td>'+act+'</td></tr>';
+    }).join('');
+    h += '<div class="tablewrap"><table><thead><tr><th>Supplier</th><th>Status</th><th>Automated checks</th><th>Risk tier</th><th class="r">On-time delivery</th><th class="r">Orders</th><th>Action</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    h += '<p class="note">Checks: ABN against the business register, bank account name match, sanctions lists, insurance certificate, and security evidence (SOC 2 or ISO 27001) for suppliers with data or site access.</p>';
+    return h;
+  }
+  function openInvite(){
+    $('#overlay').innerHTML = '<div class="scrim" data-close></div><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ivT"><h3 id="ivT">Invite a supplier</h3>'+
+      '<form class="form" id="ivForm"><label class="full">Supplier name<input type="text" name="name" required placeholder="e.g. Harbourside Electrical"></label>'+
+      '<label>Category<select class="field" name="category">'+CATEGORIES.map(function(c){ return '<option>'+c+'</option>'; }).join('')+'</select></label>'+
+      '<label>Risk tier<select class="field" name="risk"><option>Low</option><option selected>Medium</option><option>High</option></select></label>'+
+      '<p class="full note" style="margin:0">The supplier receives a portal link to enter its own ABN, bank details and documents. Checks run as soon as it submits.</p>'+
+      '<div class="full row" style="justify-content:flex-end"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="submit">Send invite</button></div></form></div>';
+    $('#ivForm [name=name]').focus();
+  }
+
+  // ---------- Contracts ----------
+  function vAgreements(){
+    var h = head('Contracts','Supplier agreements with their renewal dates and the terms that matter. Anything inside its notice period is flagged so it is renewed or renegotiated on purpose, not by default.');
+    var rows = S.agreements.slice().sort(function(a,b){ return a.renewal<b.renewal?-1:1; }).map(function(a){
+      var d = daysBetween(off(0), a.renewal), flag = d <= a.notice;
+      return '<tr><td><b>'+esc(a.name)+'</b><span class="sub">'+a.id+'</span></td><td>'+esc(sup(a.supplier).name)+'</td><td class="r">'+money(a.value)+'</td><td class="r">'+fmtDate(a.renewal)+'</td><td>'+(flag?'<span class="tag bad">'+d+' days: inside '+a.notice+'-day notice</span>':'<span class="tag plain">'+d+' days</span>')+'</td><td class="wrap">'+esc(a.terms)+'</td></tr>';
+    }).join('');
+    h += '<div class="tablewrap"><table><thead><tr><th>Agreement</th><th>Supplier</th><th class="r">Value</th><th class="r">Renews</th><th>Time left</th><th>Key terms</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    return h;
+  }
+
+  // ---------- Invoices ----------
+  function vInvoices(){
+    var h = head('Invoices','Invoices are matched automatically to the purchase order and to proof of delivery. Matched invoices go straight to payment approval; mismatches are held with the reason shown.');
+    var r = role();
+    var rows = S.invoices.map(function(i){
+      var m = invoiceMatch(i), act = '';
+      if (i.status==='Paid') act = '<span class="tag good">Paid</span>';
+      else if (i.status==='Approved') act = '<span class="tag good">Approved for payment</span>';
+      else if (m.code==='match') act = '<button class="btn primary" type="button" data-pay="'+i.id+'"'+(r==='Finance'?'':' disabled title="Finance approves payments"')+'>Approve payment</button>';
+      else if (m.code==='variance' || m.code==='nopo') act = '<button class="btn" type="button" data-override="'+i.id+'"'+(r==='Finance'?'':' disabled title="Finance approves exceptions"')+'>Approve exception</button>';
+      else act = '<span class="sub">Pays once delivered</span>';
+      return '<tr><td><b>'+i.id+'</b></td><td>'+esc(sup(i.supplier).name)+'</td><td>'+(i.po||'—')+'</td><td class="r">'+money(i.amount)+'</td><td class="r">'+money(i.expected)+'</td><td><span class="tag '+m.cls+'">'+m.label+'</span></td><td class="r">'+fmtDate(i.due)+'</td><td>'+act+'</td></tr>';
+    }).join('');
+    h += '<div class="tablewrap"><table><thead><tr><th>Invoice</th><th>Supplier</th><th>PO</th><th class="r">Billed</th><th class="r">Expected</th><th>Match</th><th class="r">Due</th><th>Action</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    h += '<p class="note">3-way match: invoice amount, purchase order price and delivery receipt must agree within 1%.</p>';
+    return h;
+  }
+
+  // =====================================================================
+  // DEPLOYMENT SUPPLY PLANNER
+  // Works backwards from a customer go-live: what to buy, when to order it,
+  // what is already late, and what each week of delay costs.
+  // Unit prices and lead times are editable estimates; market signals cite public filings.
+  // =====================================================================
+
+  var TPL = {
+    nvl72: {label:'Rack-scale: GB300 NVL72 (72 GPUs per rack)', short:'GB300 NVL72', per:72, kwGpu:1.875, itInstall:21},
+    hgx:   {label:'Server-based: HGX B300 (8 GPUs per server)', short:'HGX B300', per:8, kwGpu:1.79, itInstall:28}
+  };
+  var PHASE_TXT = {IT:'IT equipment: on site before rack installation starts', Facility:'Facility: installed before the IT equipment arrives', Colo:'Space and power: ready before facility installation', Services:'Crew mobilised when IT equipment lands', Software:'Live one week before acceptance testing'};
+
+  // ---------- market signals from public filings and calls ----------
+  var SIG = {
+    gpu: {title:'GPU systems', verdict:'Constrained, prices rising', cls:'bad', pts:[
+      ['NVIDIA','Aug 2026 earnings call','Supply-constrained through fiscal 2028. Price increases take effect in Q1 FY28 (February to April 2027). Vera Rubin began shipping in August 2026.'],
+      ['Dell Technologies','2026 results','AI server backlog of US$95bn, about 5.8 quarters of AI revenue. Inventory doubled to US$21bn.'],
+      ['Lenovo','13 Aug 2026 earnings call','AI server pipeline of US$54bn, up 157% in one quarter. Scaling GB300 and preparing Vera Rubin racks. Says it adjusts prices "at the front end" when component costs rise.']],
+      act:'Order through an allocation with a named ship date. A second rack integrator is a credible fallback. Orders placed after January 2027 should assume the higher price list.'},
+    optics: {title:'Optical transceivers', verdict:'Bottleneck: booked into 2028', cls:'bad', pts:[
+      ['Coherent','12 Aug 2026 earnings call','Fiscal 2027 is "basically completely booked out"; customer orders now reach into calendar 2028. Indium phosphide laser output is the primary constraint. Long-term agreements fix price and carry take-or-pay minimums.'],
+      ['Lumentum','11 Aug 2026 earnings call','Laser supply is "further behind" demand than last quarter. Prices raised on select products and some backlog repriced. 1.6T uptake intensifies through calendar 2027; co-packaged optics ramp from the second half of 2027.'],
+      ['Innolight','2026 interim report','Orders booked to year-end. Prepayments to its own suppliers rose about elevenfold, from CNY134m to CNY1.49bn.'],
+      ['Eoptolink','2026 interim report','Top five customers take 72% of sales, so smaller buyers queue behind hyperscalers.']],
+      act:'Treat 1.6T as a bottleneck. Secure it under a supply agreement or through the rack integrator, and plan on flat or rising prices, not the usual yearly decline. 800G is easier to get.'},
+    network: {title:'Switching', verdict:'Tight but stocked', cls:'warn', pts:[
+      ['Cisco','12 Aug 2026 results','Product orders up 35% and networking orders up 40% year on year. US$9.3bn of AI infrastructure orders from hyperscalers in fiscal 2026. Inventory up from US$3.2bn to US$5.7bn.']],
+      act:'Vendors are building stock ahead of demand, so normal lead times hold if switches are ordered together with the racks.'},
+    cabling: {title:'Fibre and cabling', verdict:'Growing fast, low cost', cls:'warn', pts:[
+      ['Corning','2026 results','Optical communications sales up 44%; generative-AI products up 100%. Long-term capacity agreements with large customers.']],
+      act:'Cheap relative to the cluster but it still gates installation. Book it with the optics.'},
+    memory: {title:'Storage and servers (memory-heavy)', verdict:'Prices rising, short quote validity', cls:'warn', pts:[
+      ['NVIDIA','Aug 2026 earnings call','Memory under "extreme pricing".'],
+      ['Lenovo','13 Aug 2026 earnings call','Expects memory to stay constrained "at least by the end of next year", with higher costs passed into prices.']],
+      act:'Quotes expire quickly. Order inside the quote window or expect to be re-priced.'},
+    cooling: {title:'Liquid cooling', verdict:'Capacity expanding', cls:'warn', pts:[
+      ['Eaton','2026 results','Liquid-cooling business growing from US$1.1bn to US$1.8bn.'],
+      ['Vertiv','8 Sep 2026 conference','Adding liquid-cooling capacity. Delays were in prefabricated all-in-one systems and came from factory coordination, with slips measured in days.']],
+      act:'Lead times are manageable, but coolant distribution units must be installed and flushed before racks arrive, so they sit early on the critical path.'},
+    electrical: {title:'Electrical and power distribution', verdict:'Longest lead, prices rising', cls:'bad', pts:[
+      ['Eaton','2026 results','Book-to-bill of 1.3 and data-centre orders up 85%. Price actions in April and August, plus repricing of existing backlog. About US$3.4m of electrical content per MW. Modular builds take about 9 months versus 18.'],
+      ['nVent','2026 results','US$2.5bn backlog and about US$100m of tariff impact.'],
+      ['Vertiv','8 Sep 2026 conference','800V DC sidecars from the second half of 2027; fully native 800V DC power trains commercial in late 2027, volume in 2028. Contracts carry inflation and tariff price triggers.']],
+      act:'The first thing to order in a new build. Lock the power architecture (including any 800V DC choice) before ordering, and price prefabricated skids as an alternative.'},
+    colo: {title:'Colocation space and power', verdict:'Pre-sold capacity', cls:'warn', pts:[
+      ['NEXTDC','FY2026 results','740 MW contracted against 288 MW built (257%); 175 MW billing. Net revenue about A$236 per kW per month (about US$155).']],
+      act:'Liquid-ready capacity is sold before it is built. Reserve early and align the ready-for-service date with rack delivery.'},
+    services: {title:'Installation services', verdict:'Labour-limited', cls:'plain', pts:[
+      ['Lenovo','13 Aug 2026 earnings call','Rack vendors now bundle installation and deployment services with AI factory deliveries.']],
+      act:'Book crews when the racks are ordered; ask the integrator to quote installation alongside the hardware.'},
+    software: {title:'Software and licences', verdict:'Available', cls:'good', pts:[], act:'Routine purchase. Order a few weeks before acceptance testing.'},
+    finance: {title:'Customer contracts and cash', verdict:'Delays hit revenue directly', cls:'info', pts:[
+      ['CoreWeave','2026 10-Q','Delivery delays reduce recognised revenue. Its top three suppliers account for 23%, 20% and 17% of purchases.'],
+      ['IREN','FY2026 10-K','Customer contracts include prepayments, deployment schedules, acceptance testing and ramp periods.'],
+      ['Nebius','2026 20-F','Customer prepayments help fund US$8.1bn of first-half capital spending.'],
+      ['NVIDIA','Aug 2026 earnings call','Days sales outstanding of about 60, with extended terms for investment-grade customers.']],
+      act:'Each week of slip moves billing back. Prepayments, phased acceptance and supplier payment terms are the financial levers.'}
+  };
+  var MILESTONES = [
+    ['2026-08-15','Vera Rubin shipping'],
+    ['2027-02-01','GPU price increase (Feb 2027)'],
+    ['2027-07-01','1.6T, co-packaged optics and 800V DC sidecars (2H 2027)'],
+    ['2028-01-01','Memory easing; native 800V DC in volume (2028)']
+  ];
+
+  // ---------- bill of materials for each template ----------
+  function mkLine(o){
+    var d = {mode:'Spot', imported:true, phase:'IT', install:0, deposit:30, net:30, escDate:'', escPct:0, expWeeks:0, expPrem:0, expedite:false,
+      supplier:'To be sourced', alt:null, basis:'Estimate', gating:true, po:null, req:null};
+    for (var k in o) d[k]=o[k]; return d;
+  }
+  function buildLines(p){
+    var t = TPL[p.template], n = p.gpus, nvl = p.template==='nvl72';
+    var units = Math.ceil(n/t.per), racks = nvl ? units : Math.ceil(units/4);
+    var mw = n*t.kwGpu/1000, L = [];
+    L.push(mkLine({id:'gpu', sig:'gpu', name: nvl ? 'GB300 NVL72 rack systems' : 'HGX B300 8-GPU servers', unit: nvl?'racks':'servers', qty:units,
+      cost: nvl?3.9e6:4.6e5, leadSpot: nvl?30:20, leadLTA: nvl?22:14, mode:'LTA', risk:5, deposit:30, escDate:'2027-02-01', escPct:5,
+      expWeeks:3, expPrem:3, supplier:'Apex Systems Integration', alt:{supplier:'Summit Server Group', leadDelta:-4, priceDelta:4}}));
+    L.push(mkLine({id:'spares', sig:'gpu', name:'GPU spares pool (2% of systems)', unit:'lot', qty:1, cost:Math.round((nvl?3.9e6:4.6e5)*units*0.02),
+      leadSpot: nvl?30:20, leadLTA: nvl?22:14, mode:'LTA', risk:4, deposit:30, escDate:'2027-02-01', escPct:5, gating:false, supplier:'Apex Systems Integration'}));
+    L.push(mkLine({id:'o16', sig:'optics', name:'1.6T optical transceivers', unit:'units', qty: nvl?n:Math.ceil(n/2), cost:1300, leadSpot:40, leadLTA:24,
+      risk:5, deposit:20, escDate:'2027-01-01', escPct:4, expWeeks:2, expPrem:6, supplier:'Lumen Optics', alt:{supplier:'Brightwave Photonics', leadDelta:-6, priceDelta:9}}));
+    L.push(mkLine({id:'o8', sig:'optics', name:'800G optical transceivers', unit:'units', qty: nvl?n:n*2, cost:750, leadSpot:20, leadLTA:14,
+      risk:4, deposit:20, escDate:'2027-01-01', escPct:3, expWeeks:2, expPrem:5, supplier:'Lumen Optics'}));
+    L.push(mkLine({id:'sw', sig:'network', name:'Compute fabric switches (800G)', unit:'switches', qty:Math.ceil(n/36), cost:95000, leadSpot:20, leadLTA:16,
+      risk:3, expWeeks:2, expPrem:4, supplier:'Fabric Networks'}));
+    L.push(mkLine({id:'fe', sig:'network', name:'Front-end and storage Ethernet switches', unit:'switches', qty: nvl?Math.ceil(racks/2)+4:Math.ceil(racks/4)+4, cost:45000,
+      leadSpot:14, leadLTA:12, risk:3, supplier:'Fabric Networks'}));
+    L.push(mkLine({id:'cab', sig:'cabling', name:'Fibre trunks, patching and copper cables', unit:'GPUs covered', qty:n, cost:420, leadSpot:10, leadLTA:8,
+      risk:2, deposit:0, supplier:'Kestrel Cabling'}));
+    L.push(mkLine({id:'sto', sig:'memory', name:'All-flash storage', unit:'PB', qty:Math.max(2,Math.round(n/230)), cost:1.15e6, leadSpot:14, leadLTA:12,
+      risk:3, deposit:20, escDate:off(30), escPct:8, supplier:'Northstar Storage'}));
+    L.push(mkLine({id:'mgmt', sig:'memory', name:'Management and CPU servers', unit:'servers', qty:Math.ceil(n/256)*2+4, cost:28000, leadSpot:12, leadLTA:10,
+      risk:3, deposit:0, escDate:off(30), escPct:6, supplier:'Apex Systems Integration'}));
+    if (!nvl) L.push(mkLine({id:'rack', sig:'cooling', name:'Racks and containment', unit:'racks', qty:racks, cost:9000, leadSpot:8, leadLTA:6, risk:2, deposit:0,
+      phase:'Facility', install:14, supplier:'To be sourced'}));
+    L.push(mkLine({id:'pdu', sig:'electrical', name: nvl?'Rack power shelves, PDUs and busway taps':'Rack PDUs and busway taps', unit:'racks', qty:racks, cost: nvl?55000:14000,
+      leadSpot:18, leadLTA:14, risk:2, deposit:20, phase:'Facility', install:14, supplier:'To be sourced'}));
+    L.push(mkLine({id:'cdu', sig:'cooling', name:'Coolant distribution units (in-row)', unit:'units', qty:Math.ceil(mw/1.2)+1, cost:380000, leadSpot:18, leadLTA:14,
+      risk:3, deposit:20, phase:'Facility', install:21, supplier:'Coolflow Liquid Systems'}));
+    if (p.site==='build'){
+      L.push(mkLine({id:'elec', sig:'electrical', name:'Switchgear, UPS and transformers', unit:'MW', qty:Math.ceil(mw*10)/10, cost:3.4e6, leadSpot:52, leadLTA:44,
+        risk:5, deposit:25, net:45, phase:'Facility', install:45, escDate:'2027-01-01', escPct:4, supplier:'To be sourced', alt:{supplier:'Prefabricated power skids', leadDelta:-13, priceDelta:8}}));
+      L.push(mkLine({id:'heat', sig:'cooling', name:'Heat rejection: dry coolers and trim chillers', unit:'MW', qty:Math.ceil(mw*p.pue*10)/10, cost:0.9e6, leadSpot:36, leadLTA:30,
+        risk:4, deposit:25, net:45, phase:'Facility', install:30, supplier:'To be sourced'}));
+    } else {
+      L.push(mkLine({id:'colo', sig:'colo', name:'Colocation: liquid-ready capacity (annual)', unit:'kW', qty:Math.round(mw*1000), cost:p.colo*12, leadSpot:16, leadLTA:16,
+        risk:4, deposit:0, imported:false, phase:'Colo', supplier:'Metro Colocation'}));
+    }
+    L.push(mkLine({id:'svc', sig:'services', name:'Installation, cabling and commissioning crew', unit:'racks', qty:racks, cost: nvl?35000:12000, leadSpot:6, leadLTA:6,
+      risk:3, deposit:0, imported:false, phase:'Services', supplier:'Kestrel Cabling'}));
+    L.push(mkLine({id:'sw-lic', sig:'software', name:'Cluster management and monitoring licences (year 1)', unit:'GPUs', qty:n, cost:900, leadSpot:2, leadLTA:2,
+      risk:1, deposit:0, imported:false, phase:'Software', supplier:'Signal Observability'}));
+    return L;
+  }
+
+  function seedPlan(){
+    var p = {customer:'C-104', custName:'Northwind Research', template:'nvl72', gpus:2304, goLive:off(240), site:'colo',
+      price:2.80, term:5, endFixed:true, credit:2, rate:10, colo:180, power:120, pue:1.3, commission:21, approval:10, transit:28,
+      prepay:15, life:6, ageing:false, phase:0, lines:[]};
+    p.lines = buildLines(p);
+    p.lines[0].po = 'PO-2047';
+    return p;
+  }
+
+  // ---------- planner maths ----------
+  function P(){ return S.plan; }
+  function monthly(p){ return p.gpus*p.price*730; }
+  function mwIT(p){ return p.gpus*TPL[p.template].kwGpu/1000; }
+  function leadOf(l){ return (l.mode==='LTA'?l.leadLTA:l.leadSpot) - (l.expedite?l.expWeeks:0); }
+  function baseValue(l){ return l.qty*l.cost*(l.expedite?1+l.expPrem/100:1); }
+
+  function calcLines(p, opts){
+    opts = opts||{};
+    var t = TPL[p.template], R = addDays(p.goLive, -p.commission), itNeed = addDays(R, -t.itInstall);
+    var maxFac = p.lines.reduce(function(m,l){ return l.phase==='Facility' ? Math.max(m,l.install) : m; }, 14);
+    var now = off(0);
+    return p.lines.map(function(l0){
+      var l = {}; for (var k in l0) l[k]=l0[k];
+      if (opts.override && opts.override.id===l.id) for (var k2 in opts.override.set) l[k2]=opts.override.set[k2];
+      var need = l.phase==='IT' ? itNeed : l.phase==='Services' ? itNeed : l.phase==='Software' ? addDays(R,-7)
+        : l.phase==='Facility' ? addDays(itNeed, -l.install) : addDays(itNeed, -maxFac);
+      var lead = leadOf(l), transit = l.imported ? p.transit : 0;
+      var orderBy = addDays(need, -(lead*7 + transit + p.approval));
+      var o = l.po && order(l.po), orderDate, arrival, ordered = !!o;
+      if (o){ orderDate = o.stageDates[0]; arrival = o.stage>=4 ? (o.stageDates[4]||o.eta) : o.eta; }
+      else { orderDate = orderBy > now ? orderBy : now; arrival = addDays(orderDate, lead*7 + transit + p.approval); }
+      if (opts.planned && !o){ orderDate = orderBy; arrival = need; }
+      var delay = Math.max(0, daysBetween(need, arrival));
+      var slack = o ? daysBetween(arrival, need) : daysBetween(now, orderBy);
+      var status = o ? (delay>0 ? 'Late' : (o.stage>=4 ? 'Delivered' : 'Ordered')) : (slack<0 ? 'Late' : slack<=30 ? 'Order now' : 'On track');
+      var escHit = !o && l.escDate && l.escPct && orderDate >= l.escDate;
+      var value = baseValue(l)*(escHit?1+l.escPct/100:1);
+      l.need=need; l.lead=lead; l.transit=transit; l.orderBy=orderBy; l.orderDate=orderDate; l.arrival=arrival; l.delay=delay; l.slack=slack;
+      l.status=status; l.ordered=ordered; l.escHit=escHit; l.value=value; l.order=o||null;
+      return l;
+    });
+  }
+  function codWeekly(p, capexHw){
+    var m = monthly(p), revW = m*12/52, powerW = mwIT(p)*p.pue*168*p.power;
+    var c = [];
+    if (p.endFixed) c.push(['Billing lost (contract end date is fixed)', Math.max(0, revW-powerW), 'Weekly revenue of '+money(revW)+' less '+money(powerW)+' of power not used while idle.']);
+    else c.push(['Billing pushed back (time value)', m*12*p.term*(p.rate/100)/52, 'Contract end moves with go-live, so revenue is deferred, not lost. Cost is the financing value of waiting.']);
+    c.push(['Late-delivery credits to the customer', m*p.credit/100, p.credit+'% of the monthly fee per week late, per the customer contract.']);
+    c.push(['Interest on hardware not yet earning', capexHw*(p.rate/100)/52, money(capexHw)+' of equipment financed at '+p.rate+'% a year.']);
+    if (p.site==='colo') c.push(['Colocation rent on empty capacity', Math.round(mwIT(p)*1000)*p.colo*12/52, 'Reserved capacity is billed whether or not GPUs are running.']);
+    if (p.ageing) c.push(['Hardware life used while idle', capexHw/(p.life*52), 'Equipment ages toward a '+p.life+'-year life and the next GPU generation while it earns nothing.']);
+    return c;
+  }
+  function planCalc(p, opts){
+    var lines = calcLines(p, opts);
+    var gating = lines.filter(function(l){ return l.gating; });
+    var delay = gating.reduce(function(m,l){ return Math.max(m,l.delay); }, 0);
+    var crit = gating.slice().sort(function(a,b){ return b.delay-a.delay || a.slack-b.slack; })[0];
+    var capex = lines.reduce(function(a,l){ return a+(l.phase==='Colo'?0:l.value); },0);
+    var capexHw = lines.reduce(function(a,l){ return a+((l.phase==='IT'||l.phase==='Facility')?l.value:0); },0);
+    var parts = codWeekly(p, capexHw), codW = parts.reduce(function(a,c){ return a+c[1]; },0);
+    var codEff = codW*(1-p.phase/100);
+    var committed = lines.reduce(function(a,l){ return a + ((l.ordered || (l.mode==='LTA' && l.phase!=='Colo')) ? l.value : 0); },0);
+    return {lines:lines, delay:delay, crit:crit, goLiveProj:addDays(p.goLive, delay), capex:capex, capexHw:capexHw, parts:parts, codW:codW, codEff:codEff,
+      delayCost: codEff*delay/7, committed:committed, monthly:monthly(p), mw:mwIT(p)};
+  }
+  // Decisions: test each lever by recalculating the whole plan with that one change
+  function decisions(p, base){
+    var out = [];
+    base.lines.forEach(function(l){
+      if (l.ordered) return;
+      if (l.delay>0 && l.mode==='Spot' && l.leadLTA<l.leadSpot){
+        var r = planCalc(p,{override:{id:l.id,set:{mode:'LTA'}}}), gain = base.delay-r.delay;
+        if (gain>0) out.push({kind:'lta', id:l.id, gain:gain, benefit:gain/7*base.codEff, cost:0,
+          text:'Move <b>'+esc(l.name)+'</b> into a supply agreement (lead '+l.leadSpot+' → '+l.leadLTA+' weeks).',
+          detail:'Brings go-live forward '+gain+' days, worth '+money(gain/7*base.codEff)+'. Needs a '+l.deposit+'% prepayment and a minimum-purchase commitment, so '+money(l.value)+' becomes committed spend now.'});
+      }
+      if (l.delay>0 && l.expWeeks>0 && !l.expedite){
+        var cur = l.mode==='Spot' && l.leadLTA<l.leadSpot ? {mode:'LTA',expedite:true} : {expedite:true};
+        var r2 = planCalc(p,{override:{id:l.id,set:cur}}), r1 = cur.mode ? planCalc(p,{override:{id:l.id,set:{mode:'LTA'}}}) : base;
+        var gain2 = r1.delay - r2.delay, cost2 = l.qty*l.cost*l.expPrem/100;
+        if (gain2>0) out.push({kind:'exp', id:l.id, gain:gain2, benefit:gain2/7*base.codEff, cost:cost2,
+          text:(cur.mode?'Then expedite':'Expedite')+' <b>'+esc(l.name)+'</b> ('+l.expWeeks+' weeks faster for +'+l.expPrem+'%).',
+          detail:'Saves '+gain2+' more days of delay, worth '+money(gain2/7*base.codEff)+', for a premium of '+money(cost2)+'. '+(gain2/7*base.codEff>cost2?'Worth paying.':'Not worth paying at the current cost of delay.')});
+      }
+      if (l.escHit){
+        var pull = addDays(l.escDate,-1), early = Math.max(0, daysBetween(pull, l.orderDate));
+        var save = l.value - baseValue(l), carry = baseValue(l)*(p.rate/100)*early/365;
+        out.push({kind:'price', id:l.id, gain:0, benefit:save, cost:carry,
+          text:'Order <b>'+esc(l.name)+'</b> before '+fmtDateY(l.escDate)+' to beat a '+l.escPct+'% price rise.',
+          detail:'Avoids '+money(save)+' of extra cost. Ordering '+early+' days earlier ties up cash for about '+money(carry)+' in interest. '+(save>carry?'Pull the order forward.':'Waiting costs less.')});
+      }
+      if (l.delay>0 && l.alt){
+        var r3 = planCalc(p,{override:{id:l.id,set:{leadSpot:l.leadSpot+l.alt.leadDelta, leadLTA:l.leadLTA+l.alt.leadDelta, cost:l.cost*(1+l.alt.priceDelta/100), supplier:l.alt.supplier}}});
+        var gain3 = base.delay - r3.delay;
+        if (gain3>0) out.push({kind:'alt', id:l.id, gain:gain3, benefit:gain3/7*base.codEff, cost:l.qty*l.cost*l.alt.priceDelta/100,
+          text:'Second source: buy <b>'+esc(l.name)+'</b> from '+esc(l.alt.supplier)+' ('+Math.abs(l.alt.leadDelta)+' weeks faster, +'+l.alt.priceDelta+'%).',
+          detail:'Brings go-live forward '+gain3+' days, worth '+money(gain3/7*base.codEff)+', for '+money(l.qty*l.cost*l.alt.priceDelta/100)+' more. Also reduces dependence on one supplier.'});
+      }
+    });
+    var p0 = P();
+    if (p0.site==='build' && p0.goLive >= '2027-10-01') out.push({kind:'design', gain:0, benefit:0, cost:0,
+      text:'Lock the power architecture before ordering electrical equipment.', detail:'Go-live falls in the 800V DC transition (sidecars from 2H 2027, native power trains in volume in 2028). Decide AC versus 800V DC before the switchgear order-by date to avoid stranded equipment.'});
+    return out.sort(function(a,b){ return (b.benefit-b.cost)-(a.benefit-a.cost); });
+  }
+  function fmtDateY(s){ return parse(s).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}); }
+  function monthKey(s){ return s.slice(0,7); }
+  function cashSeries(p, planned){
+    var r = planCalc(p, planned?{planned:true}:null), lines = r.lines;
+    var start = monthKey(off(0)), goL = planned ? p.goLive : r.goLiveProj;
+    var endD = addDays(goL, 190), months = [], d = parse(start+'-01');
+    while (iso(d).slice(0,7) <= endD.slice(0,7)){ months.push(iso(d).slice(0,7)); d = new Date(d.getFullYear(), d.getMonth()+1, 1); }
+    var out = {}, inn = {}; months.forEach(function(m){ out[m]=0; inn[m]=0; });
+    function add(map, date, v){ var k = date < off(0) ? start : monthKey(date); if (k in map) map[k]+=v; }
+    lines.forEach(function(l){
+      if (l.phase==='Colo'){ var rent = l.qty*p.colo; months.forEach(function(m){ if (m >= monthKey(l.need)) out[m]+=rent; }); return; }
+      add(out, l.orderDate, l.value*l.deposit/100);
+      add(out, addDays(l.arrival, l.net), l.value*(1-l.deposit/100));
+    });
+    var m = monthly(p);
+    add(inn, off(0), m*12*p.prepay/100);
+    var phaseShare = planned ? 0 : p.phase/100;
+    months.forEach(function(k){
+      var mStart = k+'-01';
+      if (mStart > p.goLive && phaseShare>0 && mStart <= goL) inn[k] += m*phaseShare;
+      if (mStart > goL) inn[k] += m;
+    });
+    var cum = 0, rows = months.map(function(k){ cum += inn[k]-out[k]; return {m:k, out:out[k], inn:inn[k], cum:cum}; });
+    var peak = rows.reduce(function(a,x){ return Math.min(a,x.cum); },0);
+    return {rows:rows, peak:-peak};
+  }
+  function syncCustomer(){
+    var p = P(), c = cust(p.customer);
+    if (!c){ c = {id:p.customer}; S.customers.push(c); }
+    c.name = p.custName; c.term = p.term+'-year take-or-pay'; c.gpus = p.gpus; c.monthly = monthly(p); c.goLive = p.goLive;
+  }
+  function planCounts(){
+    var r = planCalc(P());
+    return r.lines.filter(function(l){ return !l.ordered && (l.status==='Late'||l.status==='Order now') && !l.req; }).length;
+  }
+
+  // ---------- Plan views ----------
+  var planTab = 'summary', advOpen = false;
+  var STATUS_CLS = {'Late':'bad','Order now':'warn','On track':'plain','Ordered':'good','Delivered':'good'};
+  function stTag(l){ return '<span class="tag '+STATUS_CLS[l.status]+'">'+l.status+(l.req&&!l.ordered?' · requested':'')+'</span>'; }
+
+  function vPlan(){
+    var p = P(), r = planCalc(p);
+    var h = head('Deployment plan','Plan a cluster backwards from the customer\'s go-live: what to buy, when each order must be placed, what is already late, and what every week of delay costs.',
+      '<button class="btn" type="button" id="xlsx">Export to Excel</button>');
+    // verdict
+    var crit = r.crit, late = r.delay>0;
+    h += '<div class="verdict '+(late?'bad':'good')+'"><div><div class="vk">'+esc(p.custName)+' · '+p.gpus.toLocaleString('en-US')+' GPUs · '+TPL[p.template].short+' · go-live '+fmtDateY(p.goLive)+'</div>'+
+      '<div class="vt">'+(late ? 'Go-live at risk: projected '+r.delay+' days late ('+fmtDateY(r.goLiveProj)+'), driven by '+esc(crit.name.charAt(0).toLowerCase()+crit.name.slice(1)).replace(/^(\d|[a-z]+\d)/i,function(m){ return m.toUpperCase(); })+'.' : 'On track for go-live on '+fmtDateY(p.goLive)+'.')+'</div>'+
+      '<div class="vs">'+(late ? 'Each week of delay costs about <b>'+money(r.codEff)+'</b>; the current slip costs <b>'+money(r.delayCost)+'</b>.' : 'Tightest item: '+esc(crit.name)+', '+crit.slack+' days of slack. A week of delay would cost about '+money(r.codEff)+'.')+'</div></div></div>';
+    var tabs = [['summary','Summary'],['setup','Setup'],['schedule','Schedule'],['risk','Risk map'],['money','Money'],['market','Market signals']];
+    h += '<div class="subtabs" role="tablist" aria-label="Plan sections">'+tabs.map(function(t){ return '<button type="button" role="tab" data-ptab="'+t[0]+'" aria-selected="'+(planTab===t[0])+'">'+t[1]+'</button>'; }).join('')+'</div>';
+    h += {summary:pSummary, setup:pSetup, schedule:pSchedule, risk:pRisk, money:pMoney, market:pMarket}[planTab](p, r);
+    h += '<p class="note">Unit prices and lead times are public-industry estimates for illustration; each line shows its basis and can be replaced with a supplier quote. Market signals cite company filings and earnings calls from 2026.</p>';
+    return h;
+  }
+
+  function pSummary(p, r){
+    var cash = cashSeries(p,false);
+    var due = r.lines.filter(function(l){ return !l.ordered && (l.status==='Late'||l.status==='Order now'); }).sort(function(a,b){ return a.slack-b.slack; });
+    var h = '<div class="kpis">'+
+      kpi('Projected go-live', fmtDate(r.goLiveProj), r.delay?r.delay+' days after contract date':'matches the contract', r.delay?'bad-t':'good-t')+
+      kpi('Cost of delay', money(r.codEff)+'/wk', p.phase?'after '+p.phase+'% phased go-live':'lost billing, credits, interest, rent')+
+      kpi('Deployment cost', money(r.capex), money(r.capex/p.gpus)+' per GPU, before colocation')+
+      kpi('Committed today', money(r.committed), Math.round(r.committed/r.capex*100)+'% of the plan, incl. supply agreements')+
+      kpi('Peak funding need', money(cash.peak), 'lowest point of cumulative cash')+'</div>';
+    h += '<div class="grid2"><div class="panel"><h3>Order this month</h3>';
+    if (!due.length) h += '<p class="empty">Nothing needs ordering in the next 30 days.</p>';
+    else h += '<ul class="attn">'+due.map(function(l){
+      return '<li><span class="dot" style="background:'+(l.status==='Late'?'var(--bad)':'#D49A1A')+'"></span><span class="txt"><b>'+esc(l.name)+'</b> · '+money(l.value)+'<br>'+
+        (l.status==='Late' ? '<span class="bad-t">Order-by date was '+fmtDate(l.orderBy)+'. Ordered today it lands '+l.delay+' days after it is needed.</span>' : 'Order by <b>'+fmtDate(l.orderBy)+'</b> ('+l.slack+' days left) to arrive by '+fmtDate(l.need)+'.')+
+        '</span><button class="link" type="button" data-line="'+l.id+'">Open</button></li>';
+    }).join('')+'</ul>';
+    h += '</div><div class="panel"><h3>Best moves</h3>';
+    var decAll = decisions(p, r), dec = decAll.slice(0,2);
+    h += dec.length ? '<ul class="attn">'+dec.map(function(d){
+      return '<li><span class="dot" style="background:var(--steel)"></span><span class="txt">'+d.text+'<span class="sub">'+d.detail+'</span></span>'+(d.id?'<button class="link" type="button" data-apply="'+d.kind+':'+d.id+'">Apply</button>':'')+'</li>';
+    }).join('')+'</ul>'+(decAll.length>2?'<button class="link" type="button" data-ptab="money">See all '+decAll.length+' moves and their value</button>':'') : '<p class="empty">No changes needed: every item arrives in time.</p>';
+    h += '</div></div>';
+    h += '<div class="panel" style="margin-top:18px"><h3>Critical path</h3>'+ganttHTML(p, r, r.lines.filter(function(l){ return l.gating; }).sort(function(a,b){ return a.slack-b.slack; }).slice(0,5), true)+'</div>';
+    return h;
+  }
+
+  function fld(label, key, val, type, extra){
+    return '<label>'+label+'<input type="'+(type||'number')+'" data-pf="'+key+'" value="'+val+'" '+(extra||'')+'></label>';
+  }
+  function pSetup(p, r){
+    var h = '<div class="panel"><h3>Deployment</h3><div class="form f3">'+
+      '<label>Template<select class="field" data-pf="template">'+Object.keys(TPL).map(function(k){ return '<option value="'+k+'"'+(p.template===k?' selected':'')+'>'+TPL[k].label+'</option>'; }).join('')+'</select></label>'+
+      fld('GPUs','gpus',p.gpus,'number','min="8" step="8"')+
+      '<label>Site<select class="field" data-pf="site"><option value="colo"'+(p.site==='colo'?' selected':'')+'>Existing colocation</option><option value="build"'+(p.site==='build'?' selected':'')+'>New build (own power and cooling)</option></select></label>'+
+      fld('Customer','custName',esc(p.custName),'text')+
+      fld('Contracted go-live','goLive',p.goLive,'date')+
+      fld('Price per GPU-hour (US$)','price',p.price,'number','step="0.05" min="0"')+
+      '</div><p class="note">Changing the template, GPU count or site rebuilds the bill of materials. Monthly contract revenue: <b>'+money(r.monthly)+'</b>. IT load: <b>'+r.mw.toFixed(2)+' MW</b>.</p></div>';
+    h += '<div class="panel" style="margin-top:18px"><h3>Customer contract and finance</h3><div class="form f3">'+
+      fld('Contract term (years)','term',p.term,'number','min="1" max="10"')+
+      '<label>When go-live slips<select class="field" data-pf="endFixed"><option value="1"'+(p.endFixed?' selected':'')+'>Contract end stays fixed (billing lost)</option><option value="0"'+(!p.endFixed?' selected':'')+'>Contract end moves (billing deferred)</option></select></label>'+
+      fld('Late-delivery credit (% of monthly fee per week)','credit',p.credit,'number','step="0.5" min="0"')+
+      fld('Customer prepayment (% of year-1 revenue)','prepay',p.prepay,'number','min="0" max="100"')+
+      fld('Financing rate (% a year)','rate',p.rate,'number','step="0.25" min="0"')+
+      fld('Colocation (US$ per kW per month)','colo',p.colo,'number','min="0"')+
+      '</div></div>';
+    h += '<details class="panel adv" id="advSetup"'+(advOpen?' open':'')+' style="margin-top:18px"><summary><b>Advanced: power, hardware life and schedule rules</b></summary><div class="form f3" style="margin-top:14px">'+
+      fld('Power (US$ per MWh)','power',p.power,'number','min="0"')+
+      fld('PUE','pue',p.pue,'number','step="0.05" min="1"')+
+      fld('Hardware useful life (years)','life',p.life,'number','min="1" max="10"')+
+      '<label>Count hardware ageing in delay cost<select class="field" data-pf="ageing"><option value="1"'+(p.ageing?' selected':'')+'>Yes</option><option value="0"'+(!p.ageing?' selected':'')+'>No (default)</option></select></label>'+
+      fld('Acceptance testing before go-live (days)','commission',p.commission,'number','min="0"')+
+      fld('Internal approval and PO time (days)','approval',p.approval,'number','min="0"')+
+      fld('Freight and customs for imports (days)','transit',p.transit,'number','min="0"')+
+      '</div><p class="note">Each item\'s need-on-site date comes from its phase: facility equipment is installed first, then IT equipment ('+TPL[p.template].itInstall+' days to install), then '+p.commission+' days of acceptance testing. Order-by date = need-on-site − lead time − freight − approval. Hardware ageing is off by default because depreciation normally starts at go-live.</p></details>';
+    return h;
+  }
+
+  function pSchedule(p, r){
+    var lines = r.lines.slice().sort(function(a,b){ return a.orderBy<b.orderBy?-1:1; });
+    var h = '<div class="panel">'+ganttHTML(p, r, lines, false)+'</div>';
+    h += '<h3 style="margin-top:22px">Bill of materials and order dates</h3><div class="tablewrap"><table><thead><tr><th>Item</th><th class="r">Qty</th><th class="r">Value</th><th>Sourcing</th><th class="r">Lead</th><th class="r">Order by</th><th class="r">Needed on site</th><th class="r">Arrives</th><th>Status</th><th>Basis</th></tr></thead><tbody>'+
+      lines.map(function(l){
+        return '<tr class="click" data-line="'+l.id+'" tabindex="0"><td class="wrap"><b>'+esc(l.name)+'</b><span class="sub">'+esc(l.supplier)+(l.po?' · '+l.po:'')+'</span></td><td class="r">'+l.qty.toLocaleString('en-US')+'<span class="sub">'+l.unit+'</span></td><td class="r">'+money(l.value)+(l.escHit?'<span class="sub warn-t">incl. +'+l.escPct+'% price rise</span>':'')+'</td>'+
+          '<td>'+(l.phase==='Colo'?'Lease':l.phase==='Services'?'Service order':l.phase==='Software'?'Licence':l.mode==='LTA'?'Supply agreement':'Spot order')+(l.expedite?'<span class="sub">expedited</span>':'')+'</td><td class="r">'+l.lead+' wks'+(l.transit?'<span class="sub">+'+l.transit+'d freight</span>':'')+'</td>'+
+          '<td class="r">'+fmtDate(l.orderBy)+'</td><td class="r">'+fmtDate(l.need)+'</td><td class="r '+(l.delay?'bad-t':'')+'">'+fmtDate(l.arrival)+(l.delay?'<span class="sub bad-t">'+l.delay+' days late</span>':'')+'</td><td>'+stTag(l)+'</td><td><span class="tag '+(l.basis==='Quote'?'good':'plain')+'">'+l.basis+'</span></td></tr>';
+      }).join('')+'</tbody></table></div>';
+    return h;
+  }
+
+  function ganttHTML(p, r, lines, compact){
+    var now = off(0), start = now, end = addDays(r.goLiveProj, 21);
+    lines.forEach(function(l){ var s = l.ordered ? l.orderDate : (l.orderBy<now?now:l.orderBy); if (s<start) start=s; if (l.arrival>end) end=l.arrival; });
+    start = addDays(start,-10);
+    var span = daysBetween(start,end);
+    function x(d){ return Math.max(0,Math.min(100, daysBetween(start,d)/span*100)); }
+    var ticks = '', d = parse(start.slice(0,8)+'01'); d = new Date(d.getFullYear(), d.getMonth()+1, 1);
+    var step = span>540 ? 3 : span>270 ? 2 : 1;
+    while (iso(d) < end){ ticks += '<span class="gtick" style="left:'+x(iso(d))+'%">'+d.toLocaleDateString('en-AU',{month:'short'})+(d.getMonth()===0||ticks===''?' '+d.getFullYear():'')+'</span>'; d = new Date(d.getFullYear(), d.getMonth()+step, 1); }
+    var ms = MILESTONES.filter(function(m){ return m[0]>start && m[0]<end; });
+    var vlines = '<span class="gv today" style="left:'+x(now)+'%" title="Today"></span><span class="gv golive" style="left:'+x(p.goLive)+'%" title="Contracted go-live '+fmtDateY(p.goLive)+'"></span>'+
+      (r.delay?'<span class="gv proj" style="left:'+x(r.goLiveProj)+'%" title="Projected go-live '+fmtDateY(r.goLiveProj)+'"></span>':'')+
+      (compact?'':ms.map(function(m,i){ return '<span class="gv ms" style="left:'+x(m[0])+'%" title="'+esc(m[1])+'"><i>'+(i+1)+'</i></span>'; }).join(''));
+    var rows = lines.map(function(l){
+      var s = l.ordered ? l.orderDate : (l.orderBy<now?now:l.orderBy), a = l.arrival;
+      var onTo = l.delay ? l.need : a;
+      var tip = esc(l.name)+': '+(l.ordered?'ordered '+fmtDate(l.orderDate):'order by '+fmtDate(l.orderBy))+', needed '+fmtDate(l.need)+', arrives '+fmtDate(a)+(l.delay?' ('+l.delay+' days late)':'');
+      return '<div class="grow"><button type="button" class="glabel" data-line="'+l.id+'">'+esc(l.name)+stTag(l)+'</button><div class="gtrack">'+vlines+
+        '<span class="gbar '+STATUS_CLS[l.status]+'" style="left:'+x(s)+'%;width:'+Math.max(0.6,x(onTo)-x(s))+'%" title="'+tip+'"></span>'+
+        (l.delay?'<span class="gbar over" style="left:'+x(l.need)+'%;width:'+Math.max(0.6,x(a)-x(l.need))+'%" title="'+tip+'"></span>':'')+
+        '<span class="gneed" style="left:'+x(l.need)+'%" title="Needed on site '+fmtDate(l.need)+'"></span></div></div>';
+    }).join('');
+    var legend = '<div class="glegend"><span><i class="lg bar"></i>Order to arrival</span><span><i class="lg over"></i>Arrives after it is needed</span><span><i class="lg need"></i>Needed on site</span><span><i class="lg today"></i>Today</span><span><i class="lg golive"></i>Contracted go-live</span>'+(r.delay?'<span><i class="lg proj"></i>Projected go-live</span>':'')+'</div>';
+    var msl = (!compact && ms.length) ? '<ol class="mslist">'+ms.map(function(m){ return '<li>'+fmtDateY(m[0])+': '+esc(m[1])+'</li>'; }).join('')+'</ol>' : '';
+    return '<div class="gwrap"><div class="gantt"><div class="grow ghead"><span></span><div class="gtrack axis">'+ticks+'</div></div>'+rows+'</div></div>'+legend+msl;
+  }
+
+  function quadrant(l, total){
+    var hiS = l.value/total >= 0.03, hiR = l.risk >= 4 || l.status==='Late';
+    return hiR ? (hiS?'Strategic':'Bottleneck') : (hiS?'Leverage':'Routine');
+  }
+  var QACT = {Strategic:'Lock supply with an allocation or long-term agreement, keep a second source warm, review weekly.',
+    Bottleneck:'Secure supply early even at a premium; small spend, but it can stop the whole cluster.',
+    Leverage:'Run a competitive tender and negotiate price; supply is not the problem.',
+    Routine:'Standard terms, bundled with related orders and an automated PO. Still watch the order-by date.'};
+  function pRisk(p, r){
+    var total = r.lines.reduce(function(a,l){ return a+l.value; },0);
+    var W=680,H=400,ml=54,mr=16,mt=16,mb=46, pw=W-ml-mr, ph=H-mt-mb;
+    function xs(v){ var lv = Math.log10(Math.max(0.05, v*100)); return ml + (lv - Math.log10(0.05))/(Math.log10(100)-Math.log10(0.05))*pw; }
+    function ys(v){ return mt + (5.4 - v)/(5.4-0.6)*ph; }
+    var pts = r.lines.map(function(l,i){ var rk = l.risk + (l.status==='Late'?0.3:0); return {l:l, i:i+1, x:xs(l.value/total), y:ys(Math.min(5.3,rk))}; });
+    // nudge overlaps
+    pts.forEach(function(a,ai){ pts.slice(0,ai).forEach(function(b){ if (Math.abs(a.x-b.x)<26 && Math.abs(a.y-b.y)<26) a.y -= 24; }); });
+    var col = {Late:'var(--bad)','Order now':'#D49A1A','On track':'var(--neutral)',Ordered:'var(--good)',Delivered:'var(--good)'};
+    var svg = '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Category risk map: supply risk against share of spend" class="rmap">';
+    var qx = xs(0.03), qy = ys(3.5);
+    svg += '<rect x="'+qx+'" y="'+mt+'" width="'+(ml+pw-qx)+'" height="'+(qy-mt)+'" class="q hot"/><rect x="'+ml+'" y="'+mt+'" width="'+(qx-ml)+'" height="'+(qy-mt)+'" class="q warm"/>';
+    [0.1,1,10,100].forEach(function(v){ var X = xs(v/100); svg += '<line x1="'+X+'" x2="'+X+'" y1="'+mt+'" y2="'+(mt+ph)+'" class="grid"/><text x="'+X+'" y="'+(H-mb+16)+'" text-anchor="middle" class="ax">'+v+'%</text>'; });
+    [1,2,3,4,5].forEach(function(v){ var Y = ys(v); svg += '<line x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+Y+'" y2="'+Y+'" class="grid"/><text x="'+(ml-8)+'" y="'+(Y+4)+'" text-anchor="end" class="ax">'+v+'</text>'; });
+    svg += '<line x1="'+qx+'" x2="'+qx+'" y1="'+mt+'" y2="'+(mt+ph)+'" class="qline"/><line x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+qy+'" y2="'+qy+'" class="qline"/>';
+    svg += '<text x="'+(ml+pw-6)+'" y="'+(mt+14)+'" text-anchor="end" class="ql">Strategic</text><text x="'+(ml+6)+'" y="'+(mt+14)+'" class="ql">Bottleneck</text>'+
+      '<text x="'+(ml+pw-6)+'" y="'+(mt+ph-8)+'" text-anchor="end" class="ql">Leverage</text><text x="'+(ml+6)+'" y="'+(mt+ph-8)+'" class="ql">Routine</text>';
+    svg += '<text x="'+(ml+pw/2)+'" y="'+(H-6)+'" text-anchor="middle" class="ax">Share of deployment spend (log scale)</text><text transform="translate(14 '+(mt+ph/2)+') rotate(-90)" text-anchor="middle" class="ax">Supply risk (1 low – 5 high)</text>';
+    pts.forEach(function(pt){
+      svg += '<g class="pt" data-line="'+pt.l.id+'" tabindex="0" role="button" aria-label="'+esc(pt.l.name)+'"><title>'+esc(pt.l.name)+': '+(pt.l.value/total*100).toFixed(1)+'% of spend, risk '+pt.l.risk+', '+pt.l.status+'</title><circle cx="'+pt.x+'" cy="'+pt.y+'" r="18" fill="transparent"/><circle cx="'+pt.x+'" cy="'+pt.y+'" r="11" fill="'+col[pt.l.status]+'" stroke="var(--paper)" stroke-width="2"/><text x="'+pt.x+'" y="'+(pt.y+4)+'" text-anchor="middle" class="pn">'+pt.i+'</text></g>';
+    });
+    svg += '</svg>';
+    var h = '<div class="panel"><p style="color:var(--ink-soft)">Where each category sits decides how to buy it. Risk scores come from the market signals; a late item moves up. Select a point or row for detail.</p>'+svg+
+      '<div class="glegend"><span><i class="lg dot" style="background:var(--bad)"></i>Late</span><span><i class="lg dot" style="background:#D49A1A"></i>Order now</span><span><i class="lg dot" style="background:var(--neutral)"></i>On track</span><span><i class="lg dot" style="background:var(--good)"></i>Ordered</span></div></div>';
+    h += '<div class="tablewrap" style="margin-top:18px"><table><thead><tr><th>#</th><th>Item</th><th>Quadrant</th><th class="r">Share of spend</th><th>Status</th><th>How to buy it</th></tr></thead><tbody>'+
+      pts.map(function(pt){ var q = quadrant(pt.l,total); return '<tr class="click" data-line="'+pt.l.id+'" tabindex="0"><td>'+pt.i+'</td><td class="wrap"><b>'+esc(pt.l.name)+'</b></td><td>'+q+'</td><td class="r">'+(pt.l.value/total*100).toFixed(1)+'%</td><td>'+stTag(pt.l)+'</td><td class="wrap">'+QACT[q]+'</td></tr>'; }).join('')+
+      '</tbody></table></div>';
+    return h;
+  }
+
+  function pMoney(p, r){
+    var maxPart = r.parts.reduce(function(m,c){ return Math.max(m,c[1]); },1);
+    var h = '<div class="grid2"><div class="panel"><h3>What a week of delay costs</h3>'+
+      r.parts.map(function(c){ return '<div class="cbar"><div class="cl"><span>'+c[0]+'</span><b class="num">'+money(c[1])+'</b></div><div class="ct"><i style="width:'+(c[1]/maxPart*100)+'%"></i></div><span class="sub">'+c[2]+'</span></div>'; }).join('')+
+      '<div class="cbar total"><div class="cl"><span>Total per week</span><b class="num">'+money(r.codW)+'</b></div></div>'+
+      '<label class="phase">Bring part of the cluster online on the original date: <b>'+p.phase+'%</b><input type="range" min="0" max="90" step="10" value="'+p.phase+'" data-pf="phase"></label>'+
+      '<p class="note">Phased go-live assumes the customer contract allows phased acceptance (common in AI cloud contracts) and that the late item can ship in part. Effective cost of delay: <b>'+money(r.codEff)+'</b> per week.</p></div>';
+    h += '<div class="panel"><h3>Decisions and their value</h3>';
+    var dec = decisions(p, r);
+    h += dec.length ? '<ul class="attn">'+dec.map(function(d){
+      return '<li><span class="dot" style="background:var(--steel)"></span><span class="txt">'+d.text+'<span class="sub">'+d.detail+'</span>'+
+        '<span class="dmeta">'+(d.gain?'<span>Days saved <b>'+d.gain+'</b></span>':'')+(d.benefit?'<span>Value <b class="good-t">'+money(d.benefit)+'</b></span>':'')+(d.cost?'<span>Cost <b>'+money(d.cost)+'</b></span>':'')+'</span></span>'+
+        (d.id?'<button class="btn" type="button" data-apply="'+d.kind+':'+d.id+'">Apply</button>':'')+'</li>';
+    }).join('')+'</ul>' : '<p class="empty">Every item arrives in time and no price rises are triggered.</p>';
+    h += '<p class="note">Each move is tested by re-running the whole schedule, so days saved only count if they move the go-live date.</p></div></div>';
+    // cash
+    var a = cashSeries(p,false), b = cashSeries(p,true);
+    h += '<div class="panel" style="margin-top:18px"><h3>Cash: supplier payments against customer receipts</h3>'+
+      '<p style="color:var(--ink-soft)">Deposits go out at order, balances on delivery plus payment terms; the customer prepays '+p.prepay+'% of year-one revenue at signing and pays monthly from go-live. Peak funding need: <b>'+money(a.peak)+'</b>'+(a.peak>b.peak+1?' (<span class="bad-t">'+money(a.peak-b.peak)+' more than if everything arrived on time</span>)':'')+'.</p>'+
+      cashChart(a,b)+'</div>';
+    h += '<details class="panel" style="margin-top:18px"><summary><b>Monthly cash table</b></summary><div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>Month</th><th class="r">Supplier payments</th><th class="r">Customer receipts</th><th class="r">Cumulative</th></tr></thead><tbody>'+
+      a.rows.map(function(x){ return '<tr><td>'+parse(x.m+'-01').toLocaleDateString('en-AU',{month:'short',year:'numeric'})+'</td><td class="r">'+money(-x.out)+'</td><td class="r">'+money(x.inn)+'</td><td class="r '+(x.cum<0?'bad-t':'')+'">'+money(x.cum)+'</td></tr>'; }).join('')+'</tbody></table></div></details>';
+    return h;
+  }
+  function cashChart(a, b){
+    var months = a.rows.length>=b.rows.length ? a.rows : b.rows;
+    var W=1000,H=320,ml=90,mr=100,mt=14,mb=32,pw=W-ml-mr,ph=H-mt-mb;
+    var all = a.rows.concat(b.rows).map(function(x){ return x.cum; });
+    var lo = Math.min.apply(null, all.concat([0])), hi = Math.max.apply(null, all.concat([0]));
+    var pad = (hi-lo)*0.08||1; lo-=pad; hi+=pad;
+    function X(i){ return ml + (months.length<2?0:i/(months.length-1)*pw); }
+    function Y(v){ return mt + (hi-v)/(hi-lo)*ph; }
+    function path(rows){ return rows.map(function(x,i){ return (i?'L':'M')+X(i).toFixed(1)+' '+Y(x.cum).toFixed(1); }).join(' '); }
+    var s = '<svg viewBox="0 0 '+W+' '+H+'" class="cash" role="img" aria-label="Cumulative cash, projected versus on-time plan">';
+    var stepV = niceStep((hi-lo)/4);
+    for (var v = Math.ceil(lo/stepV)*stepV; v<=hi; v+=stepV){ s += '<line x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" class="grid'+(Math.abs(v)<1?' zero':'')+'"/><text x="'+(ml-8)+'" y="'+(Y(v)+4)+'" text-anchor="end" class="ax">'+money(v)+'</text>'; }
+    months.forEach(function(x,i){ if (i%Math.ceil(months.length/8)===0) s += '<text x="'+X(i)+'" y="'+(H-10)+'" text-anchor="middle" class="ax">'+parse(x.m+'-01').toLocaleDateString('en-AU',{month:'short',year:'2-digit'})+'</text>'; });
+    s += '<path d="'+path(b.rows)+'" class="ln plan"/><path d="'+path(a.rows)+'" class="ln proj"/>';
+    var la = a.rows[a.rows.length-1], lb = b.rows[b.rows.length-1];
+    var ya = Y(la.cum), yb = Y(lb.cum); if (Math.abs(ya-yb)<14){ if (ya<yb) ya-=7, yb+=7; else ya+=7, yb-=7; }
+    s += '<text x="'+(X(a.rows.length-1)+6)+'" y="'+(ya+4)+'" class="dl">Projected</text><text x="'+(X(b.rows.length-1)+6)+'" y="'+(yb+4)+'" class="dl muted">If on time</text>';
+    a.rows.forEach(function(x,i){ s += '<circle cx="'+X(i)+'" cy="'+Y(x.cum)+'" r="9" fill="transparent" class="hit"><title>'+parse(x.m+'-01').toLocaleDateString('en-AU',{month:'short',year:'numeric'})+': cumulative '+money(x.cum)+' (out '+money(x.out)+', in '+money(x.inn)+')</title></circle>'; });
+    s += '</svg>';
+    return s+'<div class="glegend"><span><i class="lg proj2"></i>Projected</span><span><i class="lg plan2"></i>If everything arrives on time</span></div>';
+  }
+  function niceStep(x){ var e = Math.pow(10, Math.floor(Math.log10(x))), f = x/e; return (f<1.5?1:f<3?2:f<7?5:10)*e; }
+
+  function pMarket(p, r){
+    var byS = {}; r.lines.forEach(function(l){ (byS[l.sig]=byS[l.sig]||[]).push(l); });
+    var keys = Object.keys(SIG).filter(function(k){ return byS[k] || k==='finance'; });
+    return '<p style="color:var(--ink-soft);margin-bottom:14px">What suppliers told investors in 2026, and what it means for this plan. These signals set the risk scores and the default lead times and price rises.</p><div class="sigs">'+
+      keys.map(function(k){ var s = SIG[k];
+        return '<div class="panel sig"><div class="row" style="margin:0 0 8px;justify-content:space-between"><h3 style="margin:0">'+s.title+'</h3><span class="tag '+s.cls+'">'+s.verdict+'</span></div>'+
+          (s.pts.length?'<ul>'+s.pts.map(function(x){ return '<li><b>'+x[0]+'</b> <span class="sub" style="display:inline">'+x[1]+'</span><br>'+esc(x[2])+'</li>'; }).join('')+'</ul>':'')+
+          '<p class="impl"><b>For this plan:</b> '+s.act+'</p>'+
+          (byS[k]?'<div class="row" style="margin-top:6px">'+byS[k].map(function(l){ return '<button class="link" type="button" data-line="'+l.id+'">'+esc(l.name)+'</button> '+stTag(l); }).join(' ')+'</div>':'')+'</div>';
+      }).join('')+'</div>';
+  }
+
+  // ---------- line drawer ----------
+  function openLine(id, quiet){
+    var p = P(), r = planCalc(p), l = r.lines.filter(function(x){ return x.id===id; })[0]; if (!l) return;
+    var raw = p.lines.filter(function(x){ return x.id===id; })[0], s = SIG[l.sig], canEdit = !l.ordered, isProc = role()==='Procurement';
+    var h = '<div class="scrim" data-close></div><aside class="drawer'+(quiet?' still':'')+'" role="dialog" aria-modal="true" aria-labelledby="odT"><button class="btn close" type="button" data-close aria-label="Close">Close</button>'+
+      '<h3 id="odT">'+esc(l.name)+'</h3>'+stTag(l)+
+      '<dl><dt>Quantity</dt><dd>'+l.qty.toLocaleString('en-US')+' '+l.unit+' × '+money(l.cost)+'</dd><dt>Value</dt><dd>'+money(l.value)+(l.escHit?' <span class="warn-t">(includes +'+l.escPct+'% price rise after '+fmtDateY(l.escDate)+')</span>':'')+'</dd>'+
+      '<dt>Supplier</dt><dd>'+esc(l.supplier)+'</dd><dt>Phase</dt><dd>'+PHASE_TXT[l.phase]+(l.install?' ('+l.install+' days to install)':'')+'</dd>'+
+      '<dt>Lead time</dt><dd>'+l.lead+' weeks'+(l.transit?' + '+l.transit+' days freight':'')+' + '+p.approval+' days approval</dd>'+
+      '<dt>Order by</dt><dd><b>'+fmtDateY(l.orderBy)+'</b></dd><dt>Needed on site</dt><dd>'+fmtDateY(l.need)+'</dd>'+
+      '<dt>'+(l.ordered?'Expected arrival':'Arrives if ordered '+(l.orderBy<off(0)?'today':'on time'))+'</dt><dd class="'+(l.delay?'bad-t':'')+'">'+fmtDateY(l.arrival)+(l.delay?' ('+l.delay+' days late)':'')+'</dd>'+
+      '<dt>Payment</dt><dd>'+l.deposit+'% at order, balance '+l.net+' days after delivery</dd>'+(l.gating?'':'<dt>Gates go-live?</dt><dd>No</dd>')+'</dl>';
+    if (l.ordered) h += '<p class="note" style="margin-top:0">Linked to <b>'+l.po+'</b>. Dates now follow the order: update its ETA under Orders and the plan recalculates.</p><div class="row"><button class="btn" type="button" data-go="orders" data-open="'+l.po+'">Open '+l.po+'</button></div>';
+    else {
+      h += '<h3>Assumptions</h3><form class="form" id="lineForm" data-id="'+id+'">'+
+        '<label>Quantity<input type="number" name="qty" min="0" value="'+raw.qty+'"></label><label>Unit cost (US$)<input type="number" name="cost" min="0" value="'+raw.cost+'"></label>'+
+        '<label>Sourcing<select class="field" name="mode"><option value="Spot"'+(raw.mode==='Spot'?' selected':'')+'>Spot order ('+raw.leadSpot+' wks)</option><option value="LTA"'+(raw.mode==='LTA'?' selected':'')+'>Supply agreement ('+raw.leadLTA+' wks)</option></select></label>'+
+        '<label>Basis<select class="field" name="basis"><option'+(raw.basis==='Estimate'?' selected':'')+'>Estimate</option><option'+(raw.basis==='Quote'?' selected':'')+'>Quote</option></select></label>'+
+        '<label>Spot lead (weeks)<input type="number" name="leadSpot" min="0" value="'+raw.leadSpot+'"></label><label>Agreement lead (weeks)<input type="number" name="leadLTA" min="0" value="'+raw.leadLTA+'"></label>'+
+        '<label>Deposit at order (%)<input type="number" name="deposit" min="0" max="100" value="'+raw.deposit+'"></label><label>Balance terms (days)<input type="number" name="net" min="0" value="'+raw.net+'"></label>'+
+        (raw.expWeeks?'<label class="full row" style="flex-direction:row;margin:0"><input type="checkbox" name="expedite"'+(raw.expedite?' checked':'')+'> Expedite: '+raw.expWeeks+' weeks faster for +'+raw.expPrem+'%</label>':'')+
+        '<div class="full row" style="justify-content:flex-end;margin:0">'+(raw.alt?'<button class="btn" type="button" data-alt="'+id+'">Switch to '+esc(raw.alt.supplier)+'</button>':'')+'<button class="btn primary" type="submit">Save</button></div></form>';
+      h += '<div class="route" style="margin-top:14px">'+(raw.req ? 'Purchase request <b>'+raw.req+'</b> raised. Approve it and raise the PO under Requests; the order then drives these dates.'
+        : 'Ready to buy? Raise a purchase request with the need-by date filled in.')+
+        '<div class="row">'+(raw.req?'<button class="btn" type="button" data-go="requests">Open requests</button>':'<button class="btn primary" type="button" data-req="'+id+'"'+(isProc?'':' disabled title="Switch to Procurement"')+'>Raise purchase request</button>')+'</div></div>';
+    }
+    if (s) h += '<div class="thread"><h3>Market signal: '+s.title+'</h3><p><span class="tag '+s.cls+'">'+s.verdict+'</span></p>'+s.pts.map(function(x){ return '<div class="msg"><b>'+x[0]+'</b><span class="when">'+x[1]+'</span><div>'+esc(x[2])+'</div></div>'; }).join('')+'<p class="note">'+s.act+'</p></div>';
+    h += '</aside>';
+    $('#overlay').innerHTML = h; if (!quiet) $('.drawer .close').focus();
+    if (!canEdit) return;
+  }
+
+  function regenerate(){
+    var p = P(), keep = {}; p.lines.forEach(function(l){ if (l.po||l.req) keep[l.id] = {po:l.po, req:l.req}; });
+    p.lines = buildLines(p); p.lines.forEach(function(l){ if (keep[l.id]){ l.po=keep[l.id].po; l.req=keep[l.id].req; } });
+  }
+  function setPlanField(k, v){
+    var p = P(), num = ['gpus','price','term','credit','prepay','rate','life','colo','power','pue','commission','approval','transit','phase'];
+    if (num.indexOf(k)>-1){ v = +v; if (isNaN(v)) return; }
+    if (k==='endFixed' || k==='ageing') v = v==='1';
+    if (k==='gpus') v = Math.max(8, Math.round(v));
+    if (k==='goLive' && !v) return;
+    p[k] = v;
+    if (k==='template' || k==='gpus' || k==='site') regenerate();
+    if (k==='colo') p.lines.forEach(function(l){ if (l.phase==='Colo') l.cost = p.colo*12; });
+    if (k==='pue' && p.site==='build') regenerate();
+    syncCustomer(); save();
+  }
+  function applyDecision(kind, id){
+    var l = P().lines.filter(function(x){ return x.id===id; })[0]; if (!l) return;
+    if (kind==='lta') l.mode = 'LTA';
+    if (kind==='exp'){ if (l.leadLTA<l.leadSpot) l.mode='LTA'; l.expedite = true; }
+    if (kind==='alt') useAlt(l);
+    if (kind==='price'){ toast('Order before '+fmtDateY(l.escDate)+': raise the request now.'); openLine(id); return; }
+    save(); render(); toast('Applied. Go-live and costs recalculated.');
+  }
+  function useAlt(l){
+    var a = l.alt; if (!a) return;
+    var back = {supplier:l.supplier, leadDelta:-a.leadDelta, priceDelta:Math.round((1/(1+a.priceDelta/100)-1)*1000)/10};
+    l.leadSpot += a.leadDelta; l.leadLTA += a.leadDelta; l.cost = Math.round(l.cost*(1+a.priceDelta/100)); l.supplier = a.supplier; l.alt = back;
+  }
+  var HUBCAT = {gpu:'Hardware',memory:'Hardware',optics:'Networking',network:'Networking',cabling:'Networking',cooling:'Cooling',electrical:'Data centre',colo:'Data centre',services:'Services',software:'Software'};
+  function supIdFor(name){ var s = S.suppliers.filter(function(x){ return x.name===name; })[0]; return s ? s.id : 'S-01'; }
+  function raiseFromLine(id){
+    var p = P(), r = planCalc(p), l = r.lines.filter(function(x){ return x.id===id; })[0], raw = p.lines.filter(function(x){ return x.id===id; })[0];
+    var q = {id:'R-'+(S.seq.R++), title:l.name+' ('+l.qty.toLocaleString('en-US')+' '+l.unit+') for '+p.custName, category:HUBCAT[l.sig]||'Hardware', amount:Math.round(l.value), supplier:supIdFor(l.supplier),
+      customer:p.customer, requester:'Ops', needBy:l.need, why:'Deployment plan: order by '+fmtDate(l.orderBy)+' to arrive by '+fmtDate(l.need)+' for '+p.custName+' go-live.', approvals:[], status:'Pending', po:null, created:off(0), planLine:id, risk:riskFromLine(l)};
+    S.requests.push(q); raw.req = q.id; save(); render(); openLine(id, true); toast(q.id+' raised. Waiting on '+nextStep(q)+'.');
+  }
+
+  // ---------- Excel export (ExcelJS, loaded on demand) ----------
+  var XLSX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';
+  function loadExcel(cb){
+    if (window.ExcelJS) return cb();
+    var sc = document.createElement('script'); sc.src = XLSX_URL; sc.onload = cb; sc.onerror = function(){ toast('Could not load the Excel library. Check your connection.'); };
+    document.head.appendChild(sc);
+  }
+  function exportPlan(){ toast('Building workbook…'); loadExcel(function(){ buildWorkbook().then(function(buf){
+    var blob = new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Deployment-plan-'+P().custName.replace(/[^A-Za-z0-9]+/g,'-')+'.xlsx';
+    document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500); toast('Workbook downloaded.');
+  }); }); }
+  function xd(s){ var p = s.split('-'); return new Date(Date.UTC(+p[0],+p[1]-1,+p[2])); }
+  function buildWorkbook(){
+    var p = P(), r = planCalc(p), cash = cashSeries(p,false), wb = new ExcelJS.Workbook();
+    wb.creator = 'Finingale Deployment Supply Planner'; wb.calcProperties.fullCalcOnLoad = true;
+    var NAVY='FF1C2541', HEAD={type:'pattern',pattern:'solid',fgColor:{argb:NAVY}}, INPUT={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFF6DB'}}, BAND={type:'pattern',pattern:'solid',fgColor:{argb:'FFF2F5F8'}};
+    var USD='"US$"#,##0;[Red]-"US$"#,##0', DATE='d mmm yyyy', thin={style:'thin',color:{argb:'FFD5DCE4'}};
+    function title(ws, t, sub){ ws.getCell('A1').value = t; ws.getCell('A1').font = {name:'Calibri',size:15,bold:true,color:{argb:NAVY}}; ws.getCell('A2').value = sub; ws.getCell('A2').font = {italic:true,color:{argb:'FF6B7689'}}; }
+    function header(row){ row.eachCell(function(c){ c.fill = HEAD; c.font = {bold:true,color:{argb:'FFFFFFFF'}}; c.alignment = {vertical:'middle',wrapText:true}; c.border = {bottom:thin}; }); row.height = 30; }
+
+    var t1 = 10, lr = 4+cash.rows.length;
+    // Summary first
+    var ws = wb.addWorksheet('Summary', {views:[{showGridLines:false}]});
+    title(ws,'Deployment plan: '+p.custName, p.gpus.toLocaleString('en-US')+' GPUs · '+TPL[p.template].short+' · exported '+fmtDateY(off(0)));
+    var SM = [['Contracted go-live', xd(p.goLive), DATE],['Projected go-live', xd(r.goLiveProj), DATE],['Projected delay (days)', r.delay, '0'],
+      ['Critical item', r.crit.name, null],['Cost of delay per week', {formula:"'Cost of delay'!B"+(t1+1), result:r.codEff}, USD],
+      ['Deployment cost (before colocation)', r.capex, USD],['Committed today (incl. supply agreements)', r.committed, USD],['Peak funding need', {formula:"'Cash flow'!B"+(lr+2), result:cash.peak}, USD]];
+    SM.forEach(function(x,i){ var row = ws.getRow(4+i); row.getCell(1).value = x[0]; row.getCell(2).value = x[1]; if (x[2]) row.getCell(2).numFmt = x[2]; row.eachCell(function(c){ c.border={bottom:thin}; }); });
+    ws.getCell('A13').value = 'Best moves'; ws.getCell('A13').font = {bold:true,color:{argb:NAVY}};
+    decisions(p, r).slice(0,6).forEach(function(d,i){ ws.getCell('A'+(14+i)).value = (d.text+' '+d.detail).replace(/<[^>]+>/g,''); ws.getCell('A'+(14+i)).alignment = {wrapText:true,vertical:'top'}; ws.mergeCells('A'+(14+i)+':D'+(14+i)); ws.getRow(14+i).height = 46; });
+    ws.getCell('A22').value = 'Unit prices and lead times are public-industry estimates for illustration unless marked Quote on the Plan sheet.'; ws.getCell('A22').font = {italic:true,color:{argb:'FF6B7689'}};
+    ws.getColumn(1).width = 44; ws.getColumn(2).width = 30; ws.getColumn(3).width = 20; ws.getColumn(4).width = 20;
+    // Assumptions (inputs in yellow; other sheets reference these cells)
+    var wa = wb.addWorksheet('Assumptions', {views:[{showGridLines:false}]});
+    title(wa,'Assumptions','Yellow cells are inputs. Change them here and the Plan and Cost of delay sheets recalculate.');
+    var A = [
+      ['Customer', p.custName, null,'name'], ['Template', TPL[p.template].label, null,'tpl'], ['GPUs', p.gpus, '#,##0','gpus'], ['Contracted go-live', xd(p.goLive), DATE,'golive'],
+      ['Price per GPU-hour (US$)', p.price, '0.00','price'], ['Monthly contract revenue', null, USD,'monthly'], ['IT load (MW)', +r.mw.toFixed(3), '0.00','mw'], ['PUE', p.pue, '0.00','pue'],
+      ['Power (US$ per MWh)', p.power, '#,##0','power'], ['Colocation (US$ per kW per month)', p.site==='colo'?p.colo:0, '#,##0','colo'], ['Financing rate', p.rate/100, '0.0%','rate'],
+      ['Late-delivery credit (% of monthly fee per week)', p.credit/100, '0.0%','credit'], ['Hardware useful life (years)', p.life, '0','life'], ['Count hardware ageing (1 = yes)', p.ageing?1:0, '0','ageing'],
+      ['Contract end fixed (1 = billing lost, 0 = deferred)', p.endFixed?1:0, '0','endfixed'], ['Contract term (years)', p.term, '0','term'], ['Phased go-live share', p.phase/100, '0%','phase'],
+      ['Acceptance testing (days)', p.commission, '0','commission'], ['IT installation (days)', TPL[p.template].itInstall, '0','itinstall'], ['Approval and PO time (days)', p.approval, '0','approval'], ['Freight and customs (days)', p.transit, '0','transit']
+    ];
+    var REF = {};
+    A.forEach(function(a,i){ var row = 4+i; wa.getCell('A'+row).value = a[0]; var c = wa.getCell('B'+row); REF[a[3]] = 'Assumptions!$B$'+row;
+      if (a[3]==='monthly'){ c.value = {formula:REF.gpus.replace('Assumptions!','')+'*'+REF.price.replace('Assumptions!','')+'*730', result:r.monthly}; }
+      else { c.value = a[1]; if (a[3]!=='name' && a[3]!=='tpl' && a[3]!=='mw' && a[3]!=='itinstall') c.fill = INPUT; }
+      if (a[2]) c.numFmt = a[2]; c.border = {bottom:thin}; });
+    wa.getColumn(1).width = 48; wa.getColumn(2).width = 26;
+
+    // Plan sheet with live schedule formulas
+    var wp = wb.addWorksheet('Plan', {views:[{state:'frozen',ySplit:4,showGridLines:false}]});
+    title(wp,'Bill of materials and order dates','Order by = Needed on site − lead weeks × 7 − freight − approval. Slack and status update against TODAY().');
+    var cols = ['Item','Phase','Supplier','Sourcing','Qty','Unit','Unit cost','Value','Lead (weeks)','Freight (days)','Needed on site','Order by','Days of slack','Status','Ordered (PO)','Price rise %','Price rise from','Basis'];
+    cols.forEach(function(c,i){ wp.getRow(4).getCell(i+1).value = c; }); header(wp.getRow(4));
+    var widths = [42,11,26,17,10,11,12,15,11,11,14,14,12,15,13,11,14,10];
+    widths.forEach(function(w,i){ wp.getColumn(i+1).width = w; });
+    var first = 5;
+    r.lines.forEach(function(l,i){
+      var n = first+i, row = wp.getRow(n);
+      row.values = [l.name, l.phase, l.supplier, (l.mode==='LTA'?'Supply agreement':'Spot')+(l.expedite?', expedited':''), l.qty, l.unit, l.cost*(l.expedite?1+l.expPrem/100:1), null, l.lead, l.transit, xd(l.need), null, null, null, l.po||'', l.escPct/100, l.escDate?xd(l.escDate):null, l.basis];
+      row.getCell(8).value = {formula:'E'+n+'*G'+n+'*IF(AND(O'+n+'="",P'+n+'>0,ISNUMBER(Q'+n+'),L'+n+'>=Q'+n+'),1+P'+n+',1)', result:l.value};
+      row.getCell(12).value = {formula:'K'+n+'-I'+n+'*7-J'+n+'-'+REF.approval, result:xd(l.orderBy)};
+      row.getCell(13).value = l.ordered ? daysBetween(l.arrival,l.need) : {formula:'L'+n+'-TODAY()', result:l.slack};
+      row.getCell(14).value = {formula:'IF(O'+n+'<>"",IF(M'+n+'<0,"Late","Ordered"),IF(M'+n+'<0,"Late",IF(M'+n+'<=30,"Order now","On track")))', result:l.status==='Delivered'?'Ordered':l.status};
+      [5].forEach(function(c){ row.getCell(c).numFmt = '#,##0'; }); [7,8].forEach(function(c){ row.getCell(c).numFmt = USD; });
+      [11,12,17].forEach(function(c){ row.getCell(c).numFmt = DATE; }); row.getCell(16).numFmt = '0%'; row.getCell(13).numFmt = '#,##0';
+      [5,7,9,10].forEach(function(c){ row.getCell(c).fill = INPUT; });
+      if (i%2) [1,2,3,4,6,8,11,12,13,14,15,16,17,18].forEach(function(c){ row.getCell(c).fill = BAND; });
+      row.eachCell({includeEmpty:true}, function(c){ c.border = {bottom:thin}; c.alignment = {vertical:'middle',wrapText:c.col===1}; });
+    });
+    var last = first + r.lines.length - 1, tr = wp.getRow(last+1);
+    tr.getCell(1).value = 'Total'; tr.getCell(8).value = {formula:'SUM(H'+first+':H'+last+')', result:r.lines.reduce(function(a,l){ return a+l.value; },0)}; tr.getCell(8).numFmt = USD; tr.font = {bold:true};
+    wp.addConditionalFormatting({ref:'N'+first+':N'+last, rules:[
+      {type:'containsText',operator:'containsText',text:'Late',style:{font:{color:{argb:'FFB3412E'},bold:true}}},
+      {type:'containsText',operator:'containsText',text:'Order now',style:{font:{color:{argb:'FF9A6A12'},bold:true}}}]});
+    wp.getCell('A'+(last+3)).value = 'Ordered lines show slack against the supplier\'s current ETA (fixed value). Freight is zero for local services and colocation.'; wp.getCell('A'+(last+3)).font = {italic:true,color:{argb:'FF6B7689'}};
+
+    // Cost of delay with live formulas
+    var wc = wb.addWorksheet('Cost of delay', {views:[{showGridLines:false}]});
+    title(wc,'Cost of delay per week','Every figure is a formula on the Assumptions sheet.');
+    var hwF = 'SUMPRODUCT((Plan!B'+first+':B'+last+'="IT")+(Plan!B'+first+':B'+last+'="Facility"),Plan!H'+first+':H'+last+')';
+    var C = [
+      ['Billing lost or deferred', 'IF('+REF.endfixed+'=1,MAX(0,'+REF.monthly+'*12/52-'+REF.mw+'*'+REF.pue+'*168*'+REF.power+'),'+REF.monthly+'*12*'+REF.term+'*'+REF.rate+'/52)'],
+      ['Late-delivery credits', REF.monthly+'*'+REF.credit],
+      ['Interest on hardware not yet earning', hwF+'*'+REF.rate+'/52'],
+      ['Colocation rent on empty capacity', REF.mw+'*1000*'+REF.colo+'*12/52'],
+      ['Hardware life used while idle', 'IF('+REF.ageing+'=1,'+hwF+'/('+REF.life+'*52),0)']
+    ];
+    var resMap = {}; r.parts.forEach(function(c){ resMap[c[0].slice(0,12)] = c[1]; });
+    header(wc.getRow(4)); wc.getRow(4).values = ['Component','US$ per week']; header(wc.getRow(4));
+    C.forEach(function(c,i){ var row = wc.getRow(5+i); row.getCell(1).value = c[0]; row.getCell(2).value = {formula:c[1]}; row.getCell(2).numFmt = USD; row.eachCell(function(x){ x.border={bottom:thin}; }); });
+    wc.getCell('A'+t1).value = 'Total per week'; wc.getCell('B'+t1).value = {formula:'SUM(B5:B'+(t1-1)+')', result:r.codW};
+    wc.getCell('A'+(t1+1)).value = 'After phased go-live'; wc.getCell('B'+(t1+1)).value = {formula:'B'+t1+'*(1-'+REF.phase+')', result:r.codEff};
+    wc.getCell('A'+(t1+2)).value = 'Projected delay (days)'; wc.getCell('B'+(t1+2)).value = r.delay; wc.getCell('B'+(t1+2)).fill = INPUT;
+    wc.getCell('A'+(t1+3)).value = 'Cost of the projected delay'; wc.getCell('B'+(t1+3)).value = {formula:'B'+(t1+1)+'*B'+(t1+2)+'/7', result:r.delayCost};
+    [t1,t1+1,t1+3].forEach(function(n){ wc.getCell('B'+n).numFmt = USD; wc.getRow(n).font = {bold:true}; });
+    wc.getColumn(1).width = 42; wc.getColumn(2).width = 18;
+
+    // Cash flow
+    var wf = wb.addWorksheet('Cash flow', {views:[{state:'frozen',ySplit:4,showGridLines:false}]});
+    title(wf,'Monthly cash','Deposits at order, balances on delivery plus terms, colocation rent from ready-for-service; customer prepayment at signing and monthly billing from projected go-live.');
+    wf.getRow(4).values = ['Month','Supplier payments','Customer receipts','Net','Cumulative']; header(wf.getRow(4));
+    cash.rows.forEach(function(x,i){ var n = 5+i, row = wf.getRow(n);
+      row.values = [xd(x.m+'-01'), -x.out, x.inn]; row.getCell(4).value = {formula:'B'+n+'+C'+n, result:x.inn-x.out};
+      row.getCell(5).value = {formula: i ? 'E'+(n-1)+'+D'+n : 'D'+n, result:x.cum};
+      row.getCell(1).numFmt = 'mmm yyyy'; [2,3,4,5].forEach(function(c){ row.getCell(c).numFmt = USD; }); row.eachCell(function(c){ c.border={bottom:thin}; }); });
+    wf.getCell('A'+(lr+2)).value = 'Peak funding need'; wf.getCell('B'+(lr+2)).value = {formula:'-MIN(0,MIN(E5:E'+lr+'))', result:cash.peak}; wf.getCell('B'+(lr+2)).numFmt = USD; wf.getRow(lr+2).font = {bold:true};
+    [12,18,18,18,18].forEach(function(w,i){ wf.getColumn(i+1).width = w; });
+
+    // Market signals
+    var wm = wb.addWorksheet('Market signals', {views:[{showGridLines:false}]});
+    title(wm,'Market signals','From 2026 company filings and earnings calls. Use them to challenge supplier lead times and pricing.');
+    wm.getRow(4).values = ['Category','Read','Company','Source','What they said','What it means for the plan']; header(wm.getRow(4));
+    var rn = 5;
+    Object.keys(SIG).forEach(function(k){ var s = SIG[k]; (s.pts.length?s.pts:[['—','—','—']]).forEach(function(x,j){
+      var row = wm.getRow(rn++); row.values = [j?'':s.title, j?'':s.verdict, x[0], x[1], x[2], j?'':s.act];
+      row.eachCell({includeEmpty:true}, function(c){ c.alignment = {vertical:'top',wrapText:true}; c.border={bottom:thin}; }); }); });
+    [24,22,16,22,60,48].forEach(function(w,i){ wm.getColumn(i+1).width = w; });
+
+    return wb.xlsx.writeBuffer();
+  }
+
+  // ---------- events ----------
+  function closeOverlay(){ $('#overlay').innerHTML = ''; }
+  root.addEventListener('click', function(e){
+    var t = e.target.closest('button, [data-close], tr[data-order], tr[data-line], g[data-line]'); if (!t) return;
+    var d = t.dataset;
+    if (d.view){ go(d.view); return; }
+    if (d.ptab){ planTab = d.ptab; render(); return; }
+    if (d.review){ openReview(d.review); return; }
+    if (d.rdone){ var rp = d.rdone.split('|'), rq = S.requests.filter(function(x){ return x.id===rp[0]; })[0]; rq.reviews = rq.reviews||{}; rq.reviews[rp[1]] = off(0); save(); render(); openReview(rq.id, true); toast(rp[1]+' marked done.'); return; }
+    if (d.line){ openLine(d.line); return; }
+    if (d.apply){ var ap = d.apply.split(':'); applyDecision(ap[0], ap[1]); return; }
+    if (d.req){ raiseFromLine(d.req); return; }
+    if (d.alt){ var al = P().lines.filter(function(x){ return x.id===d.alt; })[0]; var from = al.supplier; useAlt(al); save(); render(); openLine(al.id, true); toast('Switched from '+from+' to '+al.supplier+'.'); return; }
+    if (t.id==='xlsx'){ exportPlan(); return; }
+    if (t.hasAttribute('data-close')){ closeOverlay(); return; }
+    if (d.go){ current = d.go; render(); if (d.open) openOrder(d.open); return; }
+    if (t.id==='newReq'){ openRequestForm(); return; }
+    if (t.id==='invite'){ openInvite(); return; }
+    if (t.id==='reset'){ fresh(); save(); current='overview'; planTab='summary'; render(); toast('Demo data reset.'); return; }
+    if (d.of){ orderFilter = d.of; render(); return; }
+    if (d.order){ openOrder(d.order); return; }
+    if (d.approve){
+      var q = S.requests.filter(function(x){ return x.id===d.approve; })[0], st = nextStep(q);
+      q.approvals.push(st); if (q.approvals.length===steps(q.amount).length) q.status='Approved';
+      save(); render(); toast(q.status==='Approved' ? q.id+' fully approved. Procurement can raise the PO.' : st+' approved '+q.id+'. Now with '+nextStep(q)+'.'); return;
+    }
+    if (d.reject){ var q2 = S.requests.filter(function(x){ return x.id===d.reject; })[0]; q2.status='Rejected'; save(); render(); toast(q2.id+' rejected.'); return; }
+    if (d.po){
+      var q3 = S.requests.filter(function(x){ return x.id===d.po; })[0], sp = sup(q3.supplier);
+      if (sp.status!=='Active'){ toast(sp.name+' is still onboarding. Finish its checks first.'); return; }
+      var rvp = review(q3); if (rvp.open.length){ toast('Complete '+rvp.open.length+' required review'+(rvp.open.length>1?'s':'')+' first.'); openReview(q3.id); return; }
+      var lead = LEAD_DAYS[q3.category], id = 'PO-'+(S.seq.PO++), pl = q3.planLine && P().lines.filter(function(x){ return x.id===q3.planLine; })[0];
+      if (pl) lead = leadOf(pl)*7 + (pl.imported?P().transit:0);
+      var gp = pl && (pl.sig==='gpu'||pl.sig==='optics') ? P().gpus : 0;
+      if (pl) pl.po = id;
+      S.orders.push({id:id,item:q3.title,supplier:q3.supplier,customer:q3.customer,value:q3.amount,gpus:gp,stage:0,promised:pl?q3.needBy:addDays(off(0),lead),eta:addDays(off(0),lead),stageDates:{0:off(0)},
+        thread:[{who:'Procurement',when:off(0),text:'Raised from '+q3.id+'. '+q3.why}]});
+      q3.po = id; save(); render(); toast(id+' raised and sent to '+sp.name+'.'); return;
+    }
+    if (d.advance){
+      var o = order(d.advance); o.stage++; o.stageDates[o.stage] = off(0);
+      if (o.stage===4) o.eta = off(0);
+      o.thread.push({who:role(),when:off(0),text:'Marked '+STAGES[o.stage].toLowerCase()+'.'});
+      save(); render(); openOrder(o.id, true); toast(o.id+' marked '+STAGES[o.stage].toLowerCase()+'.'); return;
+    }
+    if (d.eta){
+      var o2 = order(d.eta), v = $('#etaIn').value; if (!v) return;
+      var before = o2.eta; o2.eta = v;
+      o2.thread.push({who:role(),when:off(0),text:'ETA moved from '+fmtDate(before)+' to '+fmtDate(v)+'.'});
+      save(); render(); openOrder(o2.id, true); toast('ETA updated. Revenue at risk is now '+money(revAtRisk(o2))+'.'); return;
+    }
+    if (d.msg){
+      var o3 = order(d.msg), txt = $('#msgIn').value.trim(); if (!txt) return;
+      o3.thread.push({who:role(),when:off(0),text:txt}); save(); openOrder(o3.id, true); return;
+    }
+    if (d.check){
+      var s = S.suppliers.filter(function(x){ return x.id===d.check; })[0];
+      CHECKS.forEach(function(c){ if (s.checks[c[0]]==='pending') s.checks[c[0]] = c[0]==='insurance' ? 'fail' : 'pass'; });
+      save(); render(); toast(s.name+': checks complete. '+(s.checks.insurance==='fail'?'Insurance certificate missing.':'All passed.')); return;
+    }
+    if (d.ins){ var s2 = S.suppliers.filter(function(x){ return x.id===d.ins; })[0]; s2.checks.insurance='pass'; save(); render(); toast('Insurance certificate verified for '+s2.name+'.'); return; }
+    if (d.activate){ var s3 = S.suppliers.filter(function(x){ return x.id===d.activate; })[0]; s3.status='Active'; s3.activated=off(0); save(); render(); toast(s3.name+' is active. POs can now be raised.'); return; }
+    if (d.pay){ var i1 = S.invoices.filter(function(x){ return x.id===d.pay; })[0]; i1.status='Approved'; save(); render(); toast(i1.id+' approved for payment.'); return; }
+    if (d.override){ var i2 = S.invoices.filter(function(x){ return x.id===d.override; })[0]; i2.status='Approved'; save(); render(); toast(i2.id+' approved as an exception.'); return; }
+  });
+  root.addEventListener('toggle', function(e){ if (e.target.id==='advSetup') advOpen = e.target.open; }, true);
+  root.addEventListener('keydown', function(e){
+    if (e.key==='Escape' && $('#overlay').innerHTML){ closeOverlay(); return; }
+    if ((e.key==='Enter' || e.key===' ') && e.target.matches('tr[data-order]')){ e.preventDefault(); openOrder(e.target.dataset.order); }
+    if ((e.key==='Enter' || e.key===' ') && e.target.matches('tr[data-line], g[data-line]')){ e.preventDefault(); openLine(e.target.dataset.line); }
+  });
+  root.addEventListener('submit', function(e){
+    e.preventDefault();
+    if (e.target.id==='rqForm') submitRequest(e.target);
+    if (e.target.id==='lineForm'){
+      var lf = e.target, ln = P().lines.filter(function(x){ return x.id===lf.dataset.id; })[0];
+      ['qty','cost','leadSpot','leadLTA','deposit','net'].forEach(function(k){ var v = +lf[k].value; if (!isNaN(v) && lf[k].value!=='') ln[k] = Math.max(0,v); });
+      ln.mode = lf.mode.value; ln.basis = lf.basis.value; if (lf.expedite) ln.expedite = lf.expedite.checked;
+      save(); render(); openLine(ln.id, true); toast('Saved. Schedule and costs recalculated.');
+    }
+    if (e.target.id==='ivForm'){
+      var f = e.target, id = 'S-'+('0'+(S.seq.S++)).slice(-2);
+      S.suppliers.push({id:id,name:f.name.value.trim(),category:f.category.value,status:'Onboarding',risk:f.risk.value,onTime:null,started:off(0),activated:null,
+        checks:{abn:'pending',bank:'pending',sanctions:'pending',insurance:'pending',security:'pending'}});
+      save(); closeOverlay(); render(); toast('Invite sent to '+f.name.value.trim()+'.');
+    }
+  });
+  root.addEventListener('input', function(e){ if (e.target.closest('#rqForm')) updateRoute();
+    if (e.target.dataset && e.target.dataset.pf==='phase'){ var b = e.target.parentNode.querySelector('b'); if (b) b.textContent = e.target.value+'%'; } });
+  root.addEventListener('change', function(e){
+    if (e.target.dataset && e.target.dataset.pf){ var k = e.target.dataset.pf, y = window.scrollY; setPlanField(k, e.target.value); render(); window.scrollTo(0,y); if (k!=='phase') toast(k==='template'||k==='gpus'||k==='site' ? 'Bill of materials rebuilt.' : 'Plan updated.'); return; }
+    if (e.target.id==='role'){ render(); toast('Viewing as '+role()+'.'); } else if (e.target.closest('#rqForm')) updateRoute(); });
+
+  if (!S.plan){ S.plan = seedPlan(); syncCustomer(); save(); }
+  render();
+})();
+</script>
+<script>
+(function () {
+  var btn = document.querySelector('.nav-toggle'), links = document.getElementById('nav-links');
+  if (!btn) return;
+  btn.addEventListener('click', function () {
+    var open = links.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open);
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+})();
+</script>
+</body>
+</html>
