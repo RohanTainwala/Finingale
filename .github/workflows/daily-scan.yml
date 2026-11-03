@@ -32,11 +32,18 @@ jobs:
           python "$GITHUB_WORKSPACE/tools/scanner/scan.py" daily --show 10 || true
           python "$GITHUB_WORKSPACE/tools/scanner/publish.py" "$RUNNER_TEMP/scan/trader" "$GITHUB_WORKSPACE/data/daily-scan.json"
 
+      - name: Build the Excel download
+        # A failure here still lets the page's data update.
+        continue-on-error: true
+        run: |
+          pip install --quiet openpyxl==3.1.5
+          python tools/scanner/excel.py data/daily-scan.json data/daily-scan.xlsx
+
       - name: Commit the new results
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git add data/daily-scan.json
+          git add data/
           if git diff --cached --quiet; then echo "No change."; exit 0; fi
           git commit -m "Daily scan: $(date -u +%F)"
           git push

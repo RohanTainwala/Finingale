@@ -248,6 +248,8 @@ section[id] { scroll-margin-top: 88px; }
 .filter .ct { font-variant-numeric: tabular-nums; opacity: .7; }
 .search { font: inherit; font-size: .95rem; color: var(--evergreen); background: var(--white); border: 1px solid var(--line); border-radius: 14px; padding: 11px 16px; min-width: 260px; box-shadow: inset 0 2px 0 var(--mint); }
 .search::placeholder { color: #7F978B; }
+.tools { display: flex; gap: 10px; align-items: center; }
+.btn .dl { width: 18px; height: 18px; flex: none; }
 
 /* Table */
 .table-slab { overflow: hidden; }
@@ -320,7 +322,8 @@ td.name { color: var(--ink-2); max-width: 300px; overflow: hidden; text-overflow
   .fact + .fact { border-left: 0; border-top: 1px solid var(--line); }
   .block { padding-top: 88px; }
   .band { margin-top: 88px; padding: 72px 0; }
-  .search { min-width: 0; width: 100%; }
+  .tools { width: 100%; }
+  .search { min-width: 0; flex: 1; }
   .setups { grid-template-columns: 1fr; }
   th, td { padding: 12px 14px; }
   td.name { max-width: 150px; }
@@ -354,7 +357,7 @@ td.name { color: var(--ink-2); max-width: 300px; overflow: hidden; text-overflow
       <p class="hero-sub">After every US trading session, about 5,900 US-listed stocks are checked for five classic chart setups. Every match is listed here: a shortlist of charts worth a look, not a list of stocks to buy.</p>
       <div class="hero-actions">
         <a href="#list" class="btn btn-primary">See today's list</a>
-        <a href="#setups" class="btn btn-soft">How the setups work</a>
+        <a href="data/daily-scan.xlsx" class="btn btn-soft xl-link" download="finingale-daily-scan.xlsx"><svg class="dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download Excel</a>
       </div>
     </div>
 
@@ -405,7 +408,10 @@ td.name { color: var(--ink-2); max-width: 300px; overflow: hidden; text-overflow
       <button type="button" class="filter" data-k="oversold" aria-pressed="false"><i class="sw" style="background:var(--s-oversold)"></i>Oversold <span class="ct" data-ct="oversold"></span></button>
       <button type="button" class="filter" data-k="oversold_bounce" aria-pressed="false"><i class="sw" style="background:var(--s-bounce)"></i>Oversold bounce <span class="ct" data-ct="oversold_bounce"></span></button>
     </div>
-    <input type="search" class="search" id="search" placeholder="Search ticker or company" aria-label="Search ticker or company"/>
+    <div class="tools">
+      <input type="search" class="search" id="search" placeholder="Search ticker or company" aria-label="Search ticker or company"/>
+      <a href="data/daily-scan.xlsx" class="btn btn-soft btn-sm xl-link" download="finingale-daily-scan.xlsx"><svg class="dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Excel</a>
+    </div>
   </div>
   <div class="slab table-slab">
     <div class="table-scroll">
@@ -647,6 +653,7 @@ window.scanReady = fetch('data/daily-scan.json', {cache: 'no-cache'})
     $('list-sub').textContent = 'From the US close of ' + closeText + ', updated ' +
       gen.toLocaleString('en-AU', {day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit'}) +
       ' your time. Most traded first; sort by any column or narrow the list by setup.';
+    document.querySelectorAll('.xl-link').forEach(a => { a.download = 'finingale-scan-' + d.as_of + '.xlsx'; });
     render();
   }).catch(() => {
     $('eyebrow').textContent = "Today's scan couldn't be loaded";
