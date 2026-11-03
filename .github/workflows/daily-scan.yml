@@ -1,0 +1,42 @@
+name: Daily stock scan
+
+on:
+  schedule:
+    # 22:17 UTC Mon-Fri: after the US close (20:00 or 21:00 UTC), about 9:17 AM in Sydney Tue-Sat.
+    - cron: "17 22 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run the scanner
+        run: |
+          mkdir -p "$RUNNER_TEMP/scan" && cd "$RUNNER_TEMP/scan"
+          python "$GITHUB_WORKSPACE/tools/scanner/scan.py" universe
+          # Exit code 1 also means "no setups today", so only publish.py decides whether the run is good.
+          python "$GITHUB_WORKSPACE/tools/scanner/scan.py" daily --show 10 || true
+          python "$GITHUB_WORKSPACE/tools/scanner/publish.py" "$RUNNER_TEMP/scan/trader" "$GITHUB_WORKSPACE/data/daily-scan.json"
+
+      - name: Commit the new results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add data/daily-scan.json
+          if git diff --cached --quiet; then echo "No change."; exit 0; fi
+          git commit -m "Daily scan: $(date -u +%F)"
+          git push
