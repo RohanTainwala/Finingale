@@ -4,6 +4,9 @@ on:
   schedule:
     # 22:17 UTC Mon-Fri: after the US close (20:00 or 21:00 UTC), about 9:17 AM in Sydney Tue-Sat.
     - cron: "17 22 * * 1-5"
+    # Backup, 3.5 hours later, in case GitHub starts the first run late or not at all.
+    # It only commits when it finds something the first run didn't.
+    - cron: "47 1 * * 2-6"
   workflow_dispatch:
 
 permissions:
@@ -43,6 +46,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          if python tools/scanner/same_scan.py data/daily-scan.json; then
+            echo "Same trading day and matches as the last scan; nothing to commit."
+            git checkout -- data/
+            exit 0
+          fi
           git add data/
           if git diff --cached --quiet; then echo "No change."; exit 0; fi
           git commit -m "Daily scan: $(date -u +%F)"
