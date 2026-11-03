@@ -9,9 +9,18 @@ keeps showing the last good day rather than an empty or partial one.
 import datetime
 import json
 import os
+import re
 import sys
 
 MIN_SCANNED = 500   # a normal day scans ~1,500 liquid stocks; far fewer means Yahoo failed
+
+
+SHARE_WORDS = re.compile(r"\s+(New\s+)?(Class [A-Z]\s+)?(Common Stock|Common Shares|Ordinary Shares|Subordinate Voting Shares|American Depositary Shares|American Depository Shares|Sponsored ADR|ADS)\b.*$", re.I)
+
+
+def tidy(name):
+    """'Intel Corporation - Common Stock' / 'Berkshire Hathaway Inc. New Common Stock' -> the company name."""
+    return SHARE_WORDS.sub("", name.split(" - ")[0]).strip(" ,")
 
 
 def main(trader_dir, out_path):
@@ -22,7 +31,7 @@ def main(trader_dir, out_path):
         for line in f:
             sym, _, name = line.rstrip("\n").partition("|")
             if sym:
-                names[sym] = name.split(" - ")[0].strip()  # "Intel Corporation - Common Stock" -> "Intel Corporation"
+                names[sym] = tidy(name)
 
     if wl.get("mode") != "daily" or (wl.get("scanned") or 0) < MIN_SCANNED:
         sys.exit("Scan looks incomplete (scanned %s); not publishing." % wl.get("scanned"))
