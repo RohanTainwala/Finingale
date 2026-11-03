@@ -1,0 +1,48 @@
+name: Daily stock scan (India)
+
+on:
+  schedule:
+    # 11:37 UTC Mon-Fri: after the NSE/BSE close (10:00 UTC), about 10:37 PM in Sydney (9:37 PM in winter).
+    - cron: "37 11 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-scan-india
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install the PDF reader for AMFI's market-cap list
+        run: sudo apt-get install -y -qq poppler-utils >/dev/null
+
+      - name: Run the scanner
+        run: python tools/scanner/india.py data/daily-scan-india.json
+
+      - name: Build the Excel download
+        # A failure here still lets the page's data update.
+        continue-on-error: true
+        run: |
+          pip install --quiet openpyxl==3.1.5
+          python tools/scanner/excel.py data/daily-scan-india.json data/daily-scan-india.xlsx
+
+      - name: Commit the new results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add data/daily-scan-india.json data/daily-scan-india.xlsx tools/scanner/amfi-mcap.csv
+          if git diff --cached --quiet; then echo "No change."; exit 0; fi
+          git commit -m "Daily India scan: $(date -u +%F)"
+          git pull --rebase --quiet origin main
+          git push

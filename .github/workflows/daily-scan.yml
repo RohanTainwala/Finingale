@@ -46,4 +46,5 @@ jobs:
           git add data/
           if git diff --cached --quiet; then echo "No change."; exit 0; fi
           git commit -m "Daily scan: $(date -u +%F)"
+          git pull --rebase --quiet origin main
           git push
