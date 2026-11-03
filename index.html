@@ -294,6 +294,15 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
 .mg-golive { position: absolute; top: -4px; bottom: -4px; left: calc(102px + (100% - 102px) * .74); border-left: 2px dashed #5EE59A; }
 .mg-foot { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(168,221,185,.18); }
 .mg-foot b { color: var(--marigold); font-weight: 600; }
+.scan-board { background: var(--evergreen); border-radius: 18px; padding: 22px 22px 18px; box-shadow: 0 6px 0 #0A2B20, 0 18px 30px -18px rgba(6,33,26,.6); font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #A8DDB9; min-width: 0; }
+.sb-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; color: #7FBF98; }
+.sb-head b { color: #E6F6EC; font-weight: 600; }
+.sb-row { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 10px; height: 30px; border-top: 1px solid rgba(168,221,185,.12); font-variant-numeric: tabular-nums; }
+.sb-row .t { color: #E6F6EC; font-weight: 600; }
+.sb-row .k { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-row .p { color: #E6F6EC; }
+.sb-foot { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(168,221,185,.18); }
+.sb-foot b { color: var(--marigold); font-weight: 600; }
 .pill-new { align-self: flex-start; font-size: .8rem; font-weight: 600; color: var(--evergreen); background: var(--marigold); padding: 3px 10px; border-radius: 999px; }
 
 /* Digital assets band */
@@ -421,6 +430,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
       <li><a href="articles.html">Articles</a></li>
       <li><a href="calculators.html">Calculators</a></li>
       <li><a href="dcf-model-builder.html">DCF model</a></li>
+      <li><a href="daily-scanner.html">Daily scanner</a></li>
       <li><a href="#digital-assets">Digital assets</a></li>
       <li><a href="finingale-letstalk.html">Let's talk</a></li>
     </ul>
@@ -526,6 +536,22 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
       <p>Tools exploring tokenised settlement and real-world assets in Australia, inspired by the RBA's Project Acacia.</p>
       <span class="go">Explore the section</span>
     </a>
+    <a href="daily-scanner.html" class="tile slab wide tilt">
+      <div class="copy">
+        <span class="pill-new">New · updated daily</span>
+        <h3>Daily stock scanner</h3>
+        <p>After every US trading session, about 5,900 US stocks are checked for five classic chart setups: 20-day breakouts, bull flags, 20-day average reclaims, oversold and oversold bounces. Every match is listed, with a backtest that shows how much (or how little) each setup has been worth.</p>
+        <div class="meta"><span>Updates automatically</span><span>5 setups</span><span>Searchable list</span><span>Backtested</span></div>
+        <span class="go">See today's scan</span>
+      </div>
+      <div class="scan-board">
+        <div class="sb-head"><span id="sb-date">latest US close</span><span><b id="sb-count">—</b> matches</span></div>
+        <div id="sb-rows">
+          <div class="sb-row"><span class="t">—</span><span class="k">loading today's scan</span><span class="p"></span></div>
+        </div>
+        <div class="sb-foot"><span>most traded first</span><span>not a buy list · <b>general information only</b></span></div>
+      </div>
+    </a>
   </div>
 </section>
 
@@ -627,6 +653,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
           <li><a href="articles.html">Articles</a></li>
           <li><a href="calculators.html">Calculators</a></li>
           <li><a href="dcf-model-builder.html">DCF model</a></li>
+          <li><a href="daily-scanner.html">Daily scanner</a></li>
           <li><a href="#digital-assets">Digital assets</a></li>
           <li><a href="finingale-letstalk.html">Let's talk</a></li>
         </ul>
@@ -673,6 +700,32 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     btn.setAttribute('aria-expanded', open);
     btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
   });
+})();
+
+/* Daily scanner tile: today's most traded matches from the scan the page uses */
+(function () {
+  const LABELS = {breakout_20d: '20-day breakout', bull_flag: 'bull flag', reclaim_ma20: 'reclaimed 20-day avg', oversold: 'oversold', oversold_bounce: 'oversold bounce'};
+  const rows = document.getElementById('sb-rows');
+  if (!rows) return;
+  const money = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD'});
+  fetch('data/daily-scan.json', {cache: 'no-cache'})
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d => {
+      document.getElementById('sb-count').textContent = new Intl.NumberFormat('en-US').format((d.hits || []).length);
+      document.getElementById('sb-date').textContent = 'US close ' + new Date(d.as_of + 'T12:00:00Z').toLocaleDateString('en-AU', {weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC'});
+      rows.replaceChildren(...(d.hits || []).slice(0, 5).map(h => {
+        const row = document.createElement('div');
+        row.className = 'sb-row';
+        [[ 't', h.s ], [ 'k', h.k.map(k => LABELS[k] || k).join(', ') ], [ 'p', money.format(h.p) ]].forEach(([c, text]) => {
+          const span = document.createElement('span');
+          span.className = c;
+          span.textContent = text;
+          row.appendChild(span);
+        });
+        return row;
+      }));
+    })
+    .catch(() => { rows.querySelector('.k').textContent = "open the scanner for today's list"; });
 })();
 
 /* Tilt on the toolkit tiles */
