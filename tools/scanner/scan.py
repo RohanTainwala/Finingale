@@ -503,10 +503,17 @@ def daily_closes(series, now_utc):
     s = session(today)
     today_done = s is None or now.time() >= s[1]
     out = {}
+    # Yahoo can leave the latest day's close blank for a while after the bell; its meta then
+    # holds that session's last trade, which is the close.
+    meta = series.get("meta") or {}
+    last_px, last_ts = meta.get("regularMarketPrice"), meta.get("regularMarketTime")
+    last_trade = ts_to_eastern(last_ts) if last_ts else None
     for ts, c in zip(series["t"], series["c"]):
+        d = ts_to_eastern(ts).date()
+        if c is None and last_px is not None and last_trade and last_trade.date() == d and last_trade.time() >= datetime.time(15, 55):
+            c = last_px
         if c is None:
             continue
-        d = ts_to_eastern(ts).date()
         if d > today or (d == today and not today_done):
             continue
         out[d] = float(c)  # one bar a day: a late duplicate (the live tick) wins

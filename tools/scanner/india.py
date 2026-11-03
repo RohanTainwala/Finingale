@@ -163,10 +163,17 @@ def fetch(symbols):
 def closes(series, now_ist):
     """[(IST date, close)] of complete sessions: today's bar only once the market has closed."""
     out = {}
+    # Yahoo often leaves the latest day's close blank for hours after NSE shuts; its meta then
+    # already holds that session's last trade (stamped 15:29-15:30 IST), which is the close.
+    meta = series.get("meta") or {}
+    last_px, last_ts = meta.get("regularMarketPrice"), meta.get("regularMarketTime")
+    last_trade = datetime.datetime.fromtimestamp(last_ts, datetime.timezone.utc).replace(tzinfo=None) + IST if last_ts else None
     for ts, c in zip(series["t"], series["c"]):
+        d = ist_date(ts)
+        if c is None and last_px is not None and last_trade and last_trade.date() == d and last_trade.time() >= datetime.time(15, 25):
+            c = last_px
         if c is None:
             continue
-        d = ist_date(ts)
         if d > now_ist.date() or (d == now_ist.date() and now_ist.time() < datetime.time(16, 0)):
             continue
         out[d] = float(c)

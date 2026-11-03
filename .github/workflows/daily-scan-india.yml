@@ -4,6 +4,9 @@ on:
   schedule:
     # 11:37 UTC Mon-Fri: after the NSE/BSE close (10:00 UTC), about 10:37 PM in Sydney (9:37 PM in winter).
     - cron: "37 11 * * 1-5"
+    # Backup, 2.5 hours later, in case GitHub starts the first run late or not at all.
+    # It only commits when it finds something the first run didn't.
+    - cron: "7 14 * * 1-5"
   workflow_dispatch:
 
 permissions:
@@ -41,6 +44,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          if python tools/scanner/same_scan.py data/daily-scan-india.json; then
+            echo "Same trading day and matches as the last scan; nothing to commit."
+            git checkout -- data/ tools/scanner/amfi-mcap.csv
+            exit 0
+          fi
           git add data/daily-scan-india.json data/daily-scan-india.xlsx tools/scanner/amfi-mcap.csv
           if git diff --cached --quiet; then echo "No change."; exit 0; fi
           git commit -m "Daily India scan: $(date -u +%F)"
