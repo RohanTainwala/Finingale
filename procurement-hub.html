@@ -388,6 +388,11 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
 .ph .sig li{margin-bottom:6px}
 .ph .sig .impl{font-size:.86rem;background:var(--wash);border-radius:10px;padding:8px 10px;margin:0}
 .ph details.panel summary{cursor:pointer}
+.ph .qlink{display:block;margin-top:4px}
+.ph ul.rcpt{margin:0 0 8px;padding-left:18px;font-size:.86rem}
+.ph .payrun{margin-bottom:18px}
+.ph tr.talk td{padding-top:0;font-size:.82rem;color:var(--ink-soft)}
+.ph tbody tr:has(+ tr.talk) td{border-bottom:0}
 .ph .aisum{background:var(--wash);border:1px solid var(--line);border-left:4px solid var(--steel);border-radius:12px;padding:12px 14px;margin:14px 0 18px;font-size:.92rem;line-height:1.55}
 .ph ul.why{list-style:none;margin:0 0 16px;padding:0;font-size:.88rem}
 .ph ul.why li{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line)}
@@ -500,7 +505,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
   var root = document.getElementById('ph');
   var $ = function(s){ return root.querySelector(s); };
   var DAY = 86400000;
-  var STORE = 'finingale-procurement-hub-v3';
+  var STORE = 'finingale-procurement-hub-v4';
   var STAGES = ['Ordered','In production','Shipped','Customs','Delivered','Installed','Accepted'];
   var INSTALL_DAYS = 14;                                   // delivery to go-live
   var CATEGORIES = ['Hardware','Networking','Cooling','Data centre','Software','Services'];
@@ -532,33 +537,45 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
         {id:'C-103',name:'Meridian Platform',term:'5-year take-or-pay',gpus:2048,monthly:6.2e6,goLive:off(24)}
       ],
       suppliers: [
-        {id:'S-01',name:'Apex Systems Integration',category:'Hardware',status:'Active',risk:'High',onTime:88,started:off(-400),activated:off(-386),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'}},
-        {id:'S-02',name:'Lumen Optics',category:'Networking',status:'Active',risk:'Medium',onTime:71,started:off(-300),activated:off(-291),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'}},
-        {id:'S-03',name:'Coolflow Liquid Systems',category:'Cooling',status:'Active',risk:'Medium',onTime:96,started:off(-210),activated:off(-204),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'}},
-        {id:'S-04',name:'Northstar Storage',category:'Hardware',status:'Active',risk:'Medium',onTime:100,started:off(-260),activated:off(-252),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'}},
-        {id:'S-05',name:'Metro Colocation',category:'Data centre',status:'Active',risk:'High',onTime:98,started:off(-500),activated:off(-488),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'}},
-        {id:'S-06',name:'Kestrel Cabling',category:'Services',status:'Onboarding',risk:'Medium',onTime:null,started:off(-6),activated:null,checks:{abn:'pass',bank:'pending',sanctions:'pass',insurance:'fail',security:'pending'}},
-        {id:'S-07',name:'Signal Observability',category:'Software',status:'Onboarding',risk:'Low',onTime:null,started:off(-2),activated:null,checks:{abn:'pending',bank:'pending',sanctions:'pending',insurance:'pending',security:'pending'}}
+        {id:'S-01',abn:'51 824 753 556',insuranceExpiry:off(240),name:'Apex Systems Integration',category:'Hardware',status:'Active',risk:'High',onTime:88,started:off(-400),activated:off(-386),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'}},
+        {id:'S-02',abn:'33 102 417 032',insuranceExpiry:off(21),name:'Lumen Optics',category:'Networking',status:'Active',risk:'Medium',onTime:71,started:off(-300),activated:off(-291),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'}},
+        {id:'S-03',abn:'76 004 085 616',insuranceExpiry:off(190),name:'Coolflow Liquid Systems',category:'Cooling',status:'Active',risk:'Medium',onTime:96,started:off(-210),activated:off(-204),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'},bankChange:{on:off(-3),verified:false}},
+        {id:'S-04',abn:'12 345 678 901',insuranceExpiry:off(300),name:'Northstar Storage',category:'Hardware',status:'Active',risk:'Medium',onTime:100,started:off(-260),activated:off(-252),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'}},
+        {id:'S-05',abn:'85 108 337 449',insuranceExpiry:off(150),name:'Metro Colocation',category:'Data centre',status:'Active',risk:'High',onTime:98,started:off(-500),activated:off(-488),checks:{abn:'pass',bank:'pass',sanctions:'pass',insurance:'pass',security:'pass'}},
+        {id:'S-06',abn:'62 117 908 214',insuranceExpiry:null,name:'Kestrel Cabling',category:'Services',status:'Onboarding',risk:'Medium',onTime:null,started:off(-6),activated:null,checks:{abn:'pass',bank:'pending',sanctions:'pass',insurance:'fail',security:'pending'}},
+        {id:'S-07',abn:'40 610 334 772',insuranceExpiry:null,name:'Signal Observability',category:'Software',status:'Onboarding',risk:'Low',onTime:null,started:off(-2),activated:null,checks:{abn:'pending',bank:'pending',sanctions:'pending',insurance:'pending',security:'pending'}}
       ],
       orders: [
-        {id:'PO-2039',item:'All-flash storage, 20 PB',supplier:'S-04',customer:'C-101',value:24e6,gpus:0,stage:6,promised:off(-20),eta:off(-22),stageDates:{0:off(-110),1:off(-90),2:off(-50),3:off(-40),4:off(-22),5:off(-15),6:off(-9)},thread:[]},
-        {id:'PO-2041',item:'GB300 NVL72 racks × 32',supplier:'S-01',customer:'C-101',value:182.4e6,gpus:2304,stage:2,promised:off(18),eta:off(31),stageDates:{0:off(-80),1:off(-62),2:off(-6)},
+        {id:'PO-2039',qty:1,item:'All-flash storage, 20 PB',supplier:'S-04',customer:'C-101',value:24e6,gpus:0,stage:6,promised:off(-20),eta:off(-22),stageDates:{0:off(-110),1:off(-90),2:off(-50),3:off(-40),4:off(-22),5:off(-15),6:off(-9)},thread:[]},
+        {id:'PO-2041',qty:32,item:'GB300 NVL72 racks × 32',supplier:'S-01',customer:'C-101',value:182.4e6,gpus:2304,stage:2,promised:off(18),eta:off(31),stageDates:{0:off(-80),1:off(-62),2:off(-6)},
           thread:[{who:'Procurement',when:off(-3),text:'Integrator says 8 of 32 racks slipped a week at the factory; new ETA confirmed in writing.'},{who:'Finance',when:off(-2),text:'Atlas go-live is fixed in the contract. Can we split the shipment so the first 24 racks arrive on the original date?'}]},
-        {id:'PO-2042',item:'GB300 NVL72 racks × 32',supplier:'S-01',customer:'C-101',value:182.4e6,gpus:2304,stage:1,promised:off(24),eta:off(24),stageDates:{0:off(-80),1:off(-40)},thread:[]},
-        {id:'PO-2043',item:'800G optical transceivers × 9,200',supplier:'S-02',customer:'C-101',value:6.4e6,gpus:4608,stage:0,promised:off(20),eta:off(48),stageDates:{0:off(-150)},
+        {id:'PO-2042',qty:32,item:'GB300 NVL72 racks × 32',supplier:'S-01',customer:'C-101',value:182.4e6,gpus:2304,stage:1,promised:off(24),eta:off(24),stageDates:{0:off(-80),1:off(-40)},thread:[]},
+        {id:'PO-2043',qty:9200,item:'800G optical transceivers × 9,200',supplier:'S-02',customer:'C-101',value:6.4e6,gpus:4608,stage:0,promised:off(20),eta:off(48),stageDates:{0:off(-150)},
           thread:[{who:'Procurement',when:off(-5),text:'Optics supplier pushed 60% of the order by four weeks. Every rack in the Atlas cluster needs these, so this gates the whole go-live.'}]},
-        {id:'PO-2044',item:'HGX B300 nodes × 256',supplier:'S-01',customer:'C-103',value:115e6,gpus:2048,stage:3,promised:off(6),eta:off(12),stageDates:{0:off(-75),1:off(-55),2:off(-14),3:off(-2)},
+        {id:'PO-2044',qty:256,item:'HGX B300 nodes × 256',supplier:'S-01',customer:'C-103',value:115e6,gpus:2048,stage:3,promised:off(6),eta:off(12),stageDates:{0:off(-75),1:off(-55),2:off(-14),3:off(-2)},
           thread:[{who:'Procurement',when:off(-1),text:'Held at customs pending paperwork on the cooling assemblies. Broker expects release within a week.'}]},
-        {id:'PO-2045',item:'Coolant distribution units × 16',supplier:'S-03',customer:'C-102',value:3.2e6,gpus:0,stage:5,promised:off(-4),eta:off(-6),stageDates:{0:off(-70),1:off(-50),2:off(-20),3:off(-12),4:off(-6),5:off(-1)},thread:[]},
-        {id:'PO-2046',item:'GB300 NVL72 racks × 16',supplier:'S-01',customer:'C-102',value:91.2e6,gpus:1152,stage:0,promised:off(55),eta:off(55),stageDates:{0:off(-12)},thread:[]},
-        {id:'PO-2047',item:'GB300 NVL72 racks × 32 (Northwind Research)',supplier:'S-01',customer:'C-104',value:124.8e6,gpus:2304,stage:1,promised:off(161),eta:off(161),stageDates:{0:off(-21),1:off(-5)},
+        {id:'PO-2045',qty:16,item:'Coolant distribution units × 16',supplier:'S-03',customer:'C-102',value:3.2e6,gpus:0,stage:5,promised:off(-4),eta:off(-6),stageDates:{0:off(-70),1:off(-50),2:off(-20),3:off(-12),4:off(-6),5:off(-1)},thread:[]},
+        {id:'PO-2046',qty:16,item:'GB300 NVL72 racks × 16',supplier:'S-01',customer:'C-102',value:91.2e6,gpus:1152,stage:0,promised:off(55),eta:off(55),stageDates:{0:off(-12)},thread:[]},
+        {id:'PO-2047',qty:32,item:'GB300 NVL72 racks × 32 (Northwind Research)',supplier:'S-01',customer:'C-104',value:124.8e6,gpus:2304,stage:1,promised:off(161),eta:off(161),stageDates:{0:off(-21),1:off(-5)},
           thread:[{who:'Procurement',when:off(-21),text:'Ordered under the integrator allocation from the deployment plan, ahead of the February 2027 price increase.'}]}
       ],
       requests: [
-        {id:'R-317',title:'Liquid-cooling technician training',category:'Services',amount:45000,supplier:'S-03',customer:'',requester:'Ops',needBy:off(30),why:'Certify six technicians on wet-mate procedures before the Harbour Bank racks arrive.',risk:{data:'None',site:true,exportCtl:false,ai:false},approvals:['Procurement'],status:'Approved',po:null,created:off(-9)},
-        {id:'R-318',title:'Spare GPU trays for the in-country spares pool',category:'Hardware',amount:2.4e6,supplier:'S-01',customer:'',requester:'Ops',needBy:off(45),why:'A tray held at customs turns a four-hour fix into a two-week outage. Keep 2% spares onshore.',risk:{data:'None',site:false,exportCtl:true,ai:false},approvals:['Procurement','Finance'],status:'Pending',po:null,created:off(-6)},
-        {id:'R-319',title:'12 cross-connects in Sydney data centre',category:'Data centre',amount:18000,supplier:'S-05',customer:'C-103',requester:'Network',needBy:off(14),why:'Customer links for the Meridian cluster.',risk:{data:'None',site:true,exportCtl:false,ai:false},approvals:[],status:'Pending',po:null,created:off(-3)},
-        {id:'R-320',title:'Observability software, 12-month licence',category:'Software',amount:96000,supplier:'S-07',customer:'',requester:'Platform',needBy:off(21),why:'GPU health monitoring across all clusters. The agent reads node telemetry and job metadata from customer clusters.',risk:{data:'Customer',site:false,exportCtl:false,ai:true},approvals:[],status:'Pending',po:null,created:off(-1)}
+        {id:'R-301',title:'Coolant distribution units × 16 for Harbour Bank',category:'Cooling',amount:3.4e6,supplier:'S-03',customer:'C-102',requester:'Ops',needBy:off(-10),why:'Liquid cooling for the Harbour Bank hall.',risk:{data:'None',site:true,exportCtl:false,ai:false},approvals:['Procurement','Finance','CFO'],status:'Approved',po:'PO-2045',created:off(-80),approvedOn:off(-76),poOn:off(-74),
+          quotes:[{name:'Coolflow Liquid Systems',price:3.2e6,days:56},{name:'Thermacore Systems',price:3.6e6,days:63},{name:'Polar Rack Cooling',price:3.45e6,days:70}],chosen:0},
+        {id:'R-305',title:'800G optical transceivers × 9,200 for Atlas AI Lab',category:'Networking',amount:6.4e6,supplier:'S-02',customer:'C-101',requester:'Network',needBy:off(20),why:'Every Atlas rack needs these to join the cluster.',risk:{data:'None',site:false,exportCtl:true,ai:false},reviews:{'Export compliance check':off(-156),'CFO sighting':off(-155),'Contract signed on approved terms':off(-155)},approvals:['Procurement','Finance','CFO'],status:'Approved',po:'PO-2043',created:off(-160),approvedOn:off(-154),poOn:off(-150),
+          sole:'Bought under an existing framework or allocation agreement',soleNote:'Allocation under the optics framework agreement A-13.'},
+        {id:'R-309',title:'GB300 NVL72 racks × 16 for Harbour Bank',category:'Hardware',amount:91.2e6,supplier:'S-01',customer:'C-102',requester:'Ops',needBy:off(60),why:'Compute for the Harbour Bank contract.',risk:{data:'None',site:false,exportCtl:true,ai:false},reviews:{'Export compliance check':off(-16),'CFO sighting':off(-15)},approvals:['Procurement','Finance','CFO'],status:'Approved',po:'PO-2046',created:off(-20),approvedOn:off(-15),poOn:off(-12),
+          sole:'Bought under an existing framework or allocation agreement',soleNote:'Integrator allocation under master supply agreement A-11; price benchmarked against a direct OEM quote.'},
+        {id:'R-312',title:'GB300 NVL72 racks × 32 for Northwind Research',category:'Hardware',amount:124.8e6,supplier:'S-01',customer:'C-104',requester:'Ops',needBy:off(198),why:'Compute for the Northwind contract, ordered ahead of the February 2027 price increase.',risk:{data:'None',site:false,exportCtl:true,ai:false},reviews:{'Export compliance check':off(-24),'CFO sighting':off(-23)},approvals:['Procurement','Finance','CFO'],status:'Approved',po:'PO-2047',created:off(-26),approvedOn:off(-23),poOn:off(-21),
+          sole:'Bought under an existing framework or allocation agreement',soleNote:'Integrator allocation under master supply agreement A-11.'},
+        {id:'R-317',title:'Liquid-cooling technician training',category:'Services',amount:45000,supplier:'S-03',customer:'',requester:'Ops',needBy:off(30),why:'Certify six technicians on wet-mate procedures before the Harbour Bank racks arrive.',risk:{data:'None',site:true,exportCtl:false,ai:false},approvals:['Procurement'],status:'Approved',po:null,created:off(-9),approvedOn:off(-8),
+          quotes:[{name:'Coolflow Liquid Systems',price:45000,days:10},{name:'Aqua Thermal Training',price:52000,days:14}],chosen:null},
+        {id:'R-318',title:'Spare GPU trays for the in-country spares pool',category:'Hardware',amount:2.4e6,supplier:'S-01',customer:'',requester:'Ops',needBy:off(45),why:'A tray held at customs turns a four-hour fix into a two-week outage. Keep 2% spares onshore.',risk:{data:'None',site:false,exportCtl:true,ai:false},approvals:['Procurement','Finance'],status:'Pending',po:null,created:off(-6),
+          sole:'Must match installed equipment (spares, warranty)',soleNote:'Trays must match the installed GB300 racks; priced under master supply agreement A-11.'},
+        {id:'R-319',title:'12 cross-connects in Sydney data centre',category:'Data centre',amount:18000,supplier:'S-05',customer:'C-103',requester:'Network',needBy:off(14),why:'Customer links for the Meridian cluster.',risk:{data:'None',site:true,exportCtl:false,ai:false},approvals:[],status:'Pending',po:null,created:off(-3),
+          sole:'Only supplier able to provide it',soleNote:'Only the data-centre operator can install cross-connects in its building.'},
+        {id:'R-320',title:'Observability software, 12-month licence',category:'Software',amount:96000,supplier:'S-07',customer:'',requester:'Platform',needBy:off(21),why:'GPU health monitoring across all clusters. The agent reads node telemetry and job metadata from customer clusters.',risk:{data:'Customer',site:false,exportCtl:false,ai:true},approvals:[],status:'Pending',po:null,created:off(-1),
+          quotes:[{name:'Signal Observability',price:92000,days:5},{name:'Beacon Monitoring',price:118000,days:10},{name:'Gridwatch Telemetry',price:104000,days:7}],chosen:null}
       ],
       agreements: [
         {id:'A-11',name:'Master supply agreement',supplier:'S-01',value:1.2e9,renewal:off(70),notice:60,terms:'Named ship dates per order; 2% credit per week late'},
@@ -568,6 +585,11 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
         {id:'A-15',name:'Monitoring software trial',supplier:'S-07',value:12000,renewal:off(18),notice:14,terms:'Auto-renews to annual plan'}
       ],
       invoices: [
+        {id:'INV-208',supplier:'S-03',po:'PO-2045',amount:0.64e6,expected:0.64e6,due:off(-38),status:'Paid',paidOn:off(-40),firstPass:true},
+        {id:'INV-512',supplier:'S-02',po:'PO-2043',amount:0.64e6,expected:0.64e6,due:off(-118),status:'Paid',paidOn:off(-120),firstPass:true},
+        {id:'INV-540',supplier:'S-02',po:'PO-2043',amount:1.28e6,expected:1.28e6,due:off(-65),status:'Paid',paidOn:off(-60),firstPass:false},
+        {id:'INV-7655',supplier:'S-05',po:'',amount:1.18e6,expected:1.18e6,due:off(-25),status:'Paid',paidOn:off(-26),firstPass:true},
+        {id:'INV-231',supplier:'S-03',po:'PO-2045',amount:0.16e6,expected:0.16e6,due:off(4),status:'Approved',firstPass:true},
         {id:'INV-7781',supplier:'S-04',po:'PO-2039',amount:24e6,expected:24e6,due:off(12),status:'Open'},
         {id:'INV-552',supplier:'S-02',po:'PO-2043',amount:3.97e6,expected:3.84e6,due:off(20),status:'Open'},
         {id:'INV-219',supplier:'S-03',po:'PO-2045',amount:3.31e6,expected:3.2e6,due:off(25),status:'Open'},
@@ -602,11 +624,38 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
   }
   function steps(amount){ var s=['Procurement']; if (amount>=50000) s.push('Finance'); if (amount>=1e6) s.push('CFO'); return s; }
   function nextStep(r){ var s=steps(r.amount); return r.status==='Pending' ? s[r.approvals.length] : null; }
-  function supplierReady(s){ return CHECKS.every(function(c){ return s.checks[c[0]]==='pass'; }); }
+  function supplierReady(s){ return CHECKS.every(function(c){ return s.checks[c[0]]==='pass'; }) && !(s.insuranceExpiry && s.insuranceExpiry < off(0)); }
+  // ---- goods receipt: quantities and serial numbers ----
+  function orderQty(o){ return o.qty || 1; }
+  function receivedQty(o){ var r = (o.receipts||[]).reduce(function(a,x){ return a+x.qty; },0); return o.stage>=4 && !r ? orderQty(o) : r; }
+  function serialPrefix(o){ return sup(o.supplier).name.replace(/[^A-Za-z ]/g,'').split(' ').map(function(w){ return w[0]; }).join('').toUpperCase().slice(0,3)+'-'+o.id.slice(3); }
+  function serialAt(o,i){ return serialPrefix(o)+'-'+('000'+i).slice(-4); }
+  // ---- quotes: thresholds and status ----
+  function quoteRule(amount){
+    if (amount < 10000) return {n:1, label:'1 quote (under US$10k)'};
+    if (amount < 250000) return {n:3, label:'3 written quotes (US$10k to US$250k)'};
+    return {n:3, label:'Competitive tender: at least 3 bids, scored in writing (over US$250k)'};
+  }
+  var SOLE_REASONS = ['Only supplier able to provide it','Bought under an existing framework or allocation agreement','Must match installed equipment (spares, warranty)','Urgent: delay would cost more than the saving'];
+  function quoteStatus(q){
+    var rule = quoteRule(q.amount), qs = q.quotes||[], ch = q.chosen!=null ? qs[q.chosen] : null;
+    if (q.sole) return {ok:true, short:'Single source', text:'Single source: '+q.sole.toLowerCase()+'.', rule:rule, chosen:null, saving:0};
+    var others = qs.filter(function(_,i){ return i!==q.chosen; }), avg = others.length ? others.reduce(function(a,x){ return a+x.price; },0)/others.length : 0;
+    var saving = ch && others.length ? Math.max(0, avg - ch.price) : 0;
+    var ok = !!ch && qs.length >= rule.n;
+    var short = qs.length+' of '+rule.n+' quote'+(rule.n>1?'s':'')+(ch?', chosen':'');
+    return {ok:ok, short:short, text: ok ? 'Chosen: '+ch.name+' at '+money(ch.price)+(saving?', '+money(saving)+' below the average of the other quotes':'')+'.' : (qs.length<rule.n ? 'Needs '+(rule.n-qs.length)+' more quote'+(rule.n-qs.length>1?'s':'')+'.' : 'Choose a quote.'), rule:rule, chosen:ch, saving:saving};
+  }
+  function poValue(q){ var qs = quoteStatus(q); return qs.chosen ? qs.chosen.price : q.amount; }
+  function nextRun(){ var d = parse(off(0)), add = (4 - d.getDay() + 7) % 7 || 7; return off(add); }  // next Thursday
+  function bankHold(s){ return s.bankChange && !s.bankChange.verified; }
   function invoiceMatch(inv){
     if (!inv.po) return {code:'nopo', label:'No PO: check against contract', cls:'warn'};
     var o = order(inv.po);
-    if (o && o.stage < 4) return {code:'receipt', label:'Awaiting receipt', cls:'warn'};
+    if (o && o.stage < 4){
+      var rq = receivedQty(o), recv = o.value*Math.min(1, rq/orderQty(o));
+      if (inv.expected > recv*1.01) return {code:'receipt', label: rq ? 'Received '+rq.toLocaleString('en-US')+' of '+orderQty(o).toLocaleString('en-US')+': waiting for the rest' : 'Awaiting receipt', cls:'warn'};
+    }
     var v = (inv.amount - inv.expected)/inv.expected;
     if (Math.abs(v) > 0.01) return {code:'variance', label:'Price variance '+(v>0?'+':'')+(v*100).toFixed(1)+'%', cls:'bad'};
     return {code:'match', label:'3-way matched', cls:'good'};
@@ -630,7 +679,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
   }
 
   // ---------- navigation ----------
-  var VIEWS = [['overview','Overview'],['plan','Deployment plan'],['requests','Requests'],['orders','Orders'],['suppliers','Suppliers'],['agreements','Contracts'],['invoices','Invoices']];
+  var VIEWS = [['overview','Overview'],['plan','Deployment plan'],['requests','Requests'],['orders','Orders'],['suppliers','Suppliers'],['agreements','Contracts'],['invoices','Invoices'],['reports','Reports']];
   var current = 'overview', orderFilter = 'All';
   function counts(){
     var r = role();
@@ -638,9 +687,10 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
       plan: planCounts(),
       requests: S.requests.filter(function(q){ return nextStep(q)===r || (q.status==='Approved' && !q.po && r==='Procurement'); }).length,
       orders: S.orders.filter(function(o){ return slipDays(o)>0; }).length,
-      suppliers: S.suppliers.filter(function(s){ return s.status==='Onboarding'; }).length,
+      suppliers: S.suppliers.filter(function(s){ return s.status==='Onboarding' || bankHold(s) || (s.insuranceExpiry && daysBetween(off(0),s.insuranceExpiry)<=45); }).length,
       agreements: S.agreements.filter(function(a){ return daysBetween(off(0), a.renewal) <= a.notice; }).length,
-      invoices: S.invoices.filter(function(i){ return i.status==='Open' && invoiceMatch(i).code!=='match'; }).length
+      invoices: S.invoices.filter(function(i){ return (i.status==='Open' && invoiceMatch(i).code!=='match') || (i.status==='Approved' && bankHold(sup(i.supplier))); }).length,
+      reports: 0
     };
   }
   function renderNav(){
@@ -654,7 +704,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
 
   function render(){
     renderNav();
-    var fn = {overview:vOverview, plan:vPlan, requests:vRequests, orders:vOrders, suppliers:vSuppliers, agreements:vAgreements, invoices:vInvoices}[current];
+    var fn = {overview:vOverview, plan:vPlan, requests:vRequests, orders:vOrders, suppliers:vSuppliers, agreements:vAgreements, invoices:vInvoices, reports:vReports}[current];
     $('#view').innerHTML = fn();
   }
 
@@ -708,6 +758,8 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     S.requests.filter(function(q){ return q.status!=='Rejected' && !q.po && review(q).tier==='High'; }).forEach(function(q){ var v = review(q);
       items.push({c:'var(--bad)', t:'<b>'+q.id+'</b> '+esc(q.title)+' is rated high risk'+(v.open.length?'; '+v.open.length+' review'+(v.open.length>1?'s':'')+' still open':'')+'.', v:'requests'}); });
     hold.forEach(function(i){ items.push({c:'var(--warn)', t:'<b>'+i.id+'</b> from '+esc(sup(i.supplier).name)+': '+invoiceMatch(i).label+'.', v:'invoices'}); });
+    S.suppliers.filter(bankHold).forEach(function(s){ items.push({c:'var(--bad)', t:'<b>'+esc(s.name)+'</b> changed its bank details on '+fmtDate(s.bankChange.on)+'. Payments are held until a call-back confirms it.', v:'invoices'}); });
+    S.suppliers.filter(function(s){ return s.insuranceExpiry && daysBetween(off(0),s.insuranceExpiry)<=45; }).forEach(function(s){ items.push({c:'var(--warn)', t:'<b>'+esc(s.name)+'</b> insurance certificate expires in '+daysBetween(off(0),s.insuranceExpiry)+' days.', v:'suppliers'}); });
     onb.forEach(function(s){
       var blocked = CHECKS.filter(function(c){ return s.checks[c[0]]==='fail'; }).map(function(c){ return c[1]; });
       items.push({c:'var(--steel)', t:'<b>'+esc(s.name)+'</b> onboarding, day '+daysBetween(s.started,off(0))+(blocked.length?': blocked on '+blocked.join(', ').toLowerCase():'')+'.', v:'suppliers'});
@@ -732,7 +784,8 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     ['Supplier not yet onboarded, or a check failed', 1, 'Onboarding checks must pass (2 points if a check has failed)'],
     ['Spend of US$1M or more (US$10M or more)', 1, 'CFO sighting (2 points above US$10M)'],
     ['Delivery could miss a customer go-live', 2, 'Delivery plan agreed with Operations'],
-    ['Supplier on-time delivery below 80%, or open invoice disputes', 1, 'Supplier performance discussed before award']
+    ['Supplier on-time delivery below 80%, or open invoice disputes', 1, 'Supplier performance discussed before award'],
+    ['Any data shared; or site access, customer data or spend of US$250k or more', 0, 'Legal: an NDA when data is shared, and a contract on approved terms unless an existing agreement already covers this spend']
   ];
   function riskOf(q){ return q.risk || {data:'None',site:false,exportCtl:false,ai:false}; }
   function review(q){
@@ -755,15 +808,24 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     if (late && c) add(2, 'At the usual lead time it could arrive too late for '+esc(c.name)+'\'s go-live on '+fmtDate(c.goLive)+'.', ['Delivery plan agreed']);
     var disputes = S.invoices.filter(function(i){ return i.supplier===q.supplier && i.status==='Open' && invoiceMatch(i).code==='variance'; }).length;
     if ((sp.onTime!=null && sp.onTime<80) || disputes) add(1, esc(sp.name)+(sp.onTime!=null && sp.onTime<80 ? ' delivers on time '+sp.onTime+'% of the time' : '')+(disputes ? (sp.onTime<80?' and':'')+' has '+disputes+' invoice'+(disputes>1?'s':'')+' in dispute' : '')+'.', ['Supplier performance review']);
+    // Legal: NDA when data is shared; a signed contract for site access, customer data or larger spend, unless an existing agreement already covers it
+    var legal = [], cover = {};
+    if (r.data!=='None') legal.push('NDA signed');
+    if (q.amount>=250000 || r.data==='Customer' || r.site){
+      legal.push('Contract signed on approved terms');
+      var ag = S.agreements.filter(function(a){ return a.supplier===q.supplier && a.value>=q.amount; })[0];
+      if (ag) cover['Contract signed on approved terms'] = 'Covered by '+ag.id+' '+ag.name;
+    }
+    if (legal.length) need.push(legal);
     var flat = []; need.forEach(function(n){ n.forEach(function(x){ if (flat.indexOf(x)<0) flat.push(x); }); });
     var tier = pts>=6 ? 'High' : pts>=3 ? 'Medium' : 'Low';
-    var done = q.reviews || {}, open = flat.filter(function(x){ return !done[x]; });
+    var done = q.reviews || {}, open = flat.filter(function(x){ return !done[x] && !cover[x]; });
     // supplier history and similar past requests
     var pastReq = S.requests.filter(function(x){ return x.supplier===q.supplier && x.id!==q.id; });
     var ords = S.orders.filter(function(o){ return o.supplier===q.supplier; });
     var agr = S.agreements.filter(function(a){ return a.supplier===q.supplier; });
     var similar = S.requests.filter(function(x){ return x.id!==q.id && x.category===q.category; }).slice(-3);
-    return {pts:pts, tier:tier, cls: tier==='High'?'bad':tier==='Medium'?'warn':'good', why:why, need:flat, open:open, sp:sp,
+    return {pts:pts, tier:tier, cls: tier==='High'?'bad':tier==='Medium'?'warn':'good', why:why, need:flat, open:open, sp:sp, cover:cover,
       pastReq:pastReq, ords:ords, agr:agr, disputes:disputes, similar:similar};
   }
   function reviewSummary(q, v){
@@ -780,8 +842,8 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
       '<h3 id="odT">Automated review: '+q.id+'</h3><span class="tag '+v.cls+'">'+v.tier+' risk · '+v.pts+' pts</span> <span class="tag plain">Rules-based demo</span>'+
       '<div class="aisum">'+reviewSummary(q, v)+'</div>';
     h += '<h3>Why</h3>'+(v.why.length ? '<ul class="why">'+v.why.map(function(w){ return '<li><span>'+w[0]+'</span><b>+'+w[1]+'</b></li>'; }).join('')+'</ul>' : '<p class="empty" style="padding:0 0 8px">No triggers in the framework.</p>');
-    h += '<h3>Required before the PO</h3>'+(v.need.length ? '<ul class="attn">'+v.need.map(function(n){ var d = (q.reviews||{})[n];
-      return '<li><span class="dot" style="background:'+(d?'var(--good)':'var(--warn)')+'"></span><span class="txt">'+n+(d?' <span class="tag good">Done '+fmtDate(d)+'</span>':'')+'</span>'+(d?'':'<button class="btn" type="button" data-rdone="'+q.id+'|'+n+'"'+(isP?'':' disabled title="Switch to Procurement"')+'>Mark done</button>')+'</li>'; }).join('')+'</ul>' : '<p class="empty" style="padding:0 0 8px">Nothing extra; normal approvals apply.</p>');
+    h += '<h3>Required before the PO</h3>'+(v.need.length ? '<ul class="attn">'+v.need.map(function(n){ var d = (q.reviews||{})[n], cv = v.cover[n];
+      return '<li><span class="dot" style="background:'+(d||cv?'var(--good)':'var(--warn)')+'"></span><span class="txt">'+n+(d?' <span class="tag good">Done '+fmtDate(d)+'</span>':'')+(cv?' <span class="tag good">'+esc(cv)+'</span>':'')+'</span>'+(d||cv?'':'<button class="btn" type="button" data-rdone="'+q.id+'|'+n+'"'+(isP?'':' disabled title="Switch to Procurement"')+'>Mark done</button>')+'</li>'; }).join('')+'</ul>' : '<p class="empty" style="padding:0 0 8px">Nothing extra; normal approvals apply.</p>');
     var avgOt = v.sp.onTime==null ? 'no delivery history yet' : v.sp.onTime+'% on-time delivery';
     h += '<h3>Supplier history: '+esc(v.sp.name)+'</h3><dl><dt>Status</dt><dd>'+v.sp.status+(v.sp.status==='Active'?'':' (checks still running)')+', '+v.sp.risk.toLowerCase()+' risk tier</dd>'+
       '<dt>Orders</dt><dd>'+(v.ords.length ? v.ords.length+' worth '+money(v.ords.reduce(function(a,o){ return a+o.value; },0))+', '+avgOt : 'None yet')+'</dd>'+
@@ -799,7 +861,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
   // ---------- Requests ----------
   function vRequests(){
     var r = role();
-    var h = head('Requests','One front door for every purchase. Each request gets an automated risk review that lists the checks needed before a PO; approvals route by amount: Procurement always, Finance from US$50k, CFO from US$1M.',
+    var h = head('Requests','One front door for every purchase. Each request gets an automated risk review, collects the quotes its value requires, and routes for approval by amount: Procurement always, Finance from US$50k, CFO from US$1M. A PO can only be raised once all three are done.',
       '<button class="btn primary" type="button" id="newReq">New request</button>');
     var rows = S.requests.slice().sort(function(a,b){ return b.created<a.created?-1:1; }).map(function(q){
       var st = steps(q.amount), nx = nextStep(q);
@@ -809,14 +871,15 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
       else if (q.po) status = '<span class="tag good">PO '+q.po+'</span>';
       else if (q.status==='Approved') status = '<span class="tag good">Approved</span>';
       else status = '<span class="tag info">Waiting on '+nx+'</span>';
+      if (q.status!=='Rejected'){ var qs = quoteStatus(q); status += '<button class="link qlink" type="button" data-quotes="'+q.id+'"><span class="tag '+(qs.ok?'good':'warn')+'">'+qs.short+'</span></button>'; }
       var v = review(q), rv = '<button class="link" type="button" data-review="'+q.id+'"><span class="tag '+v.cls+'">'+v.tier+'</span></button>'+(v.open.length && q.status!=='Rejected' && !q.po ? '<span class="sub">'+v.open.length+' review'+(v.open.length>1?'s':'')+' open</span>' : (v.need.length?'<span class="sub">Reviews done</span>':''));
       var actions = '';
       if (nx && nx===r) actions = '<button class="btn primary" type="button" data-approve="'+q.id+'">Approve</button> <button class="btn" type="button" data-reject="'+q.id+'">Reject</button>';
       else if (q.status==='Approved' && !q.po) actions = '<button class="btn primary" type="button" data-po="'+q.id+'"'+(r!=='Procurement'?' disabled title="Procurement raises POs"':'')+'>Raise PO</button>';
       else if (nx) actions = '<span class="sub">Switch role to '+nx+' to act</span>';
-      return '<tr><td><b>'+q.id+'</b><span class="sub">'+fmtDate(q.created)+'</span></td><td class="wrap">'+esc(q.title)+'<span class="sub">'+esc(q.why)+'</span></td><td>'+q.category+'<span class="sub">'+esc(sup(q.supplier).name)+'</span></td><td class="r">'+money(q.amount)+'</td><td>'+rv+'</td><td>'+route+'</td><td>'+status+'</td><td>'+actions+'</td></tr>';
+      return '<tr><td><b>'+q.id+'</b><span class="sub">'+fmtDate(q.created)+'</span></td><td class="wrap">'+esc(q.title)+'<span class="sub">'+esc(q.why)+'</span></td><td>'+q.category+'<span class="sub">'+esc(sup(q.supplier).name)+'</span></td><td class="r">'+money(q.amount)+(poValue(q)!==q.amount?'<span class="sub">quote '+money(poValue(q))+'</span>':'')+'</td><td>'+rv+'</td><td>'+route+'</td><td>'+status+'</td><td>'+actions+'</td></tr>';
     }).join('');
-    h += '<div class="tablewrap"><table><thead><tr><th>Request</th><th>What and why</th><th>Category</th><th class="r">Amount</th><th>Automated review</th><th>Approval route</th><th>Status</th><th>Action</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    h += '<div class="tablewrap"><table><thead><tr><th>Request</th><th>What and why</th><th>Category</th><th class="r">Amount</th><th>Automated review</th><th>Approval route</th><th>Status and quotes</th><th>Action</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
     return h;
   }
 
@@ -861,6 +924,39 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     S.requests.push(q); save(); closeOverlay(); current='requests'; render(); var rv0 = review(q); toast(q.id+' submitted: '+rv0.tier.toLowerCase()+' risk'+(rv0.need.length?', '+rv0.need.length+' review'+(rv0.need.length>1?'s':'')+' required':'')+'. Waiting on '+nextStep(q)+'.');
   }
 
+  // ---------- Quotes ----------
+  function openQuotes(id, quiet){
+    var q = S.requests.filter(function(x){ return x.id===id; })[0]; if (!q) return;
+    var qs = quoteStatus(q), isP = role()==='Procurement', list = q.quotes||[], locked = !!q.po;
+    var best = null; list.forEach(function(x,i){ var meets = addDays(off(0), x.days) <= q.needBy; if (meets && (best===null || x.price < list[best].price)) best = i; });
+    var low = list.reduce(function(m,x,i){ return m===null || x.price < list[m].price ? i : m; }, null);
+    var h = '<div class="scrim" data-close></div><aside class="drawer'+(quiet?' still':'')+'" role="dialog" aria-modal="true" aria-labelledby="odT"><button class="btn close" type="button" data-close aria-label="Close">Close</button>'+
+      '<h3 id="odT">Quotes: '+q.id+'</h3><p style="margin:2px 0 10px">'+esc(q.title)+' · estimate '+money(q.amount)+' · needed by '+fmtDate(q.needBy)+'</p>'+
+      '<div class="route"><b>Rule for this value:</b> '+qs.rule.label+'. <span class="'+(qs.ok?'good-t':'warn-t')+'">'+qs.text+'</span>'+
+      '<br><span class="sub" style="display:inline">Why: competing quotes give a fair price and a written reason for every supplier choice, which auditors and the board can check.</span></div>';
+    if (q.sole){
+      h += '<h3>Single-source justification</h3><p><b>'+esc(q.sole)+'.</b> '+esc(q.soleNote||'')+'</p>'+(locked?'':'<button class="btn" type="button" data-unsole="'+q.id+'"'+(isP?'':' disabled')+'>Remove and collect quotes instead</button>');
+    } else {
+      h += '<h3>Quotes received</h3>'+(list.length ? '<div class="tablewrap"><table><thead><tr><th>Supplier</th><th class="r">Price</th><th class="r">Delivery</th><th>Notes</th><th></th></tr></thead><tbody>'+list.map(function(x,i){
+        var meets = addDays(off(0), x.days) <= q.needBy, tags = [];
+        if (i===q.chosen) tags.push('<span class="tag good">Chosen</span>');
+        if (i===best) tags.push('<span class="tag info">Best value</span>'); else if (i===low) tags.push('<span class="tag plain">Lowest price</span>');
+        if (!meets) tags.push('<span class="tag warn">Misses need-by</span>');
+        var known = S.suppliers.filter(function(s){ return s.name===x.name; })[0];
+        if (!known) tags.push('<span class="tag plain">Not onboarded</span>');
+        return '<tr><td class="wrap"><b>'+esc(x.name)+'</b></td><td class="r">'+money(x.price)+'<span class="sub">'+(x.price>q.amount?'+':'')+((x.price/q.amount-1)*100).toFixed(0)+'% vs estimate</span></td><td class="r">'+x.days+' days</td><td>'+tags.join(' ')+'</td><td>'+(locked||i===q.chosen?'':'<button class="btn" type="button" data-choose="'+q.id+'|'+i+'"'+(isP?'':' disabled title="Switch to Procurement"')+'>Choose</button>')+'</td></tr>';
+      }).join('')+'</tbody></table></div>' : '<p class="empty" style="padding:0 0 8px">No quotes yet.</p>')+
+      '<p class="note">Best value = the cheapest quote that still arrives by the need-by date. A choice more than 10% above the approved estimate goes back for approval.</p>';
+      if (!locked) h += '<h3>Add a quote</h3><form class="form" id="qForm" data-id="'+q.id+'"><label class="full">Supplier<input type="text" name="name" list="supList" required placeholder="Existing or new supplier"><datalist id="supList">'+S.suppliers.map(function(s){ return '<option value="'+esc(s.name)+'">'; }).join('')+'</datalist></label>'+
+        '<label>Price (US$)<input type="number" name="price" min="1" required></label><label>Delivery (days)<input type="number" name="days" min="0" required value="14"></label>'+
+        '<div class="full row" style="justify-content:flex-end;margin:0"><button class="btn primary" type="submit"'+(isP?'':' disabled')+'>Add quote</button></div></form>'+
+        '<details class="fw"><summary>Or record a single-source justification</summary><form class="form" id="soleForm" data-id="'+q.id+'" style="margin-top:8px"><label class="full">Reason<select class="field" name="reason">'+SOLE_REASONS.map(function(r0){ return '<option>'+r0+'</option>'; }).join('')+'</select></label>'+
+        '<label class="full">Explain<textarea name="note" rows="2" required placeholder="e.g. Allocation under the master supply agreement"></textarea></label><div class="full row" style="justify-content:flex-end;margin:0"><button class="btn" type="submit"'+(isP?'':' disabled')+'>Record justification</button></div></form></details>';
+    }
+    h += '</aside>';
+    $('#overlay').innerHTML = h; if (!quiet) $('.drawer .close').focus();
+  }
+
   // ---------- Orders ----------
   function vOrders(){
     var h = head('Orders','Each order tracked from purchase order to customer acceptance and tied to the contract it serves. Select an order for its timeline and discussion.');
@@ -900,7 +996,8 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
       '<dt>Value</dt><dd>'+money(o.value)+'</dd><dt>GPUs covered</dt><dd>'+(o.gpus?o.gpus.toLocaleString('en-US')+(c&&o.gpus>=c.gpus&&/optic/i.test(o.item)?' (gates the whole cluster)':''):'Supporting equipment')+'</dd>'+
       '<dt>Promised delivery</dt><dd>'+fmtDate(o.promised)+'</dd></dl>'+
       '<h3>Timeline</h3><ol class="timeline">'+tl+'</ol>'+
-      (o.stage<6 ? '<div class="row"><button class="btn primary" type="button" data-advance="'+o.id+'"'+(canAct?'':' disabled title="Switch to Procurement"')+'>Mark '+STAGES[o.stage+1].toLowerCase()+'</button>'+
+      receiptHTML(o, canAct)+
+      (o.stage<6 && o.stage!==3 ? '<div class="row"><button class="btn primary" type="button" data-advance="'+o.id+'"'+(canAct?'':' disabled title="Switch to Procurement"')+'>Mark '+STAGES[o.stage+1].toLowerCase()+'</button>'+
         (o.stage<4 ? '<label class="row" style="margin:0;font-size:.84rem">New ETA <input type="date" id="etaIn" value="'+o.eta+'" style="width:auto"'+(canAct?'':' disabled')+'></label><button class="btn" type="button" data-eta="'+o.id+'"'+(canAct?'':' disabled')+'>Update ETA</button>' : '')+'</div>' : '')+
       '<div class="thread"><h3>Discussion</h3>'+(o.thread.length ? o.thread.map(function(m){ return '<div class="msg"><b>'+esc(m.who)+'</b><span class="when">'+fmtDate(m.when)+'</span><div>'+esc(m.text)+'</div></div>'; }).join('') : '<p class="empty" style="padding:0 0 8px">No messages yet. Keep the conversation here instead of email.</p>')+
       '<textarea id="msgIn" rows="2" placeholder="Write an update as '+r+'"></textarea><div class="row" style="justify-content:flex-end"><button class="btn primary" type="button" data-msg="'+o.id+'">Post</button></div></div>'+
@@ -908,13 +1005,31 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     $('.drawer .close').focus();
   }
 
+  function receiptHTML(o, canAct){
+    var qty = orderQty(o), rq = receivedQty(o), recs = o.receipts||[];
+    var h = '<h3>Goods receipt</h3>';
+    if (o.stage<3 && !recs.length) return h+'<p class="note" style="margin-top:0">Receiving opens when the goods clear customs. Each unit is scanned in by serial number.</p>';
+    h += '<p style="margin:0 0 6px">Received <b>'+rq.toLocaleString('en-US')+' of '+qty.toLocaleString('en-US')+'</b>'+(rq<qty?' · '+(qty-rq).toLocaleString('en-US')+' still to come':' · complete')+'</p>';
+    if (recs.length) h += '<ul class="rcpt">'+recs.map(function(x){ return '<li>'+fmtDate(x.date)+': '+x.qty.toLocaleString('en-US')+' units, serials '+serialAt(o,x.from)+' to '+serialAt(o,x.from+x.qty-1)+'</li>'; }).join('')+'</ul>';
+    else if (o.stage>=4) h += '<p class="note" style="margin-top:0">Received in full before this demo began.</p>';
+    if (recs.length) h += '<p class="note" style="margin-top:0">Serial numbers are recorded in the asset register'+(o.gpus?', which lenders rely on because the GPUs secure the company\'s loans':'')+'. Invoices are only paid up to the value received.</p>';
+    if (o.stage===3) h += '<div class="row"><label class="row" style="margin:0;font-size:.84rem">Units arrived <input type="number" id="rcvQty" min="1" max="'+(qty-rq)+'" value="'+(qty-rq)+'" style="width:110px"'+(canAct?'':' disabled')+'></label>'+
+      '<button class="btn primary" type="button" data-receive="'+o.id+'"'+(canAct?'':' disabled title="Switch to Procurement"')+'>Scan serials and receive</button></div>';
+    return h;
+  }
+
   // ---------- Suppliers ----------
   function vSuppliers(){
-    var h = head('Suppliers','Suppliers onboard themselves through a portal; checks run automatically and only failures need a person. A PO can be raised only once every check passes.',
+    var h = head('Suppliers','The vendor database. Suppliers onboard themselves through a portal, checks run automatically and only failures need a person. New invites are checked for duplicates, insurance expiry is watched, and bank-detail changes are held until verified by phone.',
       '<button class="btn primary" type="button" id="invite">Invite supplier</button>');
     var rows = S.suppliers.map(function(s){
       var spend = S.orders.filter(function(o){ return o.supplier===s.id; }).reduce(function(a,o){ return a+o.value; },0);
       var checks = '<div class="checks">'+CHECKS.map(function(c){ var st = s.checks[c[0]]; return '<span class="chk '+(st==='pass'?'pass':st==='fail'?'fail':'')+'" title="'+c[1]+': '+st+'">'+c[1]+'</span>'; }).join('')+'</div>';
+      var dl = s.insuranceExpiry ? daysBetween(off(0), s.insuranceExpiry) : null, flags = [];
+      if (dl!==null && dl<0) flags.push('<span class="bad-t">Insurance expired '+(-dl)+' days ago: POs blocked</span>');
+      else if (dl!==null && dl<=45) flags.push('<span class="warn-t">Insurance expires in '+dl+' days</span>');
+      if (bankHold(s)) flags.push('<span class="bad-t">Bank details changed '+fmtDate(s.bankChange.on)+': payments held until verified</span>');
+      if (flags.length) checks += '<span class="sub">'+flags.join('<br>')+'</span>';
       var status = s.status==='Active' ? '<span class="tag good">Active</span><span class="sub">Onboarded in '+daysBetween(s.started,s.activated)+' days</span>' : '<span class="tag info">Onboarding</span><span class="sub">Day '+daysBetween(s.started,off(0))+'</span>';
       var act = '';
       if (s.status==='Onboarding'){
@@ -924,11 +1039,14 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
         else if (supplierReady(s)) act = '<button class="btn primary" type="button" data-activate="'+s.id+'"'+(r?'':' disabled')+'>Activate</button>';
         else act = '<span class="sub">Blocked</span>';
       }
+      var rp = role()==='Procurement' || role()==='Finance';
+      if (dl!==null && dl<=45) act += (act?' ':'')+'<button class="btn" type="button" data-renew="'+s.id+'"'+(role()==='Procurement'?'':' disabled')+'>Certificate renewed</button>';
+      if (bankHold(s)) act += (act?' ':'')+'<button class="btn" type="button" data-callback="'+s.id+'"'+(rp?'':' disabled')+'>Call-back verified</button>';
       var ot = s.onTime==null ? '—' : '<span class="'+(s.onTime<80?'bad-t':s.onTime<90?'warn-t':'good-t')+'">'+s.onTime+'%</span>';
-      return '<tr><td><b>'+esc(s.name)+'</b><span class="sub">'+s.id+', '+s.category+'</span></td><td>'+status+'</td><td>'+checks+'</td><td>'+s.risk+'</td><td class="r">'+ot+'</td><td class="r">'+(spend?money(spend):'—')+'</td><td>'+act+'</td></tr>';
+      return '<tr><td><b>'+esc(s.name)+'</b><span class="sub">'+s.id+', '+s.category+(s.abn?' · ABN '+s.abn:'')+'</span></td><td>'+status+'</td><td>'+checks+'</td><td>'+s.risk+'</td><td class="r">'+ot+'</td><td class="r">'+(spend?money(spend):'—')+'</td><td>'+act+'</td></tr>';
     }).join('');
     h += '<div class="tablewrap"><table><thead><tr><th>Supplier</th><th>Status</th><th>Automated checks</th><th>Risk tier</th><th class="r">On-time delivery</th><th class="r">Orders</th><th>Action</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
-    h += '<p class="note">Checks: ABN against the business register, bank account name match, sanctions lists, insurance certificate, and security evidence (SOC 2 or ISO 27001) for suppliers with data or site access.</p>';
+    h += '<p class="note">Checks: ABN against the business register, bank account name match, sanctions lists, insurance certificate, and security evidence (SOC 2 or ISO 27001) for suppliers with data or site access. A changed bank account is the most common route for invoice fraud, so payments to that supplier wait until someone calls them on a number already on file.</p>';
     return h;
   }
   function openInvite(){
@@ -936,9 +1054,28 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
       '<form class="form" id="ivForm"><label class="full">Supplier name<input type="text" name="name" required placeholder="e.g. Harbourside Electrical"></label>'+
       '<label>Category<select class="field" name="category">'+CATEGORIES.map(function(c){ return '<option>'+c+'</option>'; }).join('')+'</select></label>'+
       '<label>Risk tier<select class="field" name="risk"><option>Low</option><option selected>Medium</option><option>High</option></select></label>'+
+      '<label class="full">ABN (if known)<input type="text" name="abn" inputmode="numeric" placeholder="11 digits"></label>'+
+      '<div class="full route" id="dupPrev">No similar supplier on file.</div>'+
       '<p class="full note" style="margin:0">The supplier receives a portal link to enter its own ABN, bank details and documents. Checks run as soon as it submits.</p>'+
       '<div class="full row" style="justify-content:flex-end"><button class="btn" type="button" data-close>Cancel</button><button class="btn primary" type="submit">Send invite</button></div></form></div>';
     $('#ivForm [name=name]').focus();
+  }
+
+  function normName(n){ return String(n||'').toLowerCase().replace(/\b(pty|ltd|limited|inc|corp|corporation|co|the|group|holdings|australia)\b/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim(); }
+  function similarSuppliers(name, abn){
+    var n = normName(name), toks = n.split(' ').filter(function(t){ return t.length>2; }), a = String(abn||'').replace(/\D/g,'');
+    return S.suppliers.map(function(s){
+      if (a.length===11 && s.abn && s.abn.replace(/\D/g,'')===a) return {s:s, why:'same ABN', exact:true};
+      var m = normName(s.name); if (!n) return null;
+      if (m===n || m.indexOf(n)>-1 || n.indexOf(m)>-1) return {s:s, why:'very similar name'};
+      var st = m.split(' '), hit = toks.filter(function(t){ return st.indexOf(t)>-1; }).length;
+      return hit>=1 && toks.length && hit/Math.max(toks.length, st.length) >= 0.5 ? {s:s, why:'shares '+hit+' name word'+(hit>1?'s':'')} : null;
+    }).filter(Boolean);
+  }
+  function updateDup(){
+    var f = $('#ivForm'); if (!f) return;
+    var d = similarSuppliers(f.name.value, f.abn.value);
+    $('#dupPrev').innerHTML = d.length ? '<span class="'+(d.some(function(x){ return x.exact; })?'bad-t':'warn-t')+'"><b>Possible duplicate:</b> '+d.map(function(x){ return esc(x.s.name)+' ('+x.s.id+', '+x.why+')'; }).join('; ')+'.</span>'+(d.some(function(x){ return x.exact; })?' An ABN can only appear once in the vendor database.':' <label class="ck" style="display:inline-flex;margin-left:6px"><input type="checkbox" name="notDup"> This is a different company</label>') : 'No similar supplier on file.';
   }
 
   // ---------- Contracts ----------
@@ -954,20 +1091,113 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
 
   // ---------- Invoices ----------
   function vInvoices(){
-    var h = head('Invoices','Invoices are matched automatically to the purchase order and to proof of delivery. Matched invoices go straight to payment approval; mismatches are held with the reason shown.');
+    var h = head('Invoices','Invoices are matched automatically to the purchase order and to what was actually received. Matched invoices go to Finance for approval, then into the weekly payment run; mismatches are held with the reason shown.');
     var r = role();
-    var rows = S.invoices.map(function(i){
+    var appr = S.invoices.filter(function(i){ return i.status==='Approved'; }).sort(function(a,b){ return a.due<b.due?-1:1; });
+    var ready = appr.filter(function(i){ return !bankHold(sup(i.supplier)); }), held = appr.filter(function(i){ return bankHold(sup(i.supplier)); });
+    h += '<div class="panel payrun"><div class="row" style="justify-content:space-between;margin:0 0 8px"><h3 style="margin:0">Next payment run: '+fmtDateY(nextRun())+'</h3>'+
+      (ready.length?'<button class="btn primary" type="button" id="runPay"'+(r==='Finance'?'':' disabled title="Finance releases payments"')+'>Release '+ready.length+' payment'+(ready.length>1?'s':'')+' ('+money(ready.reduce(function(a,i){ return a+i.amount; },0))+')</button>':'')+'</div>'+
+      (appr.length ? '<ul class="attn">'+appr.map(function(i){ var sp = sup(i.supplier), hb = bankHold(sp);
+        return '<li><span class="dot" style="background:'+(hb?'var(--bad)':'var(--good)')+'"></span><span class="txt"><b>'+i.id+'</b> '+esc(sp.name)+' · '+money(i.amount)+' · due '+fmtDate(i.due)+
+          (hb?'<span class="sub bad-t">Held: bank details changed on '+fmtDate(sp.bankChange.on)+'. Call the supplier on the number already on file (not one from the email) before paying.</span>':'<span class="sub">Ready to pay</span>')+'</span>'+
+          (hb?'<button class="btn" type="button" data-callback="'+sp.id+'"'+(r==='Finance'||r==='Procurement'?'':' disabled')+'>Call-back verified</button>':'')+'</li>'; }).join('')+'</ul>' : '<p class="empty" style="padding:4px 0">No approved invoices waiting. Approve matched invoices below to add them.</p>')+
+      '<p class="note" style="margin-top:6px">Paying on time every time keeps us high on suppliers\' priority lists; the bank check stops the most common invoice fraud.</p></div>';
+    var rows = S.invoices.slice().sort(function(a,b){ return (a.status==='Paid')-(b.status==='Paid') || (a.due<b.due?-1:1); }).map(function(i){
       var m = invoiceMatch(i), act = '';
-      if (i.status==='Paid') act = '<span class="tag good">Paid</span>';
-      else if (i.status==='Approved') act = '<span class="tag good">Approved for payment</span>';
+      if (i.status==='Paid') act = '<span class="tag good">Paid '+fmtDate(i.paidOn)+'</span>';
+      else if (i.status==='Approved') act = '<span class="tag info">In payment run</span>';
       else if (m.code==='match') act = '<button class="btn primary" type="button" data-pay="'+i.id+'"'+(r==='Finance'?'':' disabled title="Finance approves payments"')+'>Approve payment</button>';
       else if (m.code==='variance' || m.code==='nopo') act = '<button class="btn" type="button" data-override="'+i.id+'"'+(r==='Finance'?'':' disabled title="Finance approves exceptions"')+'>Approve exception</button>';
       else act = '<span class="sub">Pays once delivered</span>';
-      return '<tr><td><b>'+i.id+'</b></td><td>'+esc(sup(i.supplier).name)+'</td><td>'+(i.po||'—')+'</td><td class="r">'+money(i.amount)+'</td><td class="r">'+money(i.expected)+'</td><td><span class="tag '+m.cls+'">'+m.label+'</span></td><td class="r">'+fmtDate(i.due)+'</td><td>'+act+'</td></tr>';
+      var mt = i.status==='Paid' ? '<span class="tag plain">'+(i.firstPass===false?'Matched after query':'Matched')+'</span>' : '<span class="tag '+m.cls+'">'+m.label+'</span>';
+      return '<tr><td><b>'+i.id+'</b></td><td>'+esc(sup(i.supplier).name)+'</td><td>'+(i.po||'—')+'</td><td class="r">'+money(i.amount)+'</td><td class="r">'+money(i.expected)+'</td><td>'+mt+'</td><td class="r">'+fmtDate(i.due)+'</td><td>'+act+'</td></tr>';
     }).join('');
     h += '<div class="tablewrap"><table><thead><tr><th>Invoice</th><th>Supplier</th><th>PO</th><th class="r">Billed</th><th class="r">Expected</th><th>Match</th><th class="r">Due</th><th>Action</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
-    h += '<p class="note">3-way match: invoice amount, purchase order price and delivery receipt must agree within 1%.</p>';
+    h += '<p class="note">3-way match: invoice amount, purchase order price and goods received must agree within 1%. A partly delivered order can only be invoiced up to the value received.</p>';
     return h;
+  }
+
+  // ---------- Reports ----------
+  function avg(a){ return a.length ? a.reduce(function(x,y){ return x+y; },0)/a.length : 0; }
+  function scorecard(){
+    return S.suppliers.map(function(s){
+      var os = S.orders.filter(function(o){ return o.supplier===s.id; }), spend = os.reduce(function(a,o){ return a+o.value; },0);
+      var inv = S.invoices.filter(function(i){ return i.supplier===s.id; });
+      var judged = inv.filter(function(i){ return i.firstPass!==undefined || invoiceMatch(i).code!=='receipt'; });
+      var acc = judged.length ? Math.round(judged.filter(function(i){ return i.firstPass!==undefined ? i.firstPass : invoiceMatch(i).code==='match'; }).length/judged.length*100) : null;
+      var lateOs = os.filter(function(o){ return lateDays(o)>0 && o.stage<5; });
+      var disputes = inv.filter(function(i){ return i.status==='Open' && invoiceMatch(i).code==='variance'; });
+      var issues = lateOs.length + disputes.length + (bankHold(s)?1:0) + (s.insuranceExpiry && daysBetween(off(0),s.insuranceExpiry)<=45 ? 1 : 0);
+      var onb = s.activated ? daysBetween(s.started, s.activated) : null;
+      var score = s.onTime==null && acc==null ? null : Math.round((s.onTime==null?85:s.onTime)*0.5 + (acc==null?85:acc)*0.3 + Math.max(0,100-issues*25)*0.2);
+      var grade = score==null ? '—' : score>=90 ? 'A' : score>=80 ? 'B' : 'C';
+      var talk = [];
+      if (s.onTime!=null && s.onTime<90) talk.push(s.onTime+'% on time'+(lateOs.length?'; '+lateOs.map(function(o){ return o.id+' is '+lateDays(o)+' days late'; }).join(', '):'')+'. Ask for a recovery plan and firmer ship dates.');
+      if (disputes.length) talk.push(disputes.map(function(i){ return i.id+' '+invoiceMatch(i).label.toLowerCase(); }).join(', ')+'. Agree pricing before the next invoice.');
+      if (acc!=null && acc<100 && !disputes.length) talk.push('Invoice accuracy '+acc+'%. Review the queried invoices together.');
+      if (s.insuranceExpiry && daysBetween(off(0),s.insuranceExpiry)<=45) talk.push('Insurance certificate expires '+fmtDate(s.insuranceExpiry)+'.');
+      if (bankHold(s)) talk.push('Confirm the bank-detail change.');
+      if (!talk.length && spend) talk.push('Performing well. Share our 12-month forecast and ask them to score us back.');
+      if (!talk.length) talk.push(s.status==='Onboarding' ? 'Still onboarding.' : 'No orders yet.');
+      return {s:s, spend:spend, acc:acc, issues:issues, onb:onb, score:score, grade:grade, talk:talk.join(' ')};
+    });
+  }
+  function reportData(){
+    var spend = S.orders.reduce(function(a,o){ return a+o.value; },0);
+    var done = S.requests.filter(function(q){ return q.poOn; });
+    var cycle = avg(done.map(function(q){ return daysBetween(q.created, q.poOn); }));
+    var apprDays = avg(S.requests.filter(function(q){ return q.approvedOn; }).map(function(q){ return daysBetween(q.created, q.approvedOn); }));
+    var poDays = avg(done.filter(function(q){ return q.approvedOn; }).map(function(q){ return daysBetween(q.approvedOn, q.poOn); }));
+    var delivered = S.orders.filter(function(o){ return o.stage>=4; }), ontime = delivered.filter(function(o){ return (o.stageDates[4]||o.eta) <= o.promised; }).length;
+    var judged = S.invoices.filter(function(i){ return i.firstPass!==undefined || invoiceMatch(i).code!=='receipt'; });
+    var fp = judged.length ? Math.round(judged.filter(function(i){ return i.firstPass!==undefined ? i.firstPass : invoiceMatch(i).code==='match'; }).length/judged.length*100) : 0;
+    var savings = S.requests.reduce(function(a,q){ return a + quoteStatus(q).saving; },0);
+    var paid = S.invoices.filter(function(i){ return i.status==='Paid'; }), paidOnTime = paid.length ? Math.round(paid.filter(function(i){ return i.paidOn<=i.due; }).length/paid.length*100) : 100;
+    var act = S.suppliers.filter(function(s){ return s.activated; }), onb = avg(act.map(function(s){ return daysBetween(s.started, s.activated); }));
+    var bySup = {}, byCat = {};
+    S.orders.forEach(function(o){ bySup[o.supplier] = (bySup[o.supplier]||0)+o.value; var c = sup(o.supplier).category; byCat[c] = (byCat[c]||0)+o.value; });
+    return {spend:spend, cycle:cycle, apprDays:apprDays, poDays:poDays, delivered:delivered.length, ontime:ontime, fp:fp, savings:savings, paidOnTime:paidOnTime, onb:onb, bySup:bySup, byCat:byCat, done:done.length};
+  }
+  function bars(map, total, labeler){
+    var keys = Object.keys(map).sort(function(a,b){ return map[b]-map[a]; }), mx = map[keys[0]]||1;
+    return keys.map(function(k){ return '<div class="cbar"><div class="cl"><span>'+labeler(k)+'</span><b class="num">'+money(map[k])+' · '+Math.round(map[k]/total*100)+'%</b></div><div class="ct"><i style="width:'+(map[k]/mx*100)+'%"></i></div></div>'; }).join('');
+  }
+  function vReports(){
+    var d = reportData(), sc = scorecard();
+    var h = head('Reports','The monthly view a procurement lead would share with Finance and Operations: where the money goes, how fast buying runs, and how suppliers perform. Each number points to an action.',
+      '<button class="btn" type="button" id="csv">Download scorecard (CSV)</button>');
+    h += '<div class="kpis">'+
+      kpi('Committed spend', money(d.spend), Math.round(d.spend/S.budget*100)+'% of '+money(S.budget)+' budget')+
+      kpi('Request to PO', d.cycle.toFixed(1)+' days', 'average over '+d.done+' purchases', d.cycle>10?'warn-t':'')+
+      kpi('On-time delivery', d.delivered?Math.round(d.ontime/d.delivered*100)+'%':'—', d.ontime+' of '+d.delivered+' delivered orders; '+S.orders.filter(function(o){ return o.stage<4 && lateDays(o)>0; }).length+' open orders running late', S.orders.some(function(o){ return o.stage<4 && lateDays(o)>0; })?'warn-t':'')+
+      kpi('Invoices matched first time', d.fp+'%', 'the rest needed a query or a correction', d.fp<90?'warn-t':'')+
+      kpi('Savings from quotes', money(d.savings), 'below the average competing quote', 'good-t')+'</div>';
+    var top = Object.keys(d.bySup).sort(function(a,b){ return d.bySup[b]-d.bySup[a]; })[0], share = top ? d.bySup[top]/d.spend : 0;
+    h += '<div class="grid2"><div class="panel"><h3>Spend by supplier</h3>'+bars(d.bySup, d.spend, function(k){ return esc(sup(k).name); })+
+      (share>0.5?'<p class="note"><b>Concentration:</b> '+esc(sup(top).name)+' holds '+Math.round(share*100)+'% of committed spend. That\'s normal for GPU racks bought through one integrator, but keep a second route qualified and benchmark its prices against direct manufacturer quotes.</p>':'')+'</div>'+
+      '<div class="panel"><h3>Spend by category</h3>'+bars(d.byCat, d.spend, function(k){ return k; })+'</div></div>';
+    h += '<h3 style="margin-top:22px">Supplier scorecard</h3><p class="note" style="margin-top:0">Used in quarterly supplier reviews. Score = 50% on-time delivery, 30% invoice accuracy, 20% open issues. Suppliers are asked to score us back.</p>'+
+      '<div class="tablewrap"><table><thead><tr><th>Supplier</th><th class="r">Spend</th><th class="r">On time</th><th class="r">Invoice accuracy</th><th class="r">Open issues</th><th class="r">Onboarded in</th><th>Grade</th></tr></thead><tbody>'+
+      sc.sort(function(a,b){ return b.spend-a.spend; }).map(function(x){
+        return '<tr><td><b>'+esc(x.s.name)+'</b><span class="sub">'+x.s.category+'</span></td><td class="r">'+(x.spend?money(x.spend):'—')+'</td><td class="r">'+(x.s.onTime==null?'—':x.s.onTime+'%')+'</td><td class="r">'+(x.acc==null?'—':x.acc+'%')+'</td><td class="r">'+(x.issues||'—')+'</td><td class="r">'+(x.onb==null?'—':x.onb+' days')+'</td>'+
+          '<td>'+(x.score==null?'—':'<span class="tag '+(x.grade==='A'?'good':x.grade==='B'?'info':'warn')+'">'+x.grade+' · '+x.score+'</span>')+'</td></tr>'+
+          '<tr class="talk"><td colspan="7" class="wrap"><b>For the next review:</b> '+esc(x.talk)+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+    var sl = [['Requests approved', 'within 3 days', d.apprDays, 3, d.apprDays.toFixed(1)+' days'],
+              ['PO raised after approval', 'within 2 days', d.poDays, 2, d.poDays.toFixed(1)+' days'],
+              ['New supplier onboarded', 'within 10 days', d.onb, 10, d.onb.toFixed(1)+' days'],
+              ['Suppliers paid by the due date', '100%', 100-d.paidOnTime, 0, d.paidOnTime+'%']];
+    h += '<div class="panel" style="margin-top:18px"><h3>Service to internal teams</h3><p class="note" style="margin-top:0">What Operations, Network and Finance can expect from procurement, reviewed with them monthly.</p>'+
+      '<div class="tablewrap" style="border:0"><table><thead><tr><th>Measure</th><th>Target</th><th class="r">Actual</th><th>Status</th></tr></thead><tbody>'+
+      sl.map(function(x){ var ok = x[2] <= x[3]; return '<tr><td>'+x[0]+'</td><td>'+x[1]+'</td><td class="r">'+x[4]+'</td><td><span class="tag '+(ok?'good':'warn')+'">'+(ok?'Met':'Missed')+'</span></td></tr>'; }).join('')+'</tbody></table></div></div>';
+    return h;
+  }
+  function downloadCSV(){
+    var rows = [['Supplier','Category','Spend (US$)','On-time %','Invoice accuracy %','Open issues','Onboarded in (days)','Grade','Score','Talking points']];
+    scorecard().forEach(function(x){ rows.push([x.s.name, x.s.category, Math.round(x.spend), x.s.onTime==null?'':x.s.onTime, x.acc==null?'':x.acc, x.issues, x.onb==null?'':x.onb, x.grade, x.score==null?'':x.score, x.talk]); });
+    var csv = rows.map(function(r0){ return r0.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download = 'supplier-scorecard.csv';
+    document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500); toast('Scorecard downloaded.');
   }
 
   // =====================================================================
@@ -1510,6 +1740,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     var p = P(), r = planCalc(p), l = r.lines.filter(function(x){ return x.id===id; })[0], raw = p.lines.filter(function(x){ return x.id===id; })[0];
     var q = {id:'R-'+(S.seq.R++), title:l.name+' ('+l.qty.toLocaleString('en-US')+' '+l.unit+') for '+p.custName, category:HUBCAT[l.sig]||'Hardware', amount:Math.round(l.value), supplier:supIdFor(l.supplier),
       customer:p.customer, requester:'Ops', needBy:l.need, why:'Deployment plan: order by '+fmtDate(l.orderBy)+' to arrive by '+fmtDate(l.need)+' for '+p.custName+' go-live.', approvals:[], status:'Pending', po:null, created:off(0), planLine:id, risk:riskFromLine(l)};
+    if (l.mode==='LTA' || l.sig==='gpu' || l.phase==='Colo'){ q.sole = l.phase==='Colo' ? 'Only supplier able to provide it' : 'Bought under an existing framework or allocation agreement'; q.soleNote = l.phase==='Colo' ? 'Capacity in the data hall the cluster is planned for.' : 'Supply agreement or integrator allocation for '+l.name.toLowerCase()+'.'; }
     S.requests.push(q); raw.req = q.id; save(); render(); openLine(id, true); toast(q.id+' raised. Waiting on '+nextStep(q)+'.');
   }
 
@@ -1645,6 +1876,26 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     if (d.view){ go(d.view); return; }
     if (d.ptab){ planTab = d.ptab; render(); return; }
     if (d.review){ openReview(d.review); return; }
+    if (d.quotes){ openQuotes(d.quotes); return; }
+    if (d.choose){ var cp = d.choose.split('|'), cq = S.requests.filter(function(x){ return x.id===cp[0]; })[0], cx = cq.quotes[+cp[1]];
+      cq.chosen = +cp[1];
+      var known = S.suppliers.filter(function(s0){ return s0.name===cx.name; })[0];
+      if (known) cq.supplier = known.id;
+      var msg = cx.name+' chosen at '+money(cx.price)+'.';
+      if (cx.price > cq.amount*1.1){ cq.amount = cx.price; cq.approvals = []; cq.status = 'Pending'; cq.approvedOn = null; msg += ' That is more than 10% above the approved estimate, so it goes back for approval.'; }
+      if (!known) msg += ' Invite them to onboard before the PO can be raised.';
+      save(); render(); openQuotes(cq.id, true); toast(msg); return; }
+    if (d.unsole){ var uq = S.requests.filter(function(x){ return x.id===d.unsole; })[0]; uq.sole = null; uq.soleNote = null; uq.quotes = uq.quotes||[]; save(); render(); openQuotes(uq.id, true); toast('Single-source justification removed.'); return; }
+    if (d.receive){ var ro = order(d.receive), n = Math.max(1, Math.min(orderQty(ro)-receivedQty(ro), Math.round(+$('#rcvQty').value||0)));
+      ro.receipts = ro.receipts||[]; var from = receivedQty(ro)+1; ro.receipts.push({date:off(0), qty:n, from:from});
+      var full = receivedQty(ro) >= orderQty(ro);
+      ro.thread.push({who:role(), when:off(0), text:(full?'Received in full':'Partial receipt')+': '+n.toLocaleString('en-US')+' units scanned ('+serialAt(ro,from)+' to '+serialAt(ro,from+n-1)+').'});
+      if (full){ ro.stage = 4; ro.stageDates[4] = off(0); ro.eta = off(0); }
+      save(); render(); openOrder(ro.id, true); toast(full ? ro.id+' received in full and marked delivered.' : n.toLocaleString('en-US')+' of '+orderQty(ro).toLocaleString('en-US')+' received. Invoices can be paid up to the value received.'); return; }
+    if (d.renew){ var rs = S.suppliers.filter(function(x){ return x.id===d.renew; })[0]; rs.insuranceExpiry = off(365); save(); render(); toast('New insurance certificate on file for '+rs.name+', valid to '+fmtDateY(rs.insuranceExpiry)+'.'); return; }
+    if (d.callback){ var cs = S.suppliers.filter(function(x){ return x.id===d.callback; })[0]; cs.bankChange.verified = true; cs.bankChange.by = role(); save(); render(); toast('Bank change for '+cs.name+' verified by phone. Its payments are released into the run.'); return; }
+    if (t.id==='runPay'){ var paidN = 0, paidV = 0; S.invoices.forEach(function(i){ if (i.status==='Approved' && !bankHold(sup(i.supplier))){ i.status='Paid'; i.paidOn=off(0); paidN++; paidV+=i.amount; } }); save(); render(); toast(paidN+' payment'+(paidN>1?'s':'')+' released: '+money(paidV)+'.'); return; }
+    if (t.id==='csv'){ downloadCSV(); return; }
     if (d.rdone){ var rp = d.rdone.split('|'), rq = S.requests.filter(function(x){ return x.id===rp[0]; })[0]; rq.reviews = rq.reviews||{}; rq.reviews[rp[1]] = off(0); save(); render(); openReview(rq.id, true); toast(rp[1]+' marked done.'); return; }
     if (d.line){ openLine(d.line); return; }
     if (d.apply){ var ap = d.apply.split(':'); applyDecision(ap[0], ap[1]); return; }
@@ -1660,7 +1911,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     if (d.order){ openOrder(d.order); return; }
     if (d.approve){
       var q = S.requests.filter(function(x){ return x.id===d.approve; })[0], st = nextStep(q);
-      q.approvals.push(st); if (q.approvals.length===steps(q.amount).length) q.status='Approved';
+      q.approvals.push(st); if (q.approvals.length===steps(q.amount).length){ q.status='Approved'; q.approvedOn = off(0); }
       save(); render(); toast(q.status==='Approved' ? q.id+' fully approved. Procurement can raise the PO.' : st+' approved '+q.id+'. Now with '+nextStep(q)+'.'); return;
     }
     if (d.reject){ var q2 = S.requests.filter(function(x){ return x.id===d.reject; })[0]; q2.status='Rejected'; save(); render(); toast(q2.id+' rejected.'); return; }
@@ -1668,13 +1919,16 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
       var q3 = S.requests.filter(function(x){ return x.id===d.po; })[0], sp = sup(q3.supplier);
       if (sp.status!=='Active'){ toast(sp.name+' is still onboarding. Finish its checks first.'); return; }
       var rvp = review(q3); if (rvp.open.length){ toast('Complete '+rvp.open.length+' required review'+(rvp.open.length>1?'s':'')+' first.'); openReview(q3.id); return; }
+      var qsp = quoteStatus(q3); if (!qsp.ok){ toast('Quotes not complete: '+qsp.text); openQuotes(q3.id); return; }
+      if (qsp.chosen && !S.suppliers.some(function(s0){ return s0.name===qsp.chosen.name; })){ toast(qsp.chosen.name+' must be invited and onboarded before the PO.'); return; }
       var lead = LEAD_DAYS[q3.category], id = 'PO-'+(S.seq.PO++), pl = q3.planLine && P().lines.filter(function(x){ return x.id===q3.planLine; })[0];
       if (pl) lead = leadOf(pl)*7 + (pl.imported?P().transit:0);
       var gp = pl && (pl.sig==='gpu'||pl.sig==='optics') ? P().gpus : 0;
       if (pl) pl.po = id;
-      S.orders.push({id:id,item:q3.title,supplier:q3.supplier,customer:q3.customer,value:q3.amount,gpus:gp,stage:0,promised:pl?q3.needBy:addDays(off(0),lead),eta:addDays(off(0),lead),stageDates:{0:off(0)},
+      var qn = (q3.title.match(/×\s*([\d,]+)/)||[])[1];
+      S.orders.push({id:id,qty: pl ? pl.qty : (qn ? +qn.replace(/,/g,'') : 1),item:q3.title,supplier:q3.supplier,customer:q3.customer,value:poValue(q3),gpus:gp,stage:0,promised:pl?q3.needBy:addDays(off(0),lead),eta:addDays(off(0),lead),stageDates:{0:off(0)},
         thread:[{who:'Procurement',when:off(0),text:'Raised from '+q3.id+'. '+q3.why}]});
-      q3.po = id; save(); render(); toast(id+' raised and sent to '+sp.name+'.'); return;
+      q3.po = id; q3.poOn = off(0); save(); render(); toast(id+' raised for '+money(poValue(q3))+' and sent to '+sp.name+'.'); return;
     }
     if (d.advance){
       var o = order(d.advance); o.stage++; o.stageDates[o.stage] = off(0);
@@ -1695,9 +1949,10 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     if (d.check){
       var s = S.suppliers.filter(function(x){ return x.id===d.check; })[0];
       CHECKS.forEach(function(c){ if (s.checks[c[0]]==='pending') s.checks[c[0]] = c[0]==='insurance' ? 'fail' : 'pass'; });
+      if (s.checks.insurance==='pass' && !s.insuranceExpiry) s.insuranceExpiry = off(365);
       save(); render(); toast(s.name+': checks complete. '+(s.checks.insurance==='fail'?'Insurance certificate missing.':'All passed.')); return;
     }
-    if (d.ins){ var s2 = S.suppliers.filter(function(x){ return x.id===d.ins; })[0]; s2.checks.insurance='pass'; save(); render(); toast('Insurance certificate verified for '+s2.name+'.'); return; }
+    if (d.ins){ var s2 = S.suppliers.filter(function(x){ return x.id===d.ins; })[0]; s2.checks.insurance='pass'; s2.insuranceExpiry = off(365); save(); render(); toast('Insurance certificate verified for '+s2.name+'.'); return; }
     if (d.activate){ var s3 = S.suppliers.filter(function(x){ return x.id===d.activate; })[0]; s3.status='Active'; s3.activated=off(0); save(); render(); toast(s3.name+' is active. POs can now be raised.'); return; }
     if (d.pay){ var i1 = S.invoices.filter(function(x){ return x.id===d.pay; })[0]; i1.status='Approved'; save(); render(); toast(i1.id+' approved for payment.'); return; }
     if (d.override){ var i2 = S.invoices.filter(function(x){ return x.id===d.override; })[0]; i2.status='Approved'; save(); render(); toast(i2.id+' approved as an exception.'); return; }
@@ -1717,14 +1972,27 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
       ln.mode = lf.mode.value; ln.basis = lf.basis.value; if (lf.expedite) ln.expedite = lf.expedite.checked;
       save(); render(); openLine(ln.id, true); toast('Saved. Schedule and costs recalculated.');
     }
+    if (e.target.id==='qForm'){
+      var qf = e.target, qq = S.requests.filter(function(x){ return x.id===qf.dataset.id; })[0];
+      qq.quotes = qq.quotes||[]; qq.quotes.push({name:qf.name.value.trim(), price:+qf.price.value, days:+qf.days.value||0});
+      save(); render(); openQuotes(qq.id, true); toast('Quote from '+qf.name.value.trim()+' added. '+quoteStatus(qq).text); return;
+    }
+    if (e.target.id==='soleForm'){
+      var sf = e.target, sq = S.requests.filter(function(x){ return x.id===sf.dataset.id; })[0];
+      sq.sole = sf.reason.value; sq.soleNote = sf.note.value.trim(); sq.chosen = null;
+      save(); render(); openQuotes(sq.id, true); toast('Single-source justification recorded'+(sq.amount>=250000?'; Finance sees it at approval.':'.')); return;
+    }
     if (e.target.id==='ivForm'){
-      var f = e.target, id = 'S-'+('0'+(S.seq.S++)).slice(-2);
-      S.suppliers.push({id:id,name:f.name.value.trim(),category:f.category.value,status:'Onboarding',risk:f.risk.value,onTime:null,started:off(0),activated:null,
+      var f = e.target, dups = similarSuppliers(f.name.value, f.abn.value);
+      if (dups.some(function(x){ return x.exact; })){ toast('That ABN is already in the vendor database as '+dups.filter(function(x){ return x.exact; })[0].s.name+'.'); return; }
+      if (dups.length && !(f.notDup && f.notDup.checked)){ toast('Possible duplicate. Confirm it is a different company, or use the existing record.'); return; }
+      var id = 'S-'+('0'+(S.seq.S++)).slice(-2);
+      S.suppliers.push({id:id,abn:f.abn.value.trim()||null,insuranceExpiry:null,name:f.name.value.trim(),category:f.category.value,status:'Onboarding',risk:f.risk.value,onTime:null,started:off(0),activated:null,
         checks:{abn:'pending',bank:'pending',sanctions:'pending',insurance:'pending',security:'pending'}});
       save(); closeOverlay(); render(); toast('Invite sent to '+f.name.value.trim()+'.');
     }
   });
-  root.addEventListener('input', function(e){ if (e.target.closest('#rqForm')) updateRoute();
+  root.addEventListener('input', function(e){ if (e.target.closest('#rqForm')) updateRoute(); if (e.target.closest('#ivForm') && e.target.name!=='notDup') updateDup();
     if (e.target.dataset && e.target.dataset.pf==='phase'){ var b = e.target.parentNode.querySelector('b'); if (b) b.textContent = e.target.value+'%'; } });
   root.addEventListener('change', function(e){
     if (e.target.dataset && e.target.dataset.pf){ var k = e.target.dataset.pf, y = window.scrollY; setPlanField(k, e.target.value); render(); window.scrollTo(0,y); if (k!=='phase') toast(k==='template'||k==='gpus'||k==='site' ? 'Bill of materials rebuilt.' : 'Plan updated.'); return; }
